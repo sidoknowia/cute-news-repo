@@ -1,0 +1,2 @@
+CuteNews is a powerful and easy-to-use news management system that uses flat files to store its database. 
+Among the features it supports commenting, archives, search function, file upload management, backup & restore, IP banning, flood protection and many more other features.
