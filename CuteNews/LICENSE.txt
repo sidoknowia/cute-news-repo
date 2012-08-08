@@ -8,22 +8,22 @@ Agreement.
 
 2. CutePHP Software IS DISTRIBUTED "AS IS". NO WARRANTY OF ANY KIND IS
 EXPRESSED OR IMPLIED. You Use our software AT YOUR OWN RISK. CutePHP
-Author hereby disclaims all warranties and guarantees regarding the
+Authors hereby disclaim all warranties and guarantees regarding the
 use, or the results of use, of the software in terms of correctness,
-accuracy, reliability or otherwise. The Author will not be responsible
+accuracy, reliability or otherwise. The Authors will not be responsible
 for any incidental, consequential, direct or indirect damages. You
 also agree that the disclaimer is the complete and exclusive statement
 of agreement between the parties and supersede all proposals or prior
 agreements, oral or written, and any other communications between the
 parties relating to the subject matter of the disclaimer.
 
-3. All copyrights to "CutePHP.com" are exclusively owned by the author
-- Georgi Avramov.
+3. All copyrights to "CutePHP.com" are exclusively owned by CutePHP
+Development Team.
 
-4. You can use CutePHP.com Software for free (non-commercial needs) as
-long as you do not remove / edit, and keep visible the "Powered by..."
-line (displayed on every page where the script is included) without
-the explicit written permission of CutePHP.com or payed registration.
+4. You can use CutePHP.com Software for free as long as you do not
+remove / edit, and keep visible the "Powered by..." line (displayed
+on every page where the script is included) without the explicit
+written permission of CutePHP.com or payed registration.
 The Software is licensed only to you. You may not rent, lease,
 sublicense, sell, assign, pledge, transfer or otherwise dispose of the
 Software in any form, on a temporary or permanent basis, without the
@@ -53,7 +53,7 @@ are occurring.
 6.4 Un-Official technical support will be provided in our forums from
 voluntary members to both Registered and Un-Registered Users.
 
-6.5 CutePHP.com Software includes CKEditor which is an open-source 
+6.5 CutePHP.com Software includes CKEditor, which is an open-source 
 product.
 
 TERMINATION
