@@ -7,15 +7,14 @@
 
     config.enterMode = CKEDITOR.ENTER_P;
     config.forceEnterMode = false;
+    config.toolbarCanCollapse = true;
 
     //config.toolbar = 'Basic';
-    CKEDITOR.config.toolbar = [
-        ['Save','Styles','Format'], ['Print','Source'],
-        '/',
+    config.toolbar = [
+        ['Source','Print'], ['Save','Styles','Format'],
         ['Bold','Italic','Underline','StrikeThrough','-','Undo','Redo','-','Find','Replace','-','Outdent','Indent','-','FontSize','Font'],
-        '/',
         ['NumberedList','BulletedList','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-        ['Image','Table','-','Link','Smiley','TextColor','BGColor']
+        ['Image','Table','-','Link','Smiley','TextColor','BGColor'],
     ] ;
 
 };

@@ -55,7 +55,7 @@ elseif($action == "doeditcomment")
 
     if (empty($mail))   $mail   = lang("none");
     if (empty($poster)) $poster = lang("Anonymous");
-    if (empty($comment)) die(lang("Comment can not be blank"));
+    if (empty($comment) && isset($comment)) die(lang("Comment can not be blank"));
 
     $comment = str_replace(array("\r","\t"), " ", $comment);
     $comment = str_replace("\n", "<br />", $comment);

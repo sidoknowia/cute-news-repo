@@ -172,16 +172,14 @@ $exists     = array('/rss.php',
                     '/register.php',
                     '/captcha.php',
                     '/LICENSE.txt',
-                    '/README.htm',
+                    '/README.html',
                     '/cdata/log',
                     '/cdata/cache',
                     '/cdata/backup',
                     '/cdata/hooks.php',
 );
 
-$executabes = array('/cdata/log',
-                    '/cdata/cache',
-                    '/cdata/backup');
+$executabes = array();
 
 $readables  = array('/cdata',
                     '/cdata/log',
@@ -260,7 +258,9 @@ foreach ($filesize as $i => $v)
 if (function_exists('disk_free_space') && function_exists('disk_total_space'))
 {
     $msgs['fs'][] = array('Free disk space', formatsize( disk_free_space(SERVDIR) ) );
-    $factor = (int)(650 * disk_free_space(SERVDIR) / disk_total_space('/'));
+    $factor = (int)(650 * (1 - disk_free_space('/') / disk_total_space('/')));
+    if ($factor > 650) $factor = 650;
+    if ($factor < 0) $factor = 0;
 }
 else $factor = false;
 

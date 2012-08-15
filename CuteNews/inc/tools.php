@@ -275,7 +275,6 @@ elseif ($action == 'report')
 
     // defininitions
     define('BULK_ENCODE', 8192);
-    define('GZ_ENCODE', function_exists('gzencode'));
 
     if ($do == 'report')
     {
@@ -290,100 +289,9 @@ elseif ($action == 'report')
         fwrite($ds, 'DS '.base64_encode($desc)."\n");
         fwrite($ds, 'UF '.$up_file."\n");
         fwrite($ds, 'KY '.base64_encode(xxtea_encrypt(mt_rand().mt_rand().mt_rand().'@'.$title.'@'.$desc, $key))."\n"); // key code (registration check)
-        fwrite($ds, 'GZ '.(int)GZ_ENCODE."\n");
-        fwrite($ds, "@@ Started: ".date('r')."\n\n");
         fclose($ds);
 
-        // only cutenews dirs & files
-        $fo = fopen($df, 'w');
-        foreach ($files as $i => $v)
-        {
-            if ( !preg_match('~^/(cdata)/~', $v) && !preg_match('~^/[^/]*$~', $v))
-                 unset($files[$i]);
-            else fwrite($fo, $v."\n");
-        }
-        fclose($fo);
-
-        header('HTTP/1.1 301 Moved Permanently');
-        header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=exec&key='.$key);
-        
-        exit_cookie();
-    }
-    elseif ($do == 'exec')
-    {
-
-        $exec_time = ini_get('max_execution_time') / 2;
-        if ($exec_time == 0) $exec_time = 30;
-
-        $exec_start = time();
-        $dir = file($df);
-
-        $count = count($dir);
-        if (!$count)
-        {
-            $fz = filesize($dc);
-
-            // save metadata
-            $x = fopen($dc, 'a');
-            fwrite($x, "@@ Completed at: ".date('r'));
-            fclose($x);
-            unlink($df);
-
-            // Complete dumping
-            header('HTTP/1.1 301 Moved Permanently');
-            header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
-
-            exit_cookie();
-        }
-        
-        // open file for write
-        $don = fopen($dc, 'a');
-        for ($i = 0; $i < $count; $i++)
-        {
-
-            $dt  = false;
-            $pz  = SERVDIR.trim($dir[$i]);
-
-            // check disk space
-            $fz  = filesize( $pz );
-            $dfs = disk_free_space(SERVDIR);
-            
-            if ($dfs < $fz*4)
-            {
-                if (file_exists($df)) unlink($df);
-                if (file_exists($dc)) unlink($dc);
-                msg('error', lang('Unsuffucient disk space'), str_replace('%1', formatsize($dfs), lang('Available %1 disk space. Clean disk and try again')));
-            }
-
-            // save file as b64
-            $rd = fopen($pz, 'r');
-            fwrite($don, trim($dir[$i]).'***'.$fz."\n");
-            for ($x = 0; $x < $fz; $x += BULK_ENCODE)
-            {
-                fseek($rd, $x, SEEK_SET);
-                fwrite($don, "   ". base64_encode( GZ_ENCODE? gzencode(fread($rd, BULK_ENCODE)): fread($rd, BULK_ENCODE) )."\n");
-            }
-            fclose($rd);
-            fwrite($don, "\n");
-
-            // remove file item
-            unset($dir[$i]);
-
-            // execution time overtime
-            if (time() - $exec_start > $exec_time) break;
-
-        }
-        fclose($don);
-
-        // save contents
-        $fp = fopen($df, "w");
-        fwrite($fp, implode('', $dir));
-        fclose($fp);
-
-        // Restart dumping
-        header('HTTP/1.1 301 Moved Permanently');
-        header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=exec&key='.$key);
-
+        header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
         exit_cookie();
     }
     elseif ($do == 'complete')

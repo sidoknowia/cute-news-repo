@@ -3,6 +3,9 @@
     /* Check PHP Version */
     if ( substr(PHP_VERSION, 0, 5) < '4.0.3') die('PHP Version is '.PHP_VERSION.', need great than PHP &gt;= 4.0.3 for start cutenews');
 
+    // Remove simple error
+    error_reporting(E_ALL ^ E_NOTICE);
+
     // DEFINITIONS
     define('EXEC_TIME',               microtime(true));
 

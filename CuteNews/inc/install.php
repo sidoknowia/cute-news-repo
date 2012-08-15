@@ -25,7 +25,7 @@
                 $x = fopen($dir.'/index.html', 'w');
                 fwrite($x, 'Access denied');
                 fclose($x);
-                chmod ( $dir.'/index.html', 0664 );
+                chmod ( $dir.'/index.html', 0666 );
             }
         }
 
@@ -36,7 +36,7 @@
             if (!file_exists($file))
             {
                 fclose( fopen($file, 'w') );
-                chmod ($file, 0664);
+                chmod ($file, 0666);
             }
         }
 
@@ -50,7 +50,7 @@
                 $cp = fopen($file, 'w');
                 fwrite ($cp, $rw);
                 fclose($cp);
-                chmod ($file, 0664);
+                chmod ($file, 0666);
             }
         }
 

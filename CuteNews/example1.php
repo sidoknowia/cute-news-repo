@@ -1,3 +1,9 @@
+<?php
+
+    header('Content-Type: text/html; charset=UTF-8');
+    error_reporting(E_ALL ^ E_NOTICE);
+
+?>
 <html>
 <head><title>Example1</title></head>
 <body>

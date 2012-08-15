@@ -78,11 +78,13 @@ if ($action == "options" or $action == '')
                'url'                => "$PHP_SELF?mod=tools&action=userlog",
                'access'             => "1",
         ),
+        /*
         array(
                'name'               => lang("Hooks and plugins"),
                'url'                => "$PHP_SELF?mod=hooks",
                'access'             => "1",
         ),
+        */
         array(
                'name'               => lang("Word replacement"),
                'url'                => "$PHP_SELF?mod=tools&action=replaces",

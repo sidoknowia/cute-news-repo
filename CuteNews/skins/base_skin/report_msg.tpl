@@ -32,7 +32,10 @@
                 <div><input type="submit" value="  submit report " ></div>
             </td>
         </tr>
+        <tr><td>&nbsp;</td>
+            <td><p><b>Note:</b> We will not send any confidential information.<br/> The file is saved to a report just for you and you have<br/> the right not to send him anywhere.</p></td></tr>
     </table>
+
 
 </form>
 
