@@ -49,7 +49,6 @@
     <tr>
         <td width="75" valign="top"><br />Short Story</td>
         <td>
-            <div style="margin: 12px 0 4px 0;"><a href=# onclick="window.open('{$PHP_SELF}?mod=images&action=quick&area={$short_story_id}&wysiwyg=yes', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage">[insert image]</a></div>
             <textarea style="width: 464px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=4></textarea>
         </td>
     </tr>
@@ -58,7 +57,6 @@
 
         <td width="75" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
         <td>
-            <div style="margin: 12px 0 4px 0;"><a href=# onclick="window.open('{$PHP_SELF}?mod=images&action=quick&area={$short_full_id}&wysiwyg=yes', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage">[insert image]</a></div>
             <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;"></textarea>
         </td>
     </tr>
@@ -97,6 +95,30 @@
 </form>
 
 <script type="text/javascript">
-    CKEDITOR.replace( 'short_story', { skin: 'v2', width: 550, height: 300, } );
-    CKEDITOR.replace( 'full_story', { skin: 'v2', width: 550, height: 400, } );
+    (function()
+    {
+        var settings =
+        {
+            skin: 'v2',
+            width: 655,
+            height: 350,
+            customConfig: '',
+            entities_latin: false,
+            entities_greek: false,
+            toolbar: [
+                ['Source','Maximize','Scayt','PasteText','Undo','Redo','Find','Replace','-','SelectAll','RemoveFormat','NumberedList','BulletedList','Outdent','Indent'],
+                ['Image','Table','HorizontalRule','Smiley'],
+                ['Link','Unlink','Anchor'],
+                ['Format','FontSize','TextColor','BGColor'],
+                ['Bold','Italic','Underline','Strike','Blockquote'],
+                ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+
+            ],
+            filebrowserBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true',
+            filebrowserImageBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true'
+        };
+        CKEDITOR.replace( 'short_story', settings );
+        CKEDITOR.replace( 'full_story', settings );
+    })();
+
 </script>

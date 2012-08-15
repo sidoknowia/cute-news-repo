@@ -14,32 +14,26 @@ if($action == "preview")
     // $image = urlencode($image);
 
 echo <<<PREVIEWHTML
-
-
 <HTML>
-        <HEAD>
-                <TITLE>Image Preview</TITLE>
-                <script language='javascript'>
-                        var NS = (navigator.appName=="Netscape")?true:false;
-
-                        function fitPic() {
-                                iWidth = (NS)?window.innerWidth:document.body.clientWidth;
-                                iHeight = (NS)?window.innerHeight:document.body.clientHeight;
-                                iWidth = document.images[0].width - iWidth;
-                                iHeight = document.images[0].height - iHeight;
-                                window.resizeBy(iWidth, iHeight-1);
-                                self.focus();
-                        };
-                </script>
-        </HEAD>
-        <BODY bgcolor="#FFFFFF" onload='fitPic();' topmargin="0" marginheight="0" leftmargin="0" marginwidth="0">
-                <script language='javascript'>
-                        document.write( "<img src='$config_http_script_dir/cdata/upimages/$image' border=0>" );
-                </script>
-        </BODY>
-
+    <HEAD>
+        <TITLE>Image Preview</TITLE>
+        <script type='text/javascript'>
+            var NS = (navigator.appName=="Netscape")?true:false;
+            function fitPic()
+            {
+                iWidth = (NS)?window.innerWidth:document.body.clientWidth;
+                iHeight = (NS)?window.innerHeight:document.body.clientHeight;
+                iWidth = document.images[0].width - iWidth;
+                iHeight = document.images[0].height - iHeight;
+                window.resizeBy(iWidth, iHeight-1);
+                self.focus();
+            };
+        </script>
+    </HEAD>
+    <BODY bgcolor="#FFFFFF" onload='fitPic();' topmargin="0" marginheight="0" leftmargin="0" marginwidth="0">
+         <script language='javascript'> document.write( "<img src='$config_http_script_dir/cdata/upimages/$image' border=0>" ); </script>
+    </BODY>
 </HTML>
-
 
 PREVIEWHTML;
 
@@ -47,16 +41,14 @@ PREVIEWHTML;
 // ********************************************************************************
 // Show Images List
 // ********************************************************************************
-
 elseif($action != "doimagedelete")
 {
-
     if ($action == "quick")
     {
 ?><html><head>
-    <title>Insert Image</title>
-    <style type="text/css">
-    <!--
+<title>Insert Image</title>
+<style type="text/css">
+<!--
     select, option, textarea, input
     {
         border: #808080 1px solid;
@@ -69,11 +61,11 @@ elseif($action != "doimagedelete")
     a:active,a:visited,a:link {font-size : 10px; color: #808080; font-family: verdana; text-decoration: none;}
     a:hover {font-size : 10px; color: darkblue; font-weight:bold; text-decoration: none; }
     .panel  { border: 1px dotted silver; background-color: #F7F6F4;}
-    -->
-    </style>
-    </head>
+-->
+</style>
+</head>
 
-<body bgcolor=#FFFFFF>
+<body bgcolor="white">
 <script language="javascript" type="text/javascript">
 
     function insertimage(selectedImage)
@@ -90,16 +82,25 @@ elseif($action != "doimagedelete")
         if (imageWidth) appends += ' width=' + imageWidth;
         if (imageHeight) appends += ' height=' + imageWidth;
 
-        finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='<?php echo $config_http_script_dir; ?>/cdata/upimages/"+ selectedImage +"'>";
-<?php
+        finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='<?php echo $config_http_script_dir; ?>cdata/upimages/"+ selectedImage +"'>";
+        <?php
 
-        if ($wysiwyg && $area) { ?>window.opener.CKEDITOR.instances.<?php echo $area; ?>.insertHtml( finalImage ); window.close();
-            <?php } else {  ?>opener.document.getElementById(area).value += finalImage; window.close(); <?php } ?>
+            if ($wysiwyg && $_REQUEST['CKEditorFuncNum'])
+            {
+                $CKEditorFuncNum = $_REQUEST['CKEditorFuncNum'];
+                echo "window.opener.CKEDITOR.tools.callFunction(".$CKEditorFuncNum.", '".$config_http_script_dir."cdata/upimages/'+ selectedImage);";
+                echo "window.close();";
+            }
+            else
+            {
+                echo 'opener.document.getElementById(area).value += finalImage; window.close();';
+            }
+        ?>
     }
 
     function PopupPic(sPicURL)
     {
-        window.open('$PHP_SELF?mod=images&action=preview&image='+sPicURL, '', 'resizable=1,HEIGHT=200,WIDTH=200');
+        window.open('<?php echo $PHP_SELF; ?>?mod=images&action=preview&image='+sPicURL, '', 'resizable=1,HEIGHT=200,WIDTH=200');
     }
 
     window.resizeTo(410, 550);
@@ -218,6 +219,7 @@ $img_result
 </table>
 
      <input type=hidden name=wysiwyg value='$wysiwyg'>
+     <input type=hidden name=CKEditorFuncNum value='$CKEditorFuncNum'>
      <input type=hidden name=subaction value=upload>
      <input type=hidden name=area value='$area'>
     <input type=hidden name=action value='$action'>
@@ -227,14 +229,15 @@ $img_result
 HTML;
 
 
-if($action == "quick"){
-echo"
+if($action == "quick") {
+echo "
 <form name=properties>
+<input type=hidden name=CKEditorFuncNum value='".$_REQUEST['CKEditorFuncNum']."'>
 <table style='margin-top:10px;' border=0 cellpading=0 cellspacing=0  width=100%>
 
      <td height=33>
      <b>Image Properties</b>
- <table border=0 cellpading=0 cellspacing=0 class=\"panel\" style='padding:5px'width=290px; >
+     <table border=0 cellpading=0 cellspacing=0 class=\"panel\" style='padding:5px'width=290px; >
 
 
       <tr>
@@ -273,8 +276,7 @@ echo"
 }
 
 
-
-echo"<tr><td><img height=1 style=\"height: 13px !important; height: 1px;\" border=0 src=\"skins/images/blank.gif\" width=1></tr><tr><td>
+    echo"<tr><td><img height=1 style=\"height: 13px !important; height: 1px;\" border=0 src=\"skins/images/blank.gif\" width=1></tr><tr><td>
     <b>Uploaded Images</b>
     </tr>
 
