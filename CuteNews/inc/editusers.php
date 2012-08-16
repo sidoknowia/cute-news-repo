@@ -8,9 +8,10 @@ if( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
 // ********************************************************************************
 if ($action == "list")
 {
-    echoheader ("users", lang("Manage Users"));
+    $CSRF = CSRFMake();
 
-    echo proc_tpl('editusers');
+    echoheader ("users", lang("Manage Users"));
+    echo proc_tpl('editusers', array('CSRF' => $CSRF));
 
     $i = 1;
     $all_users = file(SERVDIR."/cdata/db.users.php");
@@ -56,6 +57,7 @@ elseif ($action == "adduser")
 {
     if (!$regusername) msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "javascript:history.go(-1)");
     if (!$regpassword) msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "javascript:history.go(-1)");
+    CSRFCheck();
 
     $all_users = file(SERVDIR."/cdata/db.users.php");
     unset($all_users[0]);
@@ -93,6 +95,7 @@ elseif ($action == "adduser")
 elseif ($action == "edituser")
 {
 
+    $CSRF = CSRFMake();
     if ( false === ($user_arr = bsearch_key($id, DB_USERS)) )
          die( lang('User not exist') );
 
@@ -112,6 +115,7 @@ elseif ($action == "edituser")
         'editusers.user',
         array
         (
+            'CSRF'          => $CSRF,
             'user_arr[2]'   => $user_arr[2],
             'user_arr[4]'   => $user_arr[4],
             'user_arr[5]'   => $user_arr[4],
@@ -129,6 +133,8 @@ elseif ($action == "edituser")
 // ********************************************************************************
 elseif ($action == "doedituser")
 {
+    CSRFCheck();
+
     if (empty($id)) die_stat(false, lang("This is not a valid user."));
 
     if ( false === ($the_user = bsearch_key($id, DB_USERS)) )

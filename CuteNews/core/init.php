@@ -106,6 +106,7 @@
     if ( file_exists(SERVDIR.'/cdata/language.php') ) include (SERVDIR.'/cdata/language.php'); // override
 
     // check skin if exists
+    $config_skin = preg_replace('~[^a-z]~i','', $config_skin);
     if (!isset($config_skin) or !$config_skin or !file_exists(SERVDIR."/skins/$config_skin.skin.php"))
     {
         $using_safe_skin = true;
@@ -258,6 +259,9 @@
         '◊' => '&loz;',     '♠' => '&spades;', '♣' => '&clubs;', '♥' => '&hearts;',
         '♦' => '&diams;',
     );
+
+    // XSS Config skin
+    $config_skin = preg_replace('~[^a-z]~i','', $config_skin);
 
     // Try loading template (loading safe default template)
     include (SERVDIR.'/skins/base_skin/install/copy/Default.tpl');

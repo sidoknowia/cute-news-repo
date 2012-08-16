@@ -20,6 +20,8 @@ foreach ($orig_cat_lines as $single_line)
     }
 }
 
+$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+
 // ********************************************************************************
 // List all news available for editing
 // ********************************************************************************
@@ -217,15 +219,15 @@ if ($action == "list")
     // SHOW OPTION BAR -----------------
     echo proc_tpl('editnews/list/optbar',
                   array('all_count_news'        => $all_count_news,
-                        'entries_showed'        => $entries_showed,
-                        'cat_msg'               => $cat_msg,
-                        'source_msg'            => $source_msg,
-                        'postponed_selected'    => $postponed_selected,
-                        'unapproved_selected'   => $unapproved_selected,
-                        'opt_source'            => $opt_source,
-                        'opt_catlist'           => $opt_catlist,
-                        'opt_author'            => $opt_author,
-                        'news_per_page'         => $news_per_page,
+                        'entries_showed'        => htmlspecialchars($entries_showed),
+                        'cat_msg'               => htmlspecialchars($cat_msg),
+                        'source_msg'            => htmlspecialchars($source_msg),
+                        'postponed_selected'    => htmlspecialchars($postponed_selected),
+                        'unapproved_selected'   => htmlspecialchars($unapproved_selected),
+                        'opt_source'            => htmlspecialchars($opt_source),
+                        'opt_catlist'           => htmlspecialchars($opt_catlist),
+                        'opt_author'            => htmlspecialchars($opt_author),
+                        'news_per_page'         => htmlspecialchars($news_per_page),
                   ),
                   array('OPT_AUTHOR' => $opt_author)
     );
@@ -512,7 +514,7 @@ elseif ($action == "doeditnews")
         $ccount = 0;
         $nice_category = '';
 
-        foreach($category as $ckey => $cvalue)
+        foreach ($category as $ckey => $cvalue)
         {
             if ( !in_array($cvalue, $allowed_cats) ) die(lang('Not allowed category'));
             if ( $ccount == 0 ) $nice_category = $cvalue;
@@ -523,7 +525,7 @@ elseif ($action == "doeditnews")
     else
     {
         // Not in a category: don't format $nice_cats because we have not selected any.
-        if( $category !="" and isset($category) and !in_array($category, $allowed_cats) ) die(lang('not allowed category'));
+        if ( $category != "" and isset($category) and !in_array($category, $allowed_cats) ) die(lang('not allowed category'));
     }
     
     // Check optional fields
@@ -596,7 +598,9 @@ elseif ($action == "doeditnews")
         {
             $have_perm = 0;
             if (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR)) $have_perm = 1;
-            elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[1] == $member_db[UDB_NAME]) $have_perm = 1;
+
+            // Journalist can't edit other pages (with other name)
+            elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[NEW_USER] == $member_db[UDB_NAME]) $have_perm = 1;
 
             if ($have_perm)
             {

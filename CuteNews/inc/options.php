@@ -728,7 +728,7 @@ echo '</tr></table></tr>';
     showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", "$config_registration_level"));
     showRow(lang("Use captcha"),                    lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
     showRow(lang("Use rating"),                     lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
-    showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong"), "save_con[xss_strict]", $config_xss_strict));
+    showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
     if ($config_use_rater)
     {
         showRow(lang("Rate symbol 1"), lang("rate full symbol"),   "<input type=text style=\"text-align: center;\"  name='save_con[ratey]' value=\"$config_ratey\" size=10>", "save_con[ratey]", $config_ratey);
@@ -813,6 +813,10 @@ HTML;
 // ********************************************************************************
 elseif($action == "dosavesyscon")
 {
+    // Sanitize skin var
+    $save_con["skin"] = preg_replace('~[^a-z0-9_.]~i', '', $save_con["skin"]);
+    if (!file_exists(SERVDIR."/skins/".$save_con["skin"].".skin.php")) $save_con['skin'] = 'default';
+
     if ($member_db[UDB_ACL] != 1)
         msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 

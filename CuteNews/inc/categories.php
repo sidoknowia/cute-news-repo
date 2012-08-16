@@ -7,10 +7,16 @@ if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
 // ********************************************************************************
 // Add Category
 // ********************************************************************************
-if($action == "add")
+if ($action == "add")
 {
-    $cat_name = htmlspecialchars(stripslashes($cat_name));
-    if(!$cat_name) msg("error", LANG_ERROR_TITLE,"Please enter name of the category", "javascript:history.go(-1)");
+    CSRFCheck();
+
+    $cat_name   = str_replace('<?', '', $cat_name);
+    $cat_icon   = str_replace('<?', '', $cat_icon);
+    $cat_access = str_replace('<?', '', $cat_access);
+    $cat_name   = htmlspecialchars(stripslashes($cat_name));
+
+    if(!$cat_name) msg("error", LANG_ERROR_TITLE, "Please enter name of the category", "javascript:history.go(-1)");
 
     $cat_icon = preg_replace("/ /", "", $cat_icon);
     if ($cat_icon == "(optional)") $cat_icon = "";
@@ -40,8 +46,9 @@ if($action == "add")
 // ********************************************************************************
 // Remove Category
 // ********************************************************************************
-elseif($action == "remove")
+elseif ($action == "remove")
 {
+    CSRFCheck();
     if(!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", "$PHP_SELF?mod=categories");
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
@@ -57,8 +64,9 @@ elseif($action == "remove")
 // ********************************************************************************
 // Edit Category
 // ********************************************************************************
-elseif($action == "edit")
+elseif ($action == "edit")
 {
+    $CSRF = CSRFMake();
     if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", "$PHP_SELF?mod=categories");
 
     $all_cats = file(SERVDIR."/cdata/category.db.php");
@@ -72,8 +80,13 @@ elseif($action == "edit")
             $if_2_access    = ($cat_arr[3] == "2")  ? "selected" :  "";
 
             $msg = proc_tpl('category/edit',
-                      array('cat_arr[1]'     => $cat_arr[1],     'cat_arr[2]'    => $cat_arr[2],     'catid'         => $catid,
-                            'if_all_access'  => $if_all_access,  'if_2_access'   => $if_2_access,    'if_1_access'   => $if_1_access)
+                      array('cat_arr[1]'     => $cat_arr[1],
+                            'cat_arr[2]'     => $cat_arr[2],
+                            'catid'          => $catid,
+                            'if_all_access'  => $if_all_access,
+                            'if_2_access'    => $if_2_access,
+                            'if_1_access'    => $if_1_access,
+                            'CSRF'           => $CSRF)
             );
 
             msg("options", "Edit Category", $msg);
@@ -85,7 +98,12 @@ elseif($action == "edit")
 // ********************************************************************************
 elseif($action == "doedit")
 {
-    $cat_name = htmlspecialchars(stripslashes($cat_name));
+    CSRFCheck();
+    $cat_name   = str_replace('<?', '', $cat_name);
+    $cat_icon   = str_replace('<?', '', $cat_icon);
+    $cat_access = str_replace('<?', '', $cat_access);
+    $cat_name   = htmlspecialchars(stripslashes($cat_name));
+
     if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), "$PHP_SELF?mod=categories");
     if ($cat_name == "") msg("error", LANG_ERROR_TITLE, lang("Category name can not be blank"), "javascript:history.go(-1)");
 
@@ -104,6 +122,7 @@ elseif($action == "doedit")
 // ********************************************************************************
 // List all Categories
 // ********************************************************************************
+$CSRF = CSRFMake();
 echoheader("options", "Categories");
 
 $count_categories = 0;
@@ -127,8 +146,8 @@ foreach($all_cats as $cat_line)
     $result .= ($cat_arr[3] == "2") ? lang("Only Editors & Admin") :  "";
 
     $result .= "</td> <td $bg>
-                    <a href=\"$PHP_SELF?mod=categories&action=edit&catid=$cat_arr[0]\">[".lang('edit')."]</a>
-                    <a href=\"$PHP_SELF?mod=categories&action=remove&catid=$cat_arr[0]\">[".lang('delete')."]</a></td> </tr>";
+                    <a href=\"$PHP_SELF?mod=categories&action=edit&amp;catid=$cat_arr[0]\">[".lang('edit')."]</a>
+                    <a href=\"$PHP_SELF?mod=categories&action=remove&amp;catid=$cat_arr[0]&amp;csrf_code=$CSRF\">[".lang('delete')."]</a></td> </tr>";
 
     $count_categories ++;
 }
@@ -136,6 +155,6 @@ foreach($all_cats as $cat_line)
 if ($count_categories == 0)
     $result = "<tr><td colspan='5'><p><br><b>".lang("You haven't defined any categories yet")."</b><br>".lang("categories are optional and you can write your news without having categories")."<br></p></td></tr>";
 
-echo proc_tpl('category/index', array('result' => $result));
+echo proc_tpl('category/index', array('result' => $result, 'CSRF' => $CSRF));
 
 echofooter();

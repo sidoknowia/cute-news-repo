@@ -21,53 +21,58 @@
     </style>
     </head>
     <body>
-        <form action="{$PHP_SELF}" method=post><table width="828" cellspacing="0" cellpadding="0" height="13">
-        <td width="826" height="21" colspan="2"><div class=header>{$user_arr[2]} <span>({$user_arr[4]})</span></div>
+        <form action="{$PHP_SELF}" method=post>
+            <input type="hidden" name="csrf_code" value="{$CSRF}" />
+            <table width="828" cellspacing="0" cellpadding="0" height="13">
+                <tr>
+                <td width="826" height="21" colspan="2"><div class=header>{$user_arr[2]} <span>({$user_arr[4]})</span></div>
+                </tr>
 
-        <tr>
-            <td width="126" height="20" bgcolor="#f7f6f4">written news</td>
-            <td height="20" bgcolor="#f7f6f4" width="698">{$user_arr[6]}</td>
-        </tr>
+                <tr>
+                    <td width="126" height="20" bgcolor="#f7f6f4">written news</td>
+                    <td height="20" bgcolor="#f7f6f4" width="698">{$user_arr[6]}</td>
+                </tr>
 
-        <tr>
-            <td width="126" height="20" bgcolor="#f7f6f4">last login date</td>
-            <td height="20" bgcolor="#f7f6f4" width="698">{$last_login}</td>
-        </tr>
+                <tr>
+                    <td width="126" height="20" bgcolor="#f7f6f4">last login date</td>
+                    <td height="20" bgcolor="#f7f6f4" width="698">{$last_login}</td>
+                </tr>
 
-        <tr>
-            <td width="126" height="20">registration date</td>
-            <td height="20" width="698">{$user_date} </td>
-        </tr>
+                <tr>
+                    <td width="126" height="20">registration date</td>
+                    <td height="20" width="698">{$user_date} </td>
+                </tr>
 
-        <tr>
-            <td width="126" height="20" bgcolor="#f7f6f4">Email</td>
-            <td height="20" bgcolor="#f7f6f4" width="698">{$user_arr[5]}</td>
-        </tr>
+                <tr>
+                    <td width="126" height="20" bgcolor="#f7f6f4">Email</td>
+                    <td height="20" bgcolor="#f7f6f4" width="698">{$user_arr[5]}</td>
+                </tr>
 
-        <tr>
-            <td width="126" height="20">New Password</td>
-            <td height="20" width="698"><input size="20" name="editpassword" ></td>
-        </tr>
+                <tr>
+                    <td width="126" height="20">New Password</td>
+                    <td height="20" width="698"><input size="20" name="editpassword" ></td>
+                </tr>
 
-        <tr>
-            <td width="126" height="20" bgcolor="#f7f6f4">Access Level</td>
-            <td height="20" bgcolor="#f7f6f4" width="698">
-                <select name=editlevel>
-                {foreach from=edit_level}
-                    <option value={$edit_level.id} {$edit_level.s}>{$edit_level.id} ({$edit_level.type})</option>
-                {/foreach}
-                </select>
-        </tr>
-        <tr>
-            <td width="826" height="7" colspan="2">
-                <br />
-                <input type=submit value="Save Changes">
-                <input type=button value="Cancel" onClick="window.close();">
-                <input type=hidden name=id value={$id}>
-                <input type=hidden name=mod value=editusers>
-                <input type=hidden name=action value=doedituser>
-            </td>
-        </tr>
-        </table></form>
+                <tr>
+                    <td width="126" height="20" bgcolor="#f7f6f4">Access Level</td>
+                    <td height="20" bgcolor="#f7f6f4" width="698">
+                        <select name=editlevel>
+                        {foreach from=edit_level}
+                            <option value={$edit_level.id} {$edit_level.s}>{$edit_level.id} ({$edit_level.type})</option>
+                        {/foreach}
+                        </select>
+                </tr>
+                <tr>
+                    <td width="826" height="7" colspan="2">
+                        <br />
+                        <input type=submit value="Save Changes">
+                        <input type=button value="Cancel" onClick="window.close();">
+                        <input type=hidden name=id value={$id}>
+                        <input type=hidden name=mod value=editusers>
+                        <input type=hidden name=action value=doedituser>
+                    </td>
+                </tr>
+            </table>
+        </form>
     </body>
 </html>

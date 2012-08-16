@@ -68,6 +68,7 @@ elseif (isset($HTTP_CLIENT_IP))   $ip = $HTTP_CLIENT_IP;
 if (empty($ip))                   $ip = $_SERVER['REMOTE_ADDR'];
 if (empty($ip))                   $ip = false;
 
+$result      = false;
 $username    = empty($_SESS['user']) ? $username : $_SESS['user'];
 $password    = $password? $password : (empty($_SESS['pwd'])  ? $password : $_SESS['pwd']);
 
@@ -130,12 +131,13 @@ send_cookie(true);
 
 if (empty($is_loged_in))
 {
-
     $_SESS['csrf'] = md5( mt_rand().mt_rand().mt_rand() );
-
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
-                  array('lastusername' => $_SESS['ix'], 'result' => $result, 'csrf' => $_SESS['csrf']),
+                  array('lastusername' => htmlspecialchars($_SESS['ix']),
+                        'result' => htmlspecialchars($result),
+                        'csrf' => $_SESS['csrf']),
+
                   array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 ));
     echofooter();
 }
@@ -219,8 +221,8 @@ elseif ($is_loged_in)
         }
         else
         {
-            add_to_log($username, 'Module '.$mod.' not valid');
-            die_stat(false, $mod." is NOT a valid module");
+            add_to_log($username, 'Module '.htmlspecialchars($mod).' not valid');
+            die_stat(false, htmlspecialchars($mod)." is NOT a valid module");
         }
     }
 }

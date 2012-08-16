@@ -3,6 +3,8 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Mass Delete
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 if ($action == "mass_delete")
 {
     if (!$selected_news)

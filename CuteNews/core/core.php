@@ -740,7 +740,7 @@ function hesc($html)
     if ($config_xss_strict == 0)
         return $html;
 
-    if ( preg_match_all('~<\s*?/?\s*?([^>]+)>~s', $html, $sets, PREG_SET_ORDER) )
+    if ( preg_match_all('~<([^>]+)>~s', $html, $sets, PREG_SET_ORDER) )
     {
         $allowed_tags = explode(',', 'a,i,b,u,p,h1,h2,h3,h4,h5,h6,hr,ul,ol,br,li,tr,th,td,tt,sub,sup,img,big,div,code,span,abbr,code,acronym,address,blockquote,center,strike,strong,table,thead,object,iframe,param,embed');
         $events       = explode(',', 'onblur,onchange,onclick,ondblclick,onfocus,onkeydown,onkeypress,onkeyup,onload,onmousedown,onmousemove,onmouseout,onmouseover,onmouseup,onreset,onselect,onsubmit,onunload');
@@ -749,10 +749,20 @@ function hesc($html)
         {
             $disable  = false;
             list($tag) = explode(' ', strtolower($vs[1]), 2);
+            $mtag = $tag[0] == '/'? substr($tag, 1) : $tag;
 
-            if (in_array($tag, $allowed_tags) == false) $disable = 2;
-            elseif (preg_match_all('~on\w+~i', $vs[0], $evt, PREG_SET_ORDER))
-                foreach ($evt as $ie) if (in_array($ie[0], $events)) { $disable = 1; break; }
+            // Very hard filter: only allowed tags
+            if ($config_xss_strict == 2)
+            {
+                $disable = 1;
+                if (in_array($mtag, $allowed_tags) == false) $disable = 2;
+            }
+            else
+            {
+                if (in_array($mtag, $allowed_tags) == false) $disable = 2;
+                elseif (preg_match_all('~on\w+~i', $vs[0], $evt, PREG_SET_ORDER))
+                    foreach ($evt as $ie) if (in_array($ie[0], $events)) { $disable = 1; break; }
+            }
 
             if ($disable == 1) $html = str_replace($vs[0], '<'.$tag.'>', $html);
             if ($disable == 2) $html = str_replace($vs[0], false, $html);
@@ -762,7 +772,7 @@ function hesc($html)
 }
 
 // Short Story or fullstory replacer -----------------------------------------------------------------------------------
-function template_replacer_news($news_arr, $output, $type = 'full')
+function template_replacer_news($news_arr, $output)
 {
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
@@ -1582,8 +1592,6 @@ function replace_comment($way, $sourse)
             '~\[b\](.*?)\[/b\]~i',
             '~\[i\](.*?)\[/i\]~i',
             '~\[u\](.*?)\[/u\]~i',
-            '~\[link\](.*?)\[/link\]~i',
-            '~\[link=(.*?)\](.*?)\[/link\]~i',
             '~\[quote=(.*?)\](.*?)\[/quote\]~',
             '~\[quote\](.*?)\[/quote\]~',
         );
@@ -1593,8 +1601,6 @@ function replace_comment($way, $sourse)
             "<strong>\\1</strong>",
             "<em>\\1</em>",
             "<span style=\"text-decoration: underline;\">\\1</span>",
-            "<a href=\"\\1\">\\1</a>",
-            "<a href=\"\\1\">\\2</a>",
             "<blockquote><div style=\"font-size: 13px;\">quote (\\1):</div><hr style=\"border: 1px solid #ACA899;\" /><div>\\2</div><hr style=\"border: 1px solid #ACA899;\" /></blockquote>",
             "<blockquote><div style=\"font-size: 13px;\">quote:</div><hr style=\"border: 1px solid #ACA899;\" /><div>\\1</div><hr style=\"border: 1px solid #ACA899;\" /></blockquote>",
         );
@@ -1712,13 +1718,11 @@ function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
             /* 3 */  '~\[b\](.*?)\[/b\]~i',
             /* 4 */  '~\[i\](.*?)\[/i\]~i',
             /* 5 */  '~\[u\](.*?)\[/u\]~i',
-            /* 6 */  '~\[link\](.*?)\[/link\]~i',
             /* 7 */  '~\[color=(.*?)\](.*?)\[/color\]~i',
             /* 8 */  '~\[size=(.*?)\](.*?)\[/size\]~i',
             /* 9 */  '~\[font=(.*?)\](.*?)\[/font\]~i',
             /* 10 */ '~\[align=(.*?)\](.*?)\[/align\]~i',
             /* 12 */ '~\[image=(.*?)\]~i',
-            /* 13 */ '~\[link=(.*?)\](.*?)\[/link\]~i',
             /* 14 */ '~\[quote=(.*?)\](.*?)\[/quote\]~i',
             /* 15 */ '~\[quote\](.*?)\[/quote\]~i',
             /* 16 */ '~\[list\]~i',
@@ -1734,13 +1738,11 @@ function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
             /* 3 */  "<strong>\\1</strong>",
             /* 4 */  "<em>\\1</em>",
             /* 5 */  "<span style=\"text-decoration: underline;\">\\1</span>",
-            /* 6 */  "<a href=\"\\1\">\\1</a>",
             /* 7 */  "<span style=\"color: \\1;\">\\2</span>",
             /* 8 */  "<span style=\"font-size: \\1pt;\">\\2</span>",
             /* 9 */  "<span style=\"font-family: \\1;\">\\2</span>",
             /* 10 */ "<div style=\"text-align: \\1;\">\\2</div>",
             /* 12 */ "<img src=\"\\1\" style=\"border: none;\" alt=\"\" />",
-            /* 13 */ "<a href=\"\\1\">\\2</a>",
             /* 14 */ "<blockquote><div style=\"font-size: 13px;\">quote (\\1):</div><hr style=\"border: 1px solid #ACA899;\" /><div>\\2</div><hr style=\"border: 1px solid #ACA899;\" /></blockquote>",
             /* 15 */ "<blockquote><div style=\"font-size: 13px;\">quote:</div><hr style=\"border: 1px solid #ACA899;\" /><div>\\1</div><hr style=\"border: 1px solid #ACA899;\" /></blockquote>",
             /* 16 */ "<ul>",
@@ -1899,6 +1901,26 @@ function check_avatar($editavatar)
 function bd_config($str)
 {
     return base64_decode($str);
+}
+
+// ------------- CSRF value -------------
+function CSRFMake() /* Make CSRF in Cookies */
+{
+    global $_SESS;
+    $_SESS['U:CSRF'] = md5(mt_rand() . mt_rand());
+    send_cookie(true);
+    return $_SESS['U:CSRF'];
+}
+
+function CSRFCheck($token = 'csrf_code') /* Check CSRF code  */
+{
+    global $_SESS;
+    if ($_SESS['U:CSRF'] != $_REQUEST[$token])
+    {
+        add_to_log($_SESS['user'], 'CSRF Missed when add user');
+        msg("error", LANG_ERROR_TITLE, lang("CSRF is missing"), "javascript:history.go(-1)");
+    }
+
 }
 
 ?>

@@ -1,4 +1,5 @@
 <form method=post action="{$PHP_SELF}">
+    <input type=hidden name="csrf_code" value={$CSRF}>
     <table border=0 cellpading=0 cellspacing=0 width="645" >
     <tr>
         <td width=321 height="33">

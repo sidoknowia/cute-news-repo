@@ -3,6 +3,8 @@
 if($member_db[UDB_ACL] > ACL_LEVEL_EDITOR)
     msg("error", "Access Denied", "You don't have permission to edit comments");
 
+$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+
 // ********************************************************************************
 // Edit Comment
 // ********************************************************************************
@@ -31,14 +33,14 @@ if($action == "editcomment")
 
     header('Content-Type: text/html; charset=UTF-8');
     echo proc_tpl('editcomments', array(
-        'newsid'        => $newsid,
-        'comid'         => $comid,
+        'newsid'        => htmlspecialchars($newsid),
+        'comid'         => htmlspecialchars($comid),
         'comdate'       => $comdate,
-        'source'        => $source,
-        'single_arr[1]' => $single_arr[1],
-        'single_arr[2]' => $single_arr[2],
-        'single_arr[3]' => $single_arr[3],
-        'single_arr[4]' => $single_arr[4],
+        'source'        => htmlspecialchars($source),
+        'single_arr[1]' => htmlspecialchars($single_arr[1]),
+        'single_arr[2]' => htmlspecialchars($single_arr[2]),
+        'single_arr[3]' => htmlspecialchars($single_arr[3]),
+        'single_arr[4]' => htmlspecialchars($single_arr[4]),
     ));
 
 }

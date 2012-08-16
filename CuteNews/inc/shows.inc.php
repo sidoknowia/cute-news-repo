@@ -412,7 +412,7 @@ do
             if ($news_arr[NEW_ID] == $id and (empty($category) or $is_in_category))
             {
                 $found       = true;
-                $output      = template_replacer_news($news_arr, $template_full, 'full');
+                $output      = template_replacer_news($news_arr, $template_full);
                 $output      = hook('replace_fullstory', $output);
                 $output      = UTF8ToEntities($output);
 
@@ -736,7 +736,7 @@ do
                 $my_author   = $my_names[$news_arr[1]] ? $my_names[$news_arr[1]] : $news_arr[1];
 
                 // Basic replacements
-                $output      = template_replacer_news($news_arr, $template_active, 'short');
+                $output      = template_replacer_news($news_arr, $template_active);
                 $output      = hook('replace_activenews', $output);
                 $output      = UTF8ToEntities($output);
 

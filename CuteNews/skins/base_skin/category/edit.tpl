@@ -1,6 +1,7 @@
 <form action="{$PHP_SELF}?mod=categories" method="post">
-    <input type=hidden name=action value=doedit>
-    <input type=hidden name=catid value={$catid}>
+    <input type=hidden name="action" value=doedit>
+    <input type=hidden name="catid" value={$catid}>
+    <input type=hidden name="csrf_code" value={$CSRF}>
     <table border="0" >
         <tr>
             <td width="100">Name</td>
