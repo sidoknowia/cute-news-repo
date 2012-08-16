@@ -32,6 +32,10 @@
     // filter
     extract(filter_request('ucat,subaction,archive'), EXTR_OVERWRITE);
 
+    // Linked cats
+    if (isset($_GET['cid']) && $_GET['cid']) $category = $_GET['cid'];
+    hook('show_news_init');
+
     // Prepare requested categories
     if (preg_match('/[a-z]/i', $category))
     {

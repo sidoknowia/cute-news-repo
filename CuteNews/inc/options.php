@@ -687,10 +687,9 @@ echo <<<HTML
  <td id="button3" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('comments');">Comments</a>
  <td id="button4" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('notifications');">Notifications</a>
  <td id="button5" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('facebook');">Facebook</a>
- </tr>
-</table>
-</tr>
 HTML;
+echo hook('field_options_buttons');
+echo '</tr></table></tr>';
 
     if (!$handle = opendir(SERVDIR."/skins"))
     {
@@ -729,13 +728,15 @@ HTML;
     showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", "$config_registration_level"));
     showRow(lang("Use captcha"),                    lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
     showRow(lang("Use rating"),                     lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
+    showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong"), "save_con[xss_strict]", $config_xss_strict));
     if ($config_use_rater)
     {
         showRow(lang("Rate symbol 1"), lang("rate full symbol"),   "<input type=text style=\"text-align: center;\"  name='save_con[ratey]' value=\"$config_ratey\" size=10>", "save_con[ratey]", $config_ratey);
         showRow(lang("Rate symbol 2"), lang("rate empty symbol"),  "<input type=text style=\"text-align: center;\"  name='save_con[raten]' value=\"$config_raten\" size=10>", "save_con[raten]", $config_raten);
     }
 
-    echo"</table></td></tr>";
+    hook('field_options_general');
+    echo "</table></td></tr>";
 
     echo"<tr style='display:none' id=news width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Use Avatars"),                            lang("if not, the avatar URL field wont be shown"),     makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
@@ -744,6 +745,7 @@ HTML;
     showRow(lang("Settings for Full Story PopUp"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
     showRow(lang("Show Comments When Showing Full Story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
     showRow(lang("Time Format For News"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
+    hook('field_options_news');
     echo"</table></td></tr>";
 
     // Comments
@@ -759,6 +761,7 @@ HTML;
     showRow(lang("Settings for Comments PopUp"),                lang("only if 'Show Comments In PopUp' is enabled"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[comments_popup_string]\" value=\"$config_comments_popup_string\" size=40>");
     showRow(lang("Show Full Story When Showing Comments"),      lang("if yes, comments will be shown under the story"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_full_with_comments]", $config_show_full_with_comments));
     showRow(lang("Time Format For Comments"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_comment]' value='$config_timestamp_comment' size=40>");
+    hook('field_options_comments');
     echo"</table></td></tr>";
 
     // Notifications
@@ -770,6 +773,7 @@ HTML;
     showRow(lang("Notify of Auto-Archiving"),               lang("when (if) news are auto-archived"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_archive]", "$config_notify_archive"));
     showRow(lang("Notify of Activated Postponed Articles"), lang("when postponed article is activated"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_postponed]", "$config_notify_postponed"));
     showRow(lang("Email(s)"),                               lang("Where the notification will be send, separate multyple emails by comma"), "<input type=text style=\"text-align: center;\"  name='save_con[notify_email]' value=\"$config_notify_email\" size=40>");
+    hook('field_options_notifications');
     echo"</table></td></tr>";
 
     // Facebook preferences
@@ -782,7 +786,10 @@ HTML;
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);
     showRow(lang("Box width"),                      lang("In pixels"),                                  "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_box_width]\" value=\"$config_fb_box_width\" size=8>", "save_con[fb_box_width]", $config_fb_box_width);
     showRow(lang("Facebook appID"),                 lang("Get your AppId <a href='https://developers.facebook.com/apps'>there</a>"), "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_appid]\" value=\"$config_fb_appid\" size=40>", "save_con[fb_appid]", $config_fb_appid);
+    hook('field_options_facebook');
     echo"</table></td></tr>";
+
+    hook('field_options_additional');
 
     echo"
     <input type=hidden id=currentid name=current value=general>

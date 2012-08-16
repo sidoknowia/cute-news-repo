@@ -16,6 +16,8 @@
         die_stat(false, "<b>Error</b>!<br>CuteNews has detected that you use \$category = \"".htmlspecialchars($category)."\"; but you can call the categories only with their <b>ID</b> numbers and not with names<br>example:<br><blockquote>&lt;?PHP<br>\$category = \"1\";<br>include(\"path/to/show_archives.php\");<br>?&gt;</blockquote>");
     }
 
+    hook('show_archives_init');
+
     $category = preg_replace("/ /", "", $category);
     $tmp_cats_arr = explode(",", $category);
     foreach($tmp_cats_arr as $key=>$value)

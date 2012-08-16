@@ -734,6 +734,12 @@ function my_strip_tags($d) { return preg_replace('/<[^>]*>/', '', $d); }
 // Only Allowed Tags There....
 function hesc($html)
 {
+    global $config_xss_strict;
+
+    // XSS Strict off
+    if ($config_xss_strict == 0)
+        return $html;
+
     if ( preg_match_all('~<\s*?/?\s*?([^>]+)>~s', $html, $sets, PREG_SET_ORDER) )
     {
         $allowed_tags = explode(',', 'a,i,b,u,p,h1,h2,h3,h4,h5,h6,hr,ul,ol,br,li,tr,th,td,tt,sub,sup,img,big,div,code,span,abbr,code,acronym,address,blockquote,center,strike,strong,table,thead,object,iframe,param,embed');
@@ -759,28 +765,27 @@ function hesc($html)
 function template_replacer_news($news_arr, $output, $type = 'full')
 {
     // Predefined Globals
-    global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string, $config_auto_wrap, $config_full_popup, $config_full_popup_string,
-           $rss_news_include_url, $my_names, $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $PHP_SELF, $template, $user_query;
+    global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
+           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $rss_news_include_url, $my_names,
+           $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $PHP_SELF, $template, $user_query;
 
     // Short Story not exists
     if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) ) $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
     $output      = more_fields($news_arr[NEW_ID], $output);
 
     // Date Formatting [year, month, day, hour, minute, date=$config_timestamp_active]
-    $output      = str_replace("{year}",        date("Y", $news_arr[0]), $output);
     $output      = embedateformat($news_arr[0], $output);
-    $output      = str_replace("{day}",         date("d", $news_arr[0]), $output);
-    $output      = str_replace("{hour}",        date("H", $news_arr[0]), $output);
-    $output      = str_replace("{minite}",      date("i", $news_arr[0]), $output);
+    $output      = hook('template_replacer_news_before', $output);
 
     // Replace news content
-    $output      = str_replace("{title}",       hesc($news_arr[NEW_TITLE]), $output);
-    $output      = str_replace("{author}",      $my_names[$news_arr[NEW_USER]] ? $my_names[$news_arr[NEW_USER]] : $news_arr[NEW_USER], $output);
-    $output      = str_replace("{avatar-url}",  $news_arr[NEW_AVATAR], $output);
-    $output      = str_replace("{category}",    hesc(catid2name($news_arr[NEW_CAT])), $output);
-    $output      = str_replace("{author-name}", hesc($name_to_nick[$news_arr[NEW_USER]]), $output);
-    $output      = str_replace("{short-story}", hesc($news_arr[NEW_SHORT]), $output);
-    $output      = str_replace("{full-story}",  hesc($news_arr[NEW_FULL]), $output);
+    $output      = str_replace("{title}",           hesc($news_arr[NEW_TITLE]), $output);
+    $output      = str_replace("{author}",          $my_names[$news_arr[NEW_USER]] ? $my_names[$news_arr[NEW_USER]] : $news_arr[NEW_USER], $output);
+    $output      = str_replace("{avatar-url}",      $news_arr[NEW_AVATAR], $output);
+    $output      = str_replace("{category}",        hesc(catid2name($news_arr[NEW_CAT])), $output);
+    $output      = str_replace("{category-url}",    linkedcat($news_arr[NEW_CAT]), $output);
+    $output      = str_replace("{author-name}",     hesc($name_to_nick[$news_arr[NEW_USER]]), $output);
+    $output      = str_replace("{short-story}",     hesc($news_arr[NEW_SHORT]), $output);
+    $output      = str_replace("{full-story}",      hesc($news_arr[NEW_FULL]), $output);
 
     // Article parameters
     $caticon     = $cat[ $news_arr[NEW_CAT] ];
@@ -845,50 +850,15 @@ function template_replacer_news($news_arr, $output, $type = 'full')
          $output = str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output);
     else $output = str_replace("{star-rate}", false, $output);
 
-
     // Auto Wrapper
     if ($config_auto_wrap > 40) $auto_wrap = $config_auto_wrap; else $auto_wrap = 40;
     $output = preg_replace('~(\w{'.$auto_wrap.'})~', "\\1 ", $output);
 
-    return replace_news("show", $output);
-}
+    $output = hook('template_replacer_news_middle', $output);
+    $output = replace_news("show", $output);
+    $output = hook('template_replacer_news_after', $output);
 
-
-function xss_strip($data)
-{
-    // Fix &entity\n;
-    $data = str_replace(array('&amp;','&lt;','&gt;'), array('&amp;amp;','&amp;lt;','&amp;gt;'), $data);
-    $data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
-    $data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
-    $data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
-
-    // Remove any attribute starting with "on" or xmlns
-    $data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
-
-    // Remove javascript: and vbscript: protocols
-    $data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
-    $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
-    $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
-
-    // Only works in IE: <span style="width: expression(alert('Ping!'));"></span>
-    $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
-    $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
-    $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
-
-    // Remove namespaced elements (we do not need them)
-    $data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
-
-    do
-    {
-        // Remove really unwanted tags
-        $old_data = $data;
-        $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
-    }
-    while ($old_data !== $data);
-
-    // we are done...
-    return $data;
-
+    return $output;
 }
 
 // Extra Articles Fields
@@ -952,7 +922,7 @@ function format_date($time, $type = false)
     global $cfg;
 
     // type format - since current time
-    if ($type == 'since')
+    if ($type == 'since' || $type == 'since-short')
     {
         $dists = array(
             ' year(s) ' => 3600*24*365,
@@ -975,7 +945,7 @@ function format_date($time, $type = false)
             }
         }
 
-        $rd .= ($rd? '' : '0 m' ).' ago at '.date('Y-m-d H:i');
+        $rd .= ($rd? '' : '0 m' ).' ago'. (($type == 'since') ? ' at '.date('Y-m-d H:i') : '');
         return $rd;
     }
 
@@ -1140,16 +1110,27 @@ function add_to_ban($REMOTE_ADDR)
 
 function embedateformat($timestamp, $output)
 {
+    // Months
     if ( preg_match_all('~{month(\|.*?)?}~i', $output, $monthd, PREG_SET_ORDER) )
     {
         foreach ($monthd as $v)
-            if (empty($v[1])) $output = str_replace($v[0], date('M', $timestamp), $output);
+            if (empty($v[1])) $output = str_replace($v[0], date('F', $timestamp), $output);
             else
             {
                 $monthlist = explode(',', substr($v[1], 1));
                 $output = str_replace($v[0], $monthlist[date('n', $timestamp)-1], $output);
             }
     }
+
+    // Others parameters
+    $output     = str_replace('{weekday}', date('l', $timestamp), $output);
+    $output     = str_replace("{year}",    date("Y", $timestamp), $output);
+    $output     = str_replace("{day}",     date("d", $timestamp), $output);
+    $output     = str_replace("{hours}",   date("H", $timestamp), $output);
+    $output     = str_replace("{minite}",  date("i", $timestamp), $output);
+
+    $output     = str_replace("{since}",   format_date($timestamp, 'since-short'), $output);
+
     return $output;
 }
 
@@ -1362,8 +1343,7 @@ function ResynchronizePostponed()
             foreach ($all_postponed_db as $p_line)
             {
                 $p_item_db = explode("|", $p_line);
-
-                if($p_item_db[0] <= $now_date)
+                if ($p_item_db[0] <= $now_date)
                 {
                     // Item is old and must be Activated, add it to news.txt
                     $all_active_db      = file(SERVDIR."/cdata/news.txt");
@@ -1690,6 +1670,32 @@ function get_skin($skin)
     return $$msn;
 }
 
+/* === HELPERS === */
+// Helper for truncation any text
+function clbTruncate($match)
+{
+    if (strlen($match[2]) > $match[1])
+         return substr($match[2], 0, $match[1] - 3) . '...';
+    else return $match[2];
+}
+
+function linkedcat($catids)
+{
+    $cat_url        = array();
+    $art_cat_arr    = explode(",", $catids);
+    if (count($art_cat_arr) == 1)
+    {
+        return "<a href='".PHP_SELF."?cid=".$catids."'>".catid2name($catids)."</a>";
+    }
+    else
+    {
+        foreach($art_cat_arr as $thiscat)
+            $cat_url[] = "<a href='".PHP_SELF."?cid=".$thiscat."'>".catid2name($thiscat)."</a>&nbsp;";
+
+        return implode(", ", $cat_url);
+    }
+}
+
 // Replaces news charactars
 function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
 {
@@ -1801,6 +1807,9 @@ function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
     // Replace all
     $sourse  = preg_replace($find, $replace, $sourse);
     foreach ( $HTML_SPECIAL_CHARS as $key => $value) $sourse = str_replace($key,$value,$sourse);
+
+    // Truncate text
+    $sourse = preg_replace_callback('~\[truncate=(.*?)\](.*?)\[/truncate\]~i', 'clbTruncate', $sourse);
 
     return $sourse;
 }

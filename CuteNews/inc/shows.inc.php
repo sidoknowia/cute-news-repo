@@ -88,6 +88,31 @@ do
             break;
         }
 
+        // Check URL in comment
+        $pattern = "/[.]+(aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs".
+                        "|mobi|mil|museum|name|net|org|pro|root|tel|travel|ac".
+                        "|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az".
+                        "|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bw|by".
+                        "|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx".
+                        "|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj".
+                        "|fk|fm|fo|fr|ga|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr".
+                        "|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|htm|html|php|il|im|in|io|iq".
+                        "|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kr|kw|ky|kz|la".
+                        "|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|mg|mh|mk|ml|mm".
+                        "|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|asp|cgi".
+                        "|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk".
+                        "|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|ru|rw|sa|sb|sc|sd".
+                        "|se|sg|sh|si|sk|sl|sm|sn|sr|st|sv|sy|sz|tc|td|tf|tg|th".
+                        "|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va".
+                        "|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)/i";
+
+        if ( preg_match($pattern, $comments) && (preg_match("/www./i", $comments) || preg_match("/http/i", $comments)) )
+        {
+            echo '<div style="text-align: center;">'.lang("Your not allowed to put URL's in the comments field.").'</div>';
+            $CN_HALT = TRUE;
+            break 1;
+        }
+
         //----------------------------------
         // Check if IP is blocked
         //----------------------------------
@@ -337,15 +362,15 @@ do
             }
         }
 
+        // If id news for comment not found, add new id
         if(!$found)
         {
-            echo '<div class="blocking_posting_comment">'.lang('CuteNews did not added your comment because there is some problem with the comments database').'.<br /><a href="javascript:history.go(-1)">'.lang('go back').'</a></div>';
-            $CN_HALT = TRUE;
-            break;
+            fwrite($new_comments, "$id|>|$time|$name|$mail|$ip|$comments||\n");
         }
 
         flock ($new_comments, LOCK_UN);
         fclose($new_comments);
+
 
         //----------------------------------
         // Sign this comment in the Flood Protection
@@ -517,12 +542,12 @@ do
                                 $mail_or_url = "";
                                 if (substr($comment_arr[2],0,3) == "www") $mail_or_url = "http://";
                             }
-                            $output = str_replace("{author}", "<a $url_target href=\"$mail_or_url".stripslashes($comment_arr[2])."\">".stripslashes($comment_arr[1])."</a>", $template_comment);
+                            $output = str_replace("{author}", "<a $url_target href=\"$mail_or_url".stripslashes($comment_arr[2])."\">".stripslashes(UTF8ToEntities($comment_arr[1]))."</a>", $template_comment);
 
                         }
                         else
                         {
-                            $output = str_replace("{author}", $comment_arr[1], $template_comment);
+                            $output = str_replace("{author}", UTF8ToEntities($comment_arr[1]), $template_comment);
                         }
 
                         $comment_arr[4] = preg_replace("/\b((http(s?):\/\/)|(www\.))([\w\.]+)([&-~\%\/\w+\.-?]+)\b/i", "<a href=\"http$3://$4$5$6\" target=\"_blank\">$2$4$5$6</a>", $comment_arr[4]);
@@ -535,13 +560,12 @@ do
                         $output         = str_replace("{day}", date("d", $comment_arr[0]), $output);
                         $output         = str_replace("{hours}", date("H:i", $comment_arr[0]), $output);
 
-                        $output         = str_replace("{comment-id}", $comment_arr[0],$output);
-                        $output         = str_replace("{comment}", "<a name=\"".$comment_arr[0]."\"></a>".$comment_arr[4], $output);
+                        $output         = str_replace("{comment-id}", $comment_arr[0], $output);
+                        $output         = str_replace("{comment}", "<a name=\"".$comment_arr[0]."\"></a>".UTF8ToEntities($comment_arr[4]), $output);
                         $output         = str_replace("{comment-iteration}", $iteration ,$output);
                         $output         = replace_comment("show", $output);
 
                         // Use php template
-                        $output         = UTF8ToEntities($output);
                         if ( file_exists(SERVDIR.'/cdata/template/comment.php'))
                             include (SERVDIR.'/cdata/template/comment.php');
                         else echo $output;
