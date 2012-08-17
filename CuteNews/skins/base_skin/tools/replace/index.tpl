@@ -5,6 +5,7 @@
 
 <span style="color: green; font-size: 15px;">{$result}</span>
 <form action="{$PHP_SELF}" method="POST">
+    <input type="hidden" name="csrf_code" value="{$CSRF}" />
     <input type="hidden" name="mod" value="tools">
     <input type="hidden" name="action" value="replaces">
     <input type="hidden" name="do" value="replace">

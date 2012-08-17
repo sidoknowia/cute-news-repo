@@ -1,7 +1,7 @@
 <form method=post action="{$PHP_SELF}">
 <input type=hidden name=action value=validate>
 <input type=hidden name=mod value=lostpass>
-<table border=0 cellpading=0 cellspacing=0 width="654" height="59" >
+<table border=0 cellpadding=0 cellspacing=0 width="654" height="59" >
     <tr>
         <td width="18" height="11">&nbsp;</td>
         <td width="71" height="11" align="left">Username</td>

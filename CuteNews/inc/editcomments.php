@@ -8,7 +8,7 @@ $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 // ********************************************************************************
 // Edit Comment
 // ********************************************************************************
-if($action == "editcomment")
+if ($action == "editcomment")
 {
     if ($source == "")
          $all_comments = file(SERVDIR."/cdata/comments.txt");
@@ -31,6 +31,7 @@ if($action == "editcomment")
     $single_arr[4] = str_replace("<br />", "\n", $single_arr[4]);
     $comdate       = date("D, d F Y h:i:s", $single_arr[0]);
 
+    $CSRF = CSRFMake();
     header('Content-Type: text/html; charset=UTF-8');
     echo proc_tpl('editcomments', array(
         'newsid'        => htmlspecialchars($newsid),
@@ -41,6 +42,7 @@ if($action == "editcomment")
         'single_arr[2]' => htmlspecialchars($single_arr[2]),
         'single_arr[3]' => htmlspecialchars($single_arr[3]),
         'single_arr[4]' => htmlspecialchars($single_arr[4]),
+        'CSRF'          => $CSRF
     ));
 
 }
@@ -49,6 +51,8 @@ if($action == "editcomment")
 // ********************************************************************************
 elseif($action == "doeditcomment")
 {
+    CSRFCheck();
+
     if (empty($poster) and empty($deletecomment))
     {
         echo lang("The poster can not be blank");

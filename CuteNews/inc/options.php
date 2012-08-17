@@ -78,13 +78,6 @@ if ($action == "options" or $action == '')
                'url'                => "$PHP_SELF?mod=tools&action=userlog",
                'access'             => "1",
         ),
-        /*
-        array(
-               'name'               => lang("Hooks and plugins"),
-               'url'                => "$PHP_SELF?mod=hooks",
-               'access'             => "1",
-        ),
-        */
         array(
                'name'               => lang("Word replacement"),
                'url'                => "$PHP_SELF?mod=tools&action=replaces",
@@ -95,11 +88,6 @@ if ($action == "options" or $action == '')
                'url'                => "$PHP_SELF?mod=tools&action=xfields",
                'access'             => "1",
         ),
-        /* array(
-               'name'               => "Language",
-               'url'                => "$PHP_SELF?mod=tools&action=language",
-               'access'             => "1",
-        ), */
     );
 
     hook('more_options');
@@ -131,6 +119,7 @@ if ($action == "options" or $action == '')
 // ********************************************************************************
 elseif($action == "personal")
 {
+    $CSRF = CSRFMake();
     echoheader("user", "Personal Options");
 
     foreach($member_db as $key => $value)
@@ -150,7 +139,8 @@ elseif($action == "personal")
                       'ifchecked'    => ($member_db[UDB_CBYEMAIL] == 1)? "checked" : false, // if user wants to hide his e-mail
                       'access_level' => $access_level[ $member_db[UDB_ACL] ],
                       'registrationdate' => date("D, d F Y", $member_db[0]), // registration date
-                      'bg' => $member_db[UDB_ACL] < ACL_LEVEL_COMMENTER? "bgcolor=#F7F6F4" : false,
+                      'bg'           => $member_db[UDB_ACL] < ACL_LEVEL_COMMENTER? "bgcolor=#F7F6F4" : false,
+                      'CSRF'         => $CSRF,
                   ),
                   array('NOTCOMMENTER' => $member_db[UDB_ACL] < ACL_LEVEL_COMMENTER)
     );
@@ -162,6 +152,7 @@ elseif($action == "personal")
 // ********************************************************************************
 elseif($action == "dosavepersonal")
 {
+    CSRFCheck();
 
     $editnickname       = replace_comment("add", $editnickname);
     $editmail           = replace_comment("add", $editmail);
@@ -223,7 +214,7 @@ elseif($action == "templates")
     if ($subaction == "new")
     {
         echoheader("options", "New Template");
-        echo "<form method=post action=\"$PHP_SELF\"><table border=0 cellpading=0 cellspacing=0 width=100% height=100%><tr><td >Create new template based on: <select name=base_template>";
+        echo "<form method=post action=\"$PHP_SELF\"><table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr><td>Create new template based on: <select name=base_template>";
         foreach($templates_list as $single_template)
         {
             echo "<option value=\"$single_template\">$single_template</option>";
@@ -275,7 +266,7 @@ elseif($action == "templates")
 
         $msg = "<form method=post action=\"$PHP_SELF\">".lang('Are you sure you want to delete the template')." <b>$do_template</b> ?<br><br>
         <input type=submit value=\" ".lang('Yes, Delete This Template')."\"> &nbsp;
-        <input onClick=\"document.location='$PHP_SELF?mod=options&action=templates';\" type=button value=\"".lang('Cancel')."\">
+        <input onclick=\"document.location='$PHP_SELF?mod=options&action=templates';\" type=button value=\"".lang('Cancel')."\">
         <input type=hidden name=mod value=options>
         <input type=hidden name=action value=templates>
         <input type=hidden name=subaction value=dodelete>
@@ -326,12 +317,12 @@ elseif($action == "templates")
     }
     echoheader("options","Templates");
 
-    echo'<table border=0 cellpading=0 cellspacing=0 height="77" >
+    echo'<table border=0 cellpadding=0 cellspacing=0 height="77" >
     <tr>
         <td width=373 height="75">
         <b>Manage Templates</b>
 
-        <table border=0 cellpading=0 cellspacing=0 width=347  class="panel" height="50" >
+        <table border=0 cellpadding=0 cellspacing=0 width=347  class="panel" height="50" >
     <form method=get action="'.$PHP_SELF.'">
     <tr>
     <td width=126height="23"> &nbsp;Editing Template <td width=225height="23"> :&nbsp; <b>'.$do_template.'</b>
@@ -645,7 +636,7 @@ elseif($action == "syscon")
         return $output;
     }
 
-    echo"<table border=0 cellpading=0 cellspacing=0 width=654  ><form action=\"$PHP_SELF\" method=post>";
+    echo"<table border=0 cellpadding=0 cellspacing=0 width=654  ><form action=\"$PHP_SELF\" method=post>";
 
 echo <<<HTML
 <script language='JavaScript' type="text/javascript">
@@ -715,7 +706,7 @@ echo '</tr></table></tr>';
     else $ckeditorEnabled = makeDropDown(array("no"=>"No"), "save_con[use_wysiwyg]", $config_use_wysiwyg);
 
     // General
-    echo"<tr style='' id=general width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
+    echo"<tr style='' id=general width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
 
     showRow(lang("Full URL to CuteNews Directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
@@ -738,7 +729,7 @@ echo '</tr></table></tr>';
     hook('field_options_general');
     echo "</table></td></tr>";
 
-    echo"<tr style='display:none' id=news width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
+    echo"<tr style='display:none' id=news width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Use Avatars"),                            lang("if not, the avatar URL field wont be shown"),     makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
     showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
     showRow(lang("Show Full Story In PopUp"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
@@ -749,7 +740,7 @@ echo '</tr></table></tr>';
     echo"</table></td></tr>";
 
     // Comments
-    echo "<tr style='display:none' id=comments width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=comments width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Auto Wrap Comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
     showRow(lang("Reverse Comments"),                           lang("if yes, newest comments will be shown on the top"),           makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
     showRow(lang("Comments Flood Protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
@@ -765,7 +756,7 @@ echo '</tr></table></tr>';
     echo"</table></td></tr>";
 
     // Notifications
-    echo "<tr style='display:none' id=notifications width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=notifications width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
     showRow(lang("Notify of New Registrations"),            lang("when new user auto-registers"),                          makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
     showRow(lang("Notify of New Comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
@@ -780,7 +771,7 @@ echo '</tr></table></tr>';
     $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
 
-    echo "<tr style='display:none' id='facebook' width=100%><td colspan=10 width=100%><table cellpading=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id='facebook' width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_fbcomments]", $config_use_fbcomments));
     showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);

@@ -19,6 +19,7 @@
     </head>
     <body bgcolor="#FFFFFF">
         <form method=post action="{$PHP_SELF}">
+            <input type=hidden name="csrf_code" value="{$CSRF}" />
             <input type=hidden name=mod value=editcomments>
             <input type=hidden name=newsid value={$newsid}>
             <input type=hidden name=comid value={$comid}>

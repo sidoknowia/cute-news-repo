@@ -1,4 +1,4 @@
-<table class=panel border=0 cellpading=0 cellspacing=0 width=99% >
+<table class=panel border=0 cellpadding=0 cellspacing=0 width=99% >
 <tr>
     <td title='Show More Options' style="cursor:pointer;" onclick="getElementById('options').style.display='';">
         Showing <b>{$entries_showed}</b> articles from total <b>{$all_count_news}</b>; {$cat_msg} {$source_msg}
@@ -9,6 +9,7 @@
     <td colspan="2">
         <div id='options' style='display:none;z-index:1;'>
             <form action="{$PHP_SELF}?mod=editnews&action=list" method="POST" name="options_bar">
+                <input type=hidden name="csrf_code" value="{$CSRF}" />
                 <table width="100%" cellspacing="0" cellpadding="0">
                     <tr>
                         <td height="1" style="border-top: 1px dashed silver" width="100%" align="right" colspan="3">

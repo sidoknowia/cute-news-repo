@@ -79,7 +79,7 @@ BODY, TD, TR {text-decoration: none; font-family: Verdana, Arial, Helvetica, san
 <td height="19">
 </center>
 <!--SELF-->
-<table border=0 cellpading=0 cellspacing=15 width="100%" height="100%" >
+<table border=0 cellpadding=0 cellspacing=15 width="100%" height="100%" >
 <tr>
 <td width="100%" height="100%" >
 <!--MAIN area-->

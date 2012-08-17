@@ -1,4 +1,5 @@
 <form action="{$PHP_SELF}" method="post" >
+    <input type="hidden" name="csrf_code" value="{$CSRF}" />
     <input type="hidden" name="mod" value="tools" />
     <input type="hidden" name="action" value="language" />
     <table width="650" cellspacing="0" cellpadding="4">

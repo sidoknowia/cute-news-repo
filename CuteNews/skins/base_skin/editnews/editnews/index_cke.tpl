@@ -12,7 +12,8 @@ function confirmDelete(url)
 
 <form onSubmit= "return submitForm();" method="POST" name="addnews" action="{$PHP_SELF}">
 
-    <table border=0 cellpading=0 cellspacing=0 width="720" height="100%" >
+    <input type=hidden name="csrf_code" value="{$CSRF}" />
+    <table border=0 cellpadding=0 cellspacing=0 width="720" height="100%" >
     <tr>
         <td width="100">Info.</td>
         <td width="571" colspan="6"> Posted on {$newstime} by {$item_db1} </td>
@@ -52,6 +53,7 @@ function confirmDelete(url)
         </td>
     </tr>
 
+    <tr><td colspan="3">&nbsp;</td> </tr>
     <tr>
         <td valign="top"> <br />Full Story<br /><span style="font-size:7pt">(optional)</span> </td>
         <td width="612" colspan="2">
@@ -94,17 +96,18 @@ function confirmDelete(url)
 
 <!-- COMMENT FORM -->
 <form method=post name=comments action="{$PHP_SELF}">
-<table border=0 cellpading=0 cellspacing=0 width="720" height="100%" >
+    <input type=hidden name="csrf_code" value="{$CSRF}" />
+    <table border=0 cellpadding=0 cellspacing=0 width="720" height="100%" >
 
-{HASCOMMENTS}
-<tr>
-    <td width="75">Comments</td>
-    <td><b>Poster</b>, Comment preview</td>
-    <td width="120"> <b>Date</b> </td>
-    <td width="1">&nbsp;</td>
-</tr>
-{/HASCOMMENTS}
-{$Comments_HTML}
+    {HASCOMMENTS}
+    <tr>
+        <td width="75">Comments</td>
+        <td><b>Poster</b>, Comment preview</td>
+        <td width="120"> <b>Date</b> </td>
+        <td width="1">&nbsp;</td>
+    </tr>
+    {/HASCOMMENTS}
+    {$Comments_HTML}
 
 <script type="text/javascript">
     (function()

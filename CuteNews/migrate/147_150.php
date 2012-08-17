@@ -48,7 +48,6 @@
                 <p>Perform next actions:</p>
                 <p>
                     <div><input type="checkbox" checked="checked" name="acts[users]" value="Y" /> Copy user database</div>
-                    <div><input type="checkbox" checked="checked" name="acts[news]" value="Y" /> Copy news database</div>
                     <div><input type="checkbox" checked="checked" name="acts[active]" value="Y" /> Convert active dbs</div>
                     <div><input type="checkbox" checked="checked" name="acts[archives]" value="Y" /> Convert archives</div>
                     <div><input type="checkbox" checked="checked" name="acts[backups]" value="Y" /> Convert backups</div>
@@ -60,12 +59,10 @@
     }
     else
     {
-
         echo '<li>Use <b>'.$cp.'</b> codepage, convert to UTF-8</li>';
 
         echo '<li>Create files...';
         if (!file_exists(DB_USERS))     fclose( fopen(DB_USERS, 'w') );
-        if (!file_exists(DB_NEWS))      fclose( fopen(DB_NEWS, 'w') );
         if (!file_exists(DB_BAN))       fclose( fopen(DB_BAN, 'w') );
         echo ' done</li>';
 
@@ -120,19 +117,6 @@
             echo ' done</li>';
         }
 
-        // all news
-        if ($acts['news'] == 'Y')
-        {
-            echo '<li>Copy news in fast file database... ';
-            $news = file(SERVDIR.'/data/news.txt');
-            foreach ($news as $v)
-            {
-                $data = explode('|', iconv_self(trim($v), $cp));
-                add_key( $data[NEW_ID], $data, DB_NEWS );
-            }
-            echo ' done</li>';
-        }
-
         // ipban
         echo '<li>Copy ip bans in fast file database... ';
         $ipban = file(SERVDIR.'/data/ipban.db.php');
@@ -168,7 +152,7 @@
         $files = array
         (
             'auto_archive.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
-            'db.ban.php', 'db.fulltext.php', 'db.hooks.php',  'db.news.php',  'db.users.php', 'flood.db.php',
+            'db.ban.php', 'db.fulltext.php', 'db.hooks.php', 'db.users.php', 'flood.db.php',
             'hooks.php', 'news.txt', 'postponed_news.txt', 'replaces.php',  'rss_config.php',
             'unapproved_news.txt',
         );

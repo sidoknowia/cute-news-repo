@@ -1,10 +1,10 @@
 <form method=post action="{$PHP_SELF}">
     <input type=hidden name="csrf_code" value={$CSRF}>
-    <table border=0 cellpading=0 cellspacing=0 width="645" >
+    <table border=0 cellpadding=0 cellspacing=0 width="645" >
     <tr>
         <td width=321 height="33">
             <h3>Add Category</h3>
-            <table border=0 cellpading=0 cellspacing=0 width=300  class="panel" >
+            <table border=0 cellpadding=0 cellspacing=0 width=300  class="panel" >
                 <tr>
                     <td width=130 height="25">&nbsp;Name</td>
                     <td  height="25"><input type=text name=cat_name></td>
@@ -41,7 +41,7 @@
     </table>
 </form>
 
-<table border=0 cellpading=0 cellspacing=0 width="645" >
+<table border=0 cellpadding=0 cellspacing=0 width="645" >
     <tr>
         <td width=654 colspan=2 height=14>
             <b>Categories</b>

@@ -157,7 +157,7 @@ td.top_header
 </center>
 <!--SELF-->
 
-<table border=0 cellpading=0 cellspacing=0 width="100%" height="100%" >
+<table border=0 cellpadding=0 cellspacing=0 width="100%" height="100%" >
 <tr>
     <td width="10%"> <p align="center"><br /><img border="0" src="skins/images/{image-name}.gif" > </td>
     <td width="87%" height="20%"> {breadcrumbs} <div class=header>{header-text}</div> </td>

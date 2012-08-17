@@ -463,8 +463,10 @@ do
 
             if ($hope_archive)
             {
-                echo '<div>'.lang('You are now being redirected to the article in our archives, if the redirection fails, please').' <a href="'.$PHP_SELF.'?start_from='.$start_from.'&ucat='.$ucat.'&subaction='.$subaction.'&id='.$id.'&archive='.$hope_archive.'&'.$user_query.'">'.lang('click here').'</a></div>
-                <script type="text/javascript">window.location="'.$PHP_SELF.'?start_from='.$start_from.'&ucat='.$ucat.'&subaction='.$subaction.'&id='.$id.'&archive='.$hope_archive.'&'.$user_query.'";</script>';
+                $URL = build_uri('start_from,ucat,subaction,id,archive', array($start_from,$ucat,$subaction,$id,$hope_archive));
+                if ($user_query) $URL .= "&amp;$user_query";
+                echo '<div>'.lang('You are now being redirected to the article in our archives, if the redirection fails, please').' <a href="'.$PHP_SELF.$URL.'">'.lang('click here').'</a></div>
+                <script type="text/javascript">window.location="'.$PHP_SELF.$URL.'";</script>';
             }
             else
             {
@@ -588,7 +590,10 @@ do
         if ($comm_start_from)
         {
             $prev = $comm_start_from - $comm_per_page;
-            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF?comm_start_from=$prev&amp;archive=$archive&amp;subaction=showcomments&amp;id=$id&amp;ucat=$ucat&amp;$user_query\">\\1</a>", $prev_next_msg);
+
+            $URL = build_uri('comm_start_from,subaction,subaction,id,ucat', array($prev,'showcomments',$id,$ucat));
+            if ($user_query) $URL .= "&amp;$user_query";
+            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF{$URL}\">\\1</a>", $prev_next_msg);
         }
         else
         {
@@ -606,7 +611,11 @@ do
             for ($j=1; $j<=$pages_count; $j++)
             {
                 if( $pages_start_from != $comm_start_from )
-                     $pages .= '<a href="'.$PHP_SELF.'?comm_start_from='.$pages_start_from.'&amp;archive='.$archive.'&amp;subaction=showcomments&amp;id='.$id.'&amp;ucat='.$ucat.'&amp;'.$user_query.'">'.$j.'</a> ';
+                {
+                    $URL = build_uri('comm_start_from,archive,subaction,subaction,id,ucat', array($pages_start_from,$archive,'showcomments',$id,$ucat));
+                    if ($user_query) $URL .= "&amp;$user_query";
+                    $pages .= '<a href="'.$PHP_SELF.$URL.'">'.$j.'</a> ';
+                }
                 else $pages .= ' <strong>'.$j.'</strong> ';
 
                 $pages_start_from += $comm_per_page;
@@ -798,7 +807,7 @@ do
         if ($start_from)
         {
             $prev = $start_from - $number;
-            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF?start_from=$prev&amp;ucat=$ucat&amp;archive=$url_archive&amp;subaction=$subaction&amp;id=$id&amp;$user_query\">\\1</a> ", $prev_next_msg);
+            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF".build_uri('start_from,ucat,archive,subaction,id', array($prev,$ucat,$url_archive,$subaction,$id))."&amp;$user_query\">\\1</a> ", $prev_next_msg);
         }
         else
         {
@@ -818,7 +827,11 @@ do
             for($j=1; $j<= $pages_count; $j++)
             {
                 if ( $pages_start_from != $start_from)
-                     $pages .= '<a href="'.$PHP_SELF.'?start_from='.$pages_start_from.'&amp;ucat='.$ucat.'&amp;archive='.$url_archive.'&amp;subaction='.$subaction.'&amp;id='.$id.'&amp;'.$user_query.'">'.$j.'</a> ';
+                {
+                     $URL = build_uri('start_from,ucat,archive,subaction,id', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
+                     if ($user_query) $URL .= "&amp;$user_query";
+                     $pages .= '<a href="'.$PHP_SELF.$URL.'">'.$j.'</a> ';
+                }
                 else $pages .= '<strong>'.$j.'</strong> ';
                 $pages_start_from += $number;
             }
@@ -831,7 +844,9 @@ do
         //----------------------------------
         if($number < $count_all and $i < $count_all)
         {
-            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$PHP_SELF?start_from=$i&amp;ucat=$ucat&amp;archive=$url_archive&amp;subaction=$subaction&amp;id=$id&amp;$user_query\">\\1</a>", $prev_next_msg);
+            $URL = build_uri('start_from,ucat,archive,subaction,id', array($i, $ucat, $url_archive, $subaction, $id));
+            if ($user_query) $URL .= "&amp;$user_query";
+            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$PHP_SELF{$URL}\">\\1</a>", $prev_next_msg);
         }
         else
         {

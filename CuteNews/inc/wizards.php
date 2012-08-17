@@ -68,7 +68,7 @@ else $cat_html = "You have no categories";
 echoheader("wizard", "News Integration Wizard");
 
 echo<<<WIZARDHTML
-<table border=0 cellpading=0 cellspacing=0 width=100% height=100%><form method="post" action="$PHP_SELF"><tr><td >
+<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><form method="post" action="$PHP_SELF"><tr><td >
 
 <table cellspacing="0" cellpadding="3" width="645" height="100%" border="0" style="border-collapse: collapse" bordercolor="#111111"><tr>
   <td width="639" colspan="2">
@@ -344,11 +344,11 @@ if($action == "rss_step2")
 {
     include(SERVDIR."/cdata/rss_config.php");
 
-    if($rss_language == '' or !$rss_language) $rss_language = 'en-us';
-    if($rss_encoding == '' or !$rss_encoding) $rss_encoding = 'UTF-8';
-
+    if ($rss_language == '' or !$rss_language) $rss_language = 'en-us';
+    if ($rss_encoding == '' or !$rss_encoding) $rss_encoding = 'UTF-8';
     echoheader("wizard", lang("RSS Configuration"));
-echo<<<HTML
+
+echo <<<HTML
 
     <table border=0 height=1 width=617 cellspacing="0" cellpadding="0">
      <form method=POST action="index.php">

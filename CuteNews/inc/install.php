@@ -10,8 +10,8 @@
         $files = array
         (
             'auto_archive.db.php', 'idnews.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
-            'db.ban.php', 'db.fulltext.php', 'db.hooks.php',  'db.news.php',  'db.users.php',   'flood.db.php',
-            'hooks.php', 'news.txt', 'postponed_news.txt', 'replaces.php',  'rss_config.php',
+            'db.ban.php', 'db.fulltext.php', 'db.hooks.php', 'db.users.php', 'flood.db.php',
+            'news.txt', 'postponed_news.txt', 'replaces.php', 'rss_config.php',
             'unapproved_news.txt',
         );
 
@@ -53,6 +53,12 @@
                 chmod ($file, 0666);
             }
         }
+
+        // Place .htaccess
+        $w = fopen(SERVDIR.'/cdata/.htaccess', 'w');
+        fwrite($w, 'Deny From All');
+        chmod (SERVDIR.'/cdata/.htaccess', 0644);
+        fclose($w);
 
         header("Location: ".PHP_SELF.'?action=register');
 

@@ -35,10 +35,8 @@ if ($banid)
 {
     if ( isset($banid[$REMOTE_ADDR]) )
     {
-        if ( $banid[$REMOTE_ADDR]['E'] > time() )
-            msg('error','Error!', "You're banned");
-        elseif ( $banid[$REMOTE_ADDR]['E'] > 0)
-            delete_key($REMOTE_ADDR, DB_BAN);
+        if ( $banid[$REMOTE_ADDR]['E'] > time() ) msg('error', LANG_ERROR_TITLE, "You're banned");
+        elseif ( $banid[$REMOTE_ADDR]['E'] > 0)   delete_key($REMOTE_ADDR, DB_BAN);
     }
 }
 
@@ -46,82 +44,60 @@ b64dck();
 if ($action == "logout")
 {
     $_SESS['user'] = $_SESS['pwd'] = false;
+    send_cookie(true);
     add_to_log($username, 'logout');
     msg("info", lang("Logout"), lang("You are now logged out").", <a href=\"$PHP_SELF\">".lang('login')."</a><br /><br>");
 }
 
 // sanitize
-extract(filter_request('mod,csrf'), EXTR_OVERWRITE);
-
-$is_loged_in        = false;
-$cookie_logged      = false;
-$session_logged     = false;
-$temp_arr           = explode("?", $HTTP_REFERER);
-$HTTP_REFERER       = $temp_arr[0];
-
-if(substr($HTTP_REFERER, -1) == "/") $HTTP_REFERER.= "index.php";
+$is_loged_in = false;
+extract(filter_request('mod'), EXTR_OVERWRITE);
 
 // Check the User is Identified -------------------------------------------------------------------------------------
-
-if (isset($HTTP_X_FORWARDED_FOR)) $ip = $HTTP_X_FORWARDED_FOR;
-elseif (isset($HTTP_CLIENT_IP))   $ip = $HTTP_CLIENT_IP;
-if (empty($ip))                   $ip = $_SERVER['REMOTE_ADDR'];
-if (empty($ip))                   $ip = false;
-
 $result      = false;
-$username    = empty($_SESS['user']) ? $username : $_SESS['user'];
-$password    = $password? $password : (empty($_SESS['pwd'])  ? $password : $_SESS['pwd']);
+$username    = empty($_REQUEST['user']) ? $_REQUEST['username'] : $_SESS['ix'];
 
-/* Login Authorization using COOKIES */
-if (isset($username))
+if ( empty($_SESS['user']))
 {
-    // Do we have correct username and password ?
-    $cmd5_password = hash_generate($password);
-    $use_ln = check_login($username, $cmd5_password);
-    if ($use_ln)
+    /* Login Authorization using COOKIES */
+    if ($action == 'dologin')
     {
-        if ($action == 'dologin')
+        CSRFCheck();
+
+        // Do we have correct username and password ?
+        $member_db      = bsearch_key($username, DB_USERS);
+        $cmd5_password  = hash_generate($password);
+
+        if ( in_array($member_db[UDB_PASS], $cmd5_password))
         {
-            $_SESS['ix'] = $username;
-            if (!empty($csrf) && $csrf == $_SESS['csrf'])
-            {
-                $_SESS['user'] = $username;
-                $_SESS['pwd']  = $password;
-                if ($rememberme == 'yes') $_SESS['@'] = true;
-                elseif (isset($_SESS['@'])) unset($_SESS['@']);
+            $_SESS['ix']    = $username;
+            $_SESS['user']  = $username;
+            $_SESS['data']  = $member_db;
 
-                add_to_log($username, 'login');
-                delete_key($REMOTE_ADDR, DB_BAN);
+            if ($rememberme == 'yes') $_SESS['@'] = true;
+            elseif (isset($_SESS['@'])) unset($_SESS['@']);
 
-                // Modify Last Login
-                $member_db[UDB_LAST] = time();
-                edit_key($username, $member_db, DB_USERS);
+            add_to_log($username, 'login');
+            delete_key($ip, DB_BAN);
 
-                $is_loged_in = true;
-            }
-            else
-            {
-                $_SESS['user'] = false;
-                $_SESS['pwd'] = false;
-                $result = "<span style='color:red;'>CSRF missed</span>";
-                add_to_log($username, 'Missed CSRF (cookies)');
+            // Modify Last Login
+            $member_db[UDB_LAST] = time();
+            edit_key($username, $member_db, DB_USERS);
 
-                $is_loged_in = false;
-            }
+            $is_loged_in = true;
         }
-        else $is_loged_in = true;
-    }
-    else
-    {
-        $_SESS['user'] = false;
-        $_SESS['pwd'] = false;
-        $result = "<span style='color:red;'>".lang('Wrong username or password')."</span>";
-        $result .= add_to_ban($REMOTE_ADDR);
+        else
+        {
+            $_SESS['user'] = false;
+            $result = "<span style='color:red;'>".lang('Wrong username or password')."</span>";
+            // $result .= add_to_ban($ip);
 
-        add_to_log($username, lang('Wrong username/password'));
-        $is_loged_in = false;
+            add_to_log($username, lang('Wrong username/password'));
+            $is_loged_in = false;
+        }
     }
 }
+else $is_loged_in = true;
 
 /* END Login Authorization using COOKIES */
 send_cookie(true);
@@ -131,40 +107,21 @@ send_cookie(true);
 
 if (empty($is_loged_in))
 {
-    $_SESS['csrf'] = md5( mt_rand().mt_rand().mt_rand() );
+    $CSRF = CSRFMake();
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
-                  array('lastusername' => htmlspecialchars($_SESS['ix']),
-                        'result' => htmlspecialchars($result),
-                        'csrf' => $_SESS['csrf']),
+                  array('lastusername'  => htmlspecialchars($username),
+                        'result'        => $result,
+                        'CSRF'          => $CSRF),
 
-                  array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 ));
+                  array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 )
+    );
+
     echofooter();
 }
 elseif ($is_loged_in)
 {
-
-    // xxtea algoritm is better, than HTTP_REFERER
-    $csrf = isset($_SESS['csrf']) ? $_SESS['csrf'] : false;
-
-    // is valid md5 hash?
-    if ( !preg_match('/^[0-9a-f]{32}/', $csrf))
-    {
-        add_to_log($username, 'Permanent crypt CSRF missing!');
-        die_stat(false, lang("<h2>Sorry but your access to this page was denied !</h2><br>try to <a href=\"?action=logout\">logout</a> and then login again"));
-    }
-
-    // strong CSRF
-    list (,$addr) = explode('@', $_SESS['csrf']);
-    if ( $action != 'dologin' && $addr != $_SERVER['REMOTE_ADDR'])
-    {
-        header('Location: '.PHP_SELF);
-        $_SESS['user'] = false;
-        exit_cookie();
-    }
-
-    // save csrf
-    $_SESS['csrf'] = md5(mt_rand()).'@'.$_SERVER['REMOTE_ADDR'];
+    $member_db = $_SESS['data'];
 
     // ********************************************************************************
     // Include System Module
@@ -186,7 +143,6 @@ elseif ($is_loged_in)
                             'help'          => 'user',
                             'debug'         => 'admin',
                             'wizards'       => 'admin',
-                            'hooks'         => 'admin',
                             'rating'        => 'user',
                             );
 

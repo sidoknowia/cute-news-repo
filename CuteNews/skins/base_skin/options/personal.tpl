@@ -2,6 +2,7 @@
     
     <input type=hidden name=mod value=options>
     <input type=hidden name=action value=dosavepersonal>
+    <input type=hidden name="csrf_code" value="{$CSRF}" />
     
     <table border=0 height=1 width=617 cellspacing="0" cellpadding="0">
         <tr>

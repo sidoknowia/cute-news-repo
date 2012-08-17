@@ -2,8 +2,9 @@
 
     <input type=hidden name=mod value=addnews>
     <input type=hidden name=action value=doaddnews>
+    <input type=hidden name="csrf_code" value="{$CSRF}" />
 
-    <table border=0 cellpading=0 cellspacing=0 width="654" >
+    <table border=0 cellpadding=0 cellspacing=0 width="654" >
 
     <tr>
         <td width="75">Title</td>

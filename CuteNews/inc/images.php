@@ -9,11 +9,7 @@ $allowed_extensions = array("gif", "jpg", "png", "bmp", "jpe", "jpeg");
 // Show Preview of Image
 // ********************************************************************************
 if($action == "preview")
-{
-
-    // $image = urlencode($image);
-
-echo <<<PREVIEWHTML
+{ ?>
 <HTML>
     <HEAD>
         <TITLE>Image Preview</TITLE>
@@ -27,25 +23,27 @@ echo <<<PREVIEWHTML
                 iHeight = document.images[0].height - iHeight;
                 window.resizeBy(iWidth, iHeight-1);
                 self.focus();
-            };
+            }
         </script>
     </HEAD>
     <BODY bgcolor="#FFFFFF" onload='fitPic();' topmargin="0" marginheight="0" leftmargin="0" marginwidth="0">
-         <script language='javascript'> document.write( "<img src='$config_http_script_dir/cdata/upimages/$image' border=0>" ); </script>
+         <script type='text/javascript'>
+             document.write( "<img src='<?php echo $config_http_script_dir; ?>/cdata/upimages/<?php echo $image; ?>' border=0>" );
+         </script>
     </BODY>
 </HTML>
-
-PREVIEWHTML;
+<?php
 
 }
 // ********************************************************************************
 // Show Images List
 // ********************************************************************************
-elseif($action != "doimagedelete")
+elseif ($action != "doimagedelete")
 {
+    if ($subaction != 'upload') $CSRF = CSRFMake();
     if ($action == "quick")
     {
-?><html><head>
+        ?><html><head>
 <title>Insert Image</title>
 <style type="text/css">
 <!--
@@ -82,13 +80,13 @@ elseif($action != "doimagedelete")
         if (imageWidth) appends += ' width=' + imageWidth;
         if (imageHeight) appends += ' height=' + imageWidth;
 
-        finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='<?php echo $config_http_script_dir; ?>cdata/upimages/"+ selectedImage +"'>";
+        finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='<?php echo $config_http_script_dir; ?>/cdata/upimages/"+ selectedImage +"'>";
         <?php
 
             if ($wysiwyg && $_REQUEST['CKEditorFuncNum'])
             {
                 $CKEditorFuncNum = $_REQUEST['CKEditorFuncNum'];
-                echo "window.opener.CKEDITOR.tools.callFunction(".$CKEditorFuncNum.", '".$config_http_script_dir."cdata/upimages/'+ selectedImage);";
+                echo "window.opener.CKEDITOR.tools.callFunction(".$CKEditorFuncNum.", '".$config_http_script_dir."/cdata/upimages/'+ selectedImage);";
                 echo "window.close();";
             }
             else
@@ -109,7 +107,11 @@ elseif($action != "doimagedelete")
 </script>
 <?php
 
-} else echoheader("images", "Manage Images");
+    }
+    else
+    {
+        echoheader("images", "Manage Images");
+    }
 
     // ********************************************************************************
     // Upload Image(s)
@@ -117,6 +119,8 @@ elseif($action != "doimagedelete")
 
     if ($subaction == "upload")
     {
+        CSRFCheck();
+        $CSRF = CSRFMake();
         for ($image_i = 1; $image_i < ($images_number+1); $image_i++)
         {
             $current_image  = 'image_'.$image_i;
@@ -130,7 +134,7 @@ elseif($action != "doimagedelete")
             elseif( !isset($overwrite) and file_exists(SERVDIR."/cdata/upimages/".$image_name)){ $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";}
             elseif( !(in_array($type, $allowed_extensions) or in_array(strtolower($type), $allowed_extensions)) )
             {
-                $img_result .= "<br><font color=red>$image_name ->This type of file is not allowed !!!</font>";
+                $img_result .= "<br><span style='color:red;'>$image_name ->This type of file is not allowed!</span>";
             }
             else
             {
@@ -148,12 +152,10 @@ elseif($action != "doimagedelete")
         }
     }
 
-//
-// Add the JS for multyple image upload.
-//
-echo<<<HTMLJS
+// Add the JS for multiply image upload.
+?>
 
-<script language='javascript'>
+<script type='text/javascript'>
 
 function AddRowsToTable() {
      var tbl = document.getElementById('tblSample');
@@ -183,248 +185,126 @@ function RemoveRowFromTable() {
 }
 
 </script>
+<form name="form" id="form" action="<?php echo $PHP_SELF; ?>?mod=images" method="post" enctype="multipart/form-data">
 
-HTMLJS;
+    <input type="hidden" name="csrf_code" value="<?php echo $CSRF; ?>" />
+    <table border=0 cellpadding=0 cellspacing=0  width=100%>
 
+        <td height="33">
+        <b>Upload Image</b>
+        <table border=0 cellpadding=0 cellspacing=0 class="panel" cellpadding=8>
+        <tr>
+        <td height=25>
 
+            <table  border="0" cellspacing="0" cellpadding="0" id="tblSample">
+                <tr id="row">
+                    <td width="1" colspan="2"><input type="file" size="30" name="image_1"></td>
+                </tr>
+            </table>
 
-echo<<<HTML
-<form name="form" id="form" action="$PHP_SELF?mod=images" method="post" enctype="multipart/form-data">
+            <table border="0" cellspacing="0" cellpadding="0" style="margin-top:5px;">
+                <tr>
+                    <td>
+                        <INPUT TYPE="submit" name="submit" VALUE="Upload" style="font-weight:bold;"> &nbsp;
+                        <input type=button value='-' style="font-weight:bold; width:22px;" title='Remove last file input box' onClick="RemoveRowFromTable();return false;">
+                        <input type=button value='+' style="font-weight:bold; width:22px;" title='Add another file input box' onClick="AddRowsToTable();return false;"> &nbsp;
+                        <input style="border:0px; background-color:#F7F6F4;" type=checkbox name=overwrite id=overwrite value=1><label title='Overwrite file(s) if exist' for=overwrite> Overwrite</label>
+                    </td>
+                </tr>
+            </table>
+        <?php echo $img_result; ?>
+        </table>
 
+        <input type=hidden name=wysiwyg value='<?php echo $wysiwyg; ?>'>
+        <input type=hidden name=CKEditorFuncNum value='<?php echo $CKEditorFuncNum; ?>'>
+        <input type=hidden name=subaction value=upload>
+        <input type=hidden name=area value='<?php echo $area; ?>'>
+        <input type=hidden name=action value='<?php echo $action; ?>'>
+        <input type=hidden name='images_number' id='images_number' value='1'>
+</form>
 
-<table border=0 cellpading=0 cellspacing=0  width=100%>
-    <td height=33>
-    <b>Upload Image</b>
-<table border=0 cellpading=0 cellspacing=0 class="panel" cellpadding=8>
-    <tr>
-    <td height=25>
+<?php
 
-<table  border="0" cellspacing="0" cellpadding="0" id="tblSample">
- <tr id="row">
-  <td width="1" colspan="2"><input type="file" size="30" name="image_1"></td>
-</tr>
-</table>
-<table border="0" cellspacing="0" cellpadding="0" style="margin-top:5px;">
- <tr>
-  <td>
-  <INPUT TYPE="SUBMIT" name="submit" VALUE="Upload" style="font-weight:bold;"> &nbsp;
-   <input type=button value='-' style="font-weight:bold; width:22px;" title='Remove last file input box' onClick="RemoveRowFromTable();return false;">
-   <input type=button value='+' style="font-weight:bold; width:22px;" title='Add another file input box' onClick="AddRowsToTable();return false;"> &nbsp;
-   <input style="border:0px; background-color:#F7F6F4;" type=checkbox name=overwrite id=overwrite value=1><label title='Overwrite file(s) if exist' for=overwrite> Overwrite</label>
-
-</td>
- </tr>
-</table>
-$img_result
-</table>
-
-     <input type=hidden name=wysiwyg value='$wysiwyg'>
-     <input type=hidden name=CKEditorFuncNum value='$CKEditorFuncNum'>
-     <input type=hidden name=subaction value=upload>
-     <input type=hidden name=area value='$area'>
-    <input type=hidden name=action value='$action'>
-    <input type=hidden name='images_number' id='images_number' value='1'>
- </form>
-
-HTML;
-
-
-if($action == "quick") {
-echo "
-<form name=properties>
-<input type=hidden name=CKEditorFuncNum value='".$_REQUEST['CKEditorFuncNum']."'>
-<table style='margin-top:10px;' border=0 cellpading=0 cellspacing=0  width=100%>
-
-     <td height=33>
-     <b>Image Properties</b>
-     <table border=0 cellpading=0 cellspacing=0 class=\"panel\" style='padding:5px'width=290px; >
-
-
-      <tr>
-       <td width=80>Alt. Text: </td>
-       <td><input tabindex=1 type=text name=alternativeText style=\"width:150;\"></td>
-      </tr>
-
-      <tr>
-       <td>Image Align</td>
-       <td>
-        <select name='imageAlign' style='width:150'>
-          <option value=none>None</option>
-          <option value=left>Left</option>
-          <option value=right>Right</option>
-        </select>
-       </td>
-      </tr>
-
-      <tr>
-       <td>Border</td>
-       <td><input type=text value='0' name=imageBorder style=\"width:35\"> pixels</td>
-      </tr>
-
-      <tr>
-       <td>Width</td>
-       <td><input type=text value='' name=imageWidth style=\"width:35\"> pixels</td>
-      </tr>
-
-      <tr>
-       <td>Height</td>
-       <td><input type=text value='' name=imageHeight style=\"width:35\"> pixels</td>
-      </tr>
-
-     </table>
-</table></form>";
-}
-
-
-    echo"<tr><td><img height=1 style=\"height: 13px !important; height: 1px;\" border=0 src=\"skins/images/blank.gif\" width=1></tr><tr><td>
-    <b>Uploaded Images</b>
-    </tr>
-
-    <tr >
-
-        <td height=1>
-<FORM action='$PHP_SELF?mod=images' METHOD='POST'>
-  <table width=100% height=100% cellspacing=0 cellpadding=0>";
-
-        $img_dir = opendir(SERVDIR."/cdata/upimages");
-
-
+    if ($action == "quick") echo proc_tpl('images/quick', array('CKEditorFuncNum' => $_REQUEST['CKEditorFuncNum']));
+    echo "<tr><td><img height=1 style=\"height: 13px !important; height: 1px;\" border=0 src=\"skins/images/blank.gif\" width=1></td></tr>
+        <tr><td><b>Uploaded Images</b></tr>
+        <tr><td height=1>
+            <form action='$PHP_SELF?mod=images' METHOD='POST'>
+            <input type='hidden' name='csrf_code' value='$CSRF' />
+            <table width=100% height=100% cellspacing=0 cellpadding=0>";
 
         $i = 0;
-
-    while ($file = readdir($img_dir))
-    {
-         //Yes we'll store them in array for sorting
-         $images_in_dir[] = $file;
-    }
-    natcasesort($images_in_dir);
-    reset($images_in_dir);
-    foreach ($images_in_dir as $file) {
-
-
-
-
-        $img_name_arr = explode(".",$file);
-            $img_type          = end($img_name_arr);
-
-
-                if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/cdata/upimages/".$file))
-
-            {
-
-            $i++;
-
-            $this_size =  filesize(SERVDIR."/cdata/upimages/".$file);
-
-                $total_size += $this_size;
-
-            $img_info = getimagesize(SERVDIR."/cdata/upimages/".$file);
-
-            if( $i%2 != 0 ){ $bg = "bgcolor=#F7F6F4"; }
-
-                    else{ $bg = ""; }
-
-
-
-            if($action == "quick")
-
-            {
-
-                $my_area = str_replace("_", " ", $area);
-
-                echo"
-
-                <tr $bg><td height=16 width=1px> <a title='Preview this image' href=\"javascript:PopupPic('".$file."')\"><img style='border:0px;' src='skins/images/view_image.gif'></a>
-                <td height=16 width=100%>
-
-                <a title=\"Insert this image in the $my_area\" href=\"javascript:insertimage('$file')\">$file</a>
-
-
-
-                <td height=16 align=right>
-
-                            $img_info[0]x$img_info[1]&nbsp;&nbsp;
-
-
-
-                            <td height=16 align=right>
-
-                        &nbsp;". formatsize($this_size) ."
-
-                            </tr>";
-
-            }
-
-            else
-
-            {
-
-                    echo"<tr $bg><td height=16>&nbsp;
-                        <td height=16 width=63%>
-                            <a target=_blank href=\"". $config_http_script_dir ."/cdata/upimages/$file\">$file</a>
-
-
-
-                <td height=16 align=right>
-
-                            $img_info[0]x$img_info[1]
-
-
-
-                            <td height=16 align=right>
-
-                        &nbsp;". formatsize($this_size) ."
-
-                        <td width=70 height=16 align=right>
-                <input type=checkbox name=images[$file] value=\"$file\">
-
-                            </tr>";
-
-            }
-
-            }
-
+        $img_dir = opendir(SERVDIR."/cdata/upimages");
+        while ($file = readdir($img_dir))
+        {
+             //Yes we'll store them in array for sorting
+             $images_in_dir[] = $file;
         }
 
-
-
-    if($i > 0){
-
-            echo"<tr ><td height=16>";
-
-
-                if($action != "quick"){
-                           echo" <td colspan=4 align=right>
-                   <br><input type=submit value='Delete Selected Images'>
-                            </tr>";
-
+        natcasesort($images_in_dir);
+        reset($images_in_dir);
+        foreach ($images_in_dir as $file)
+        {
+            $img_name_arr = explode(".",$file);
+            $img_type     = end($img_name_arr);
+            if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/cdata/upimages/".$file))
+            {
+                $i++;
+                $this_size =  filesize(SERVDIR."/cdata/upimages/".$file);
+                $total_size += $this_size;
+                $img_info = getimagesize(SERVDIR."/cdata/upimages/".$file);
+                if ( $i%2 != 0 ) $bg = "bgcolor=#F7F6F4"; $bg = "";
+                if ($action == "quick")
+                {
+                    $my_area = str_replace("_", " ", $area);
+                    echo "
+                    <tr $bg>
+                        <td height=16 width=1px> <a title='Preview this image' href=\"javascript:PopupPic('".$file."')\"><img style='border:0px;' src='skins/images/view_image.gif'></a></td>
+                        <td height=16 width=100%><a title=\"Insert this image in the $my_area\" href=\"javascript:insertimage('$file')\">$file</a></td>
+                        <td height=16 align=right>$img_info[0]x$img_info[1]&nbsp;&nbsp;</td>
+                        <td height=16 align=right>&nbsp;". formatsize($this_size) ."</td>
+                    </tr>";
                 }
+                else
+                {
+                    echo "<tr $bg>
+                            <td height=16>&nbsp;</td>
+                            <td height=16 width=63%><a target=_blank href=\"". $config_http_script_dir ."/cdata/upimages/$file\">$file</a></td>
+                            <td height=16 align=right>$img_info[0]x$img_info[1]</td>
+                            <td height=16 align=right>&nbsp;". formatsize($this_size) ."</td>
+                            <td width=70 height=16 align=right><input type=checkbox name=images[$file] value=\"$file\"></td>
+                         </tr>";
+                }
+            }
+        }
 
-            echo"<tr heigh=1>
-                <td  width=14>
-                &nbsp;
-                <td >
-                <br /><b>Total size</b>
-            <td>&nbsp;
-            <td align=right>
+        if ($i > 0)
+        {
+            echo "<tr><td height=16>";
+            if($action != "quick")
+            {
+                echo" <td colspan=4 align=right><br><input type=submit value='Delete Selected Images'></tr>";
+            }
 
-                <br /><b>". formatsize($total_size) .'</b>
-
+            echo"<tr height=1>
+                    <td width=14>&nbsp;</td> <td><br/><b>Total size</b></td> <td>&nbsp;</td>
+                    <td align=right><br/><b>". formatsize($total_size) .'</b></td>
                 </tr>';
 
         }
 
-    echo'
-   </table><input type=hidden name=action value=doimagedelete></form></table>';
+    echo '</table><input type=hidden name=action value=doimagedelete></form></table>';
 
-    if($action != "quick"){ echofooter(); }
+    if($action != "quick") echofooter();
 
 }
 // ********************************************************************************
 // Delete Image
 // ********************************************************************************
-elseif($action == "doimagedelete")
+elseif ($action == "doimagedelete")
 {
+    CSRFCheck();
+
     if(!isset($images))
         msg("info","No Images selected","You must select images to be deleted.", $PHP_SELF."?mod=images");
 

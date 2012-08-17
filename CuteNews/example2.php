@@ -222,7 +222,7 @@ BODY,TD,TR{
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Here we decide what page to include
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
+    $number = 2;
     if($_POST['do'] == "search" or $_GET['dosearch'] == "yes"){ $subaction = "search"; $dosearch = "yes"; include("search.php"); }
     elseif($_GET['do'] == "archives"){ include("show_archives.php"); }
     elseif($_GET['do'] == "stats"){ echo"You can download the stats addon and include it here to show how many news, comments ... you have"; /* include("$path/stats.php"); */ }

@@ -9,7 +9,7 @@
         if (agree) document.location = "{$PHP_SELF}?mod=editusers&action=dodeleteuser&id=" + id;
     }
 </script>
-<table border=0 cellpading=0 cellspacing=0 width=654>
+<table border=0 cellpadding=0 cellspacing=0 width=654>
     <tr>
         <td width=654 colspan="6">
             <!-- Start add edit users table + info + help -->

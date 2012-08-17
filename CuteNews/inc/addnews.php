@@ -22,6 +22,7 @@ foreach($orig_cat_lines as $single_line)
 
 if ($action == "addnews")
 {
+    $CSRF = CSRFMake();
     echoheader("addnews", lang("Add News"));
     
     $short_story_id = 'short_story';
@@ -35,7 +36,7 @@ if ($action == "addnews")
     $xfields = array();
 
     // init x-fields
-    if ( !isset( $cfg['more_fields']) )
+    if ( !isset($cfg['more_fields']) )
     {
         $cfg['more_fields'] = array();
         fv_serialize('conf', $cfg);
@@ -112,6 +113,7 @@ if ($action == "addnews")
                 'date_hour'              => date("H"),
                 'date_minutes'           => date("i"),
                 'xfields'                => $xfields,
+                'CSRF'                   => $CSRF
             ),
             array
             (
@@ -212,54 +214,24 @@ elseif($action == "doaddnews")
             msg('error','Error!', lang('Avatar not uploaded!'));
     }
 
-    // geneate ID and time simultaneously
-    $ltime = bsearch_key('_time', DB_NEWS);
-    if ($ltime)
-    {
-        if ($ltime == $added_time) $added_time++;
-        elseif ($added_time < $ltime) $added_time = $ltime + 1;
-        edit_key('_time', $added_time, DB_NEWS);
-    }
-    else add_key('_time', $added_time, DB_NEWS);
-
-    // add new article to artlist
-    $artlist = bsearch_key('_artlist', DB_NEWS);
-    if ( !is_array($artlist) )
-    {
-        $artlist = array();
-        add_key('_artlist', $artlist, DB_NEWS);
-    }
-    $artlist[] = $added_time;
-    edit_key('_artlist', $artlist, DB_NEWS);
-
-    // Add article in database
-    $pack = array
-    (
-        NEW_ID      => $added_time,
-        NEW_USER    => $member_db[2],
-        NEW_TITLE   => $title,
-        NEW_SHORT   => $short_story,
-        NEW_FULL    => $full_story,
-        NEW_AVATAR  => $manual_avatar,
-        NEW_CAT     => $nice_category,
-    );
+    // Make unique time
+    $added_time = join('', file(SERVDIR.'/cdata/newsid.txt'));
+    if ($added_time == 0) $added_time = time();
+    elseif (time() <= $added_time) $added_time++;
+    else $added_time = time();
+    $w = fopen(SERVDIR.'/cdata/newsid.txt', 'w');
+    fwrite($w, $added_time);
+    fclose($w);
 
     // Additional fields
-    foreach ($cfg['more_fields'] as $i => $v) $pack[$i] = $_REQUEST[$i];
-
-    // Add news and generate fulltext
-    add_key($added_time, $pack, DB_NEWS);
-
-    // increase total words
-    $total_docs = bsearch_key('_total', DB_NEWS);
-    if ( $total_docs === false ) add_key ('_total', 0, DB_NEWS );
-    edit_key('_total', $total_docs + 1, DB_NEWS );
+    $pack = array();
+    foreach ($cfg['more_fields'] as $i => $v) $pack[] = spack($i)."=".spack($_REQUEST[$i]);
 
     // Save The News Article In Active_News_File
-    $all_db = file($decide_news_file);
-    $news_file = fopen($decide_news_file, "w");
+    $all_db         = file($decide_news_file);
+    $news_file      = fopen($decide_news_file, "w");
     flock($news_file, LOCK_EX);
-    fwrite($news_file, "$added_time|$member_db[2]|$title|$short_story|$full_story|$manual_avatar|$nice_category||\n");
+    fwrite($news_file, "$added_time|$member_db[2]|$title|$short_story|$full_story|$manual_avatar|$nice_category||".join(';', $pack)."\n");
     foreach ($all_db as $line) fwrite($news_file, $line);
     flock($news_file, LOCK_UN);
     fclose($news_file);

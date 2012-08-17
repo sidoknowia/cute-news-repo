@@ -27,10 +27,11 @@ $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 // ********************************************************************************
 if ($action == "list")
 {
+    $CSRF = CSRFMake();
     echoheader("editnews", "Edit News");
 
     // How Many News to show on one page
-    if($news_per_page == "") $news_per_page = 21;
+    if ($news_per_page == "") $news_per_page = 21;
 
     $all_db = array();
     if ($source == "")
@@ -228,6 +229,7 @@ if ($action == "list")
                         'opt_catlist'           => htmlspecialchars($opt_catlist),
                         'opt_author'            => htmlspecialchars($opt_author),
                         'news_per_page'         => htmlspecialchars($news_per_page),
+                        'CSRF'                  => $CSRF
                   ),
                   array('OPT_AUTHOR' => $opt_author)
     );
@@ -271,6 +273,7 @@ if ($action == "list")
                         'npp_nav'           => $npp_nav,
                         'source'            => $source,
                         'do_action'         => $do_action,
+                        'CSRF'              => $CSRF
                   ),
                   array('ENTRIES_SHOWED' => $entries_showed)
                   );
@@ -310,14 +313,14 @@ elseif ($action == "editnews")
             $found = TRUE;
             break;
         }
-        //foreach news line
+        // foreach news line
     }
 
     $have_perm = 0;
     if(($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR))
         $have_perm = 1;
 
-    elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[1] == $member_db[UDB_NAME])
+    elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[NEW_USER] == $member_db[UDB_NAME])
         $have_perm = 1;
 
     if(!$have_perm)
@@ -353,6 +356,7 @@ elseif ($action == "editnews")
     $item_db[3] = replace_news("admin", $item_db[3], $use_wysiwyg);
     $item_db[4] = replace_news("admin", $item_db[4], $use_wysiwyg);
 
+    $CSRF = CSRFMake();
     echoheader("editnews", "Edit News");
 
     // make category lines
@@ -455,7 +459,16 @@ elseif ($action == "editnews")
         $Comments_HTML = proc_tpl('editnews/editnews/nocomments');
 
     // init x-fields
-    $article = bsearch_key($id, DB_NEWS);
+    $article = array();
+    $pack = explode(';', $item_db[8]);
+    foreach ($pack as $i => $v)
+    {
+        list ($a, $b) = explode('=', $v);
+        $a = str_replace(array('{~',"{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $a);
+        $b = str_replace(array('{~',"{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $b);
+        $article[$a] = $b;
+    }
+
     foreach ($cfg['more_fields'] as $i => $v)
     {
         $af = isset($article[$i]) ? $article[$i] : false;
@@ -489,6 +502,7 @@ elseif ($action == "editnews")
             'use_wysiwyg'           => $use_wysiwyg,
             'Comments_HTML'         => $Comments_HTML,
             'xfields'               => $xfields,
+            'CSRF'                  => $CSRF
         ),
         array
         (
@@ -527,13 +541,20 @@ elseif ($action == "doeditnews")
         // Not in a category: don't format $nice_cats because we have not selected any.
         if ( $category != "" and isset($category) and !in_array($category, $allowed_cats) ) die(lang('not allowed category'));
     }
-    
+
     // Check optional fields
-    $optfields = array();
+    $more = $optfields = array();
     foreach ($cfg['more_fields'] as $i => $v)
     {
-        if (substr($v, 0, 1) != '&' && $_REQUEST[$i] == false)
+        if ($v[0] != '&' && $_REQUEST[$i] == false)
+        {
             $optfields[] = $v;
+        }
+        else
+        {
+            if (!empty($_REQUEST[$i]))
+                $more[] = spack($i).'='.spack($_REQUEST[$i]);
+        }
     }
 
     if (count($optfields))
@@ -550,7 +571,7 @@ elseif ($action == "doeditnews")
 
     $short_story    = replace_news("add", $short_story, $n_to_br, $use_html);
     $full_story     = replace_news("add", $full_story,  $n_to_br, $use_html);
-       
+
     $title          = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $title) );
     $avatar         = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $avatar) );
 
@@ -587,7 +608,7 @@ elseif ($action == "doeditnews")
     // write
     $old_db = file( $news_file );
     $new_db = fopen( $news_file, "w");
-    foreach($old_db as $old_db_line)
+    foreach ($old_db as $old_db_line)
     {
         $old_db_arr = explode("|", $old_db_line);
         if ($id != $old_db_arr[0])
@@ -607,7 +628,8 @@ elseif ($action == "doeditnews")
                 if ($ifdelete != "yes")
                 {
                     $okchanges = true;
-                    fwrite ($new_db, "$old_db_arr[0]|$old_db_arr[1]|$title|$short_story|$full_story|$editavatar|$nice_category|$old_db_arr[7]|\n");
+                    $more_fields = join(';', $more);
+                    fwrite ($new_db, "$old_db_arr[0]|$old_db_arr[1]|$title|$short_story|$full_story|$editavatar|$nice_category|$old_db_arr[7]|$more_fields\n");
                 }
                 else
                 {
@@ -640,14 +662,6 @@ elseif ($action == "doeditnews")
 
     if ($okdeleted)
     {
-        // Delete from art-list
-        $unset = bsearch_key( array('_artlist', '_total'), DB_NEWS);
-        foreach ($unset[0] as $i => $v) if ($v == $id) unset($unset[0][$i]);
-        edit_key( array('_artlist' => $unset[0], '_total' => $unset[1] - 1), false, DB_NEWS);
-
-        // delete news
-        delete_key($id, DB_NEWS);
-
         if ( $okdelcom )
              msg("info", lang("News Deleted"), lang("The news item successfully was deleted").'.<br />'.lang("If there were comments for this article they are also deleted."));
         else msg("info", lang("News Deleted"), lang("The news item successfully was deleted").'.<br />'.
@@ -657,21 +671,7 @@ elseif ($action == "doeditnews")
     }
     elseif ($okchanges)
     {
-
-        // do changes in db.news.php
-        $pack               = bsearch_key($id, DB_NEWS);
-        $pack[NEW_TITLE]    = $title;
-        $pack[NEW_SHORT]    = $short_story;
-        $pack[NEW_FULL]     = $full_story;
-        $pack[NEW_AVATAR]   = $editavatar;
-        $pack[NEW_CAT]      = $nice_category;
-
-        // do changes in more fields
-        foreach ($cfg['more_fields'] as $i => $v) $pack[$i] = $_REQUEST[$i];
-        edit_key($id, $pack, DB_NEWS);
-
         header("Location: $PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
-
     }
 
     else msg("error", LANG_ERROR_TITLE, lang("The news item can not be found or there is an error with the news database file."));

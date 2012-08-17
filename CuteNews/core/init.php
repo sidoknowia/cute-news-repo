@@ -59,6 +59,7 @@
     define('NEW_AVATAR',              5);
     define('NEW_CAT',                 6);
     define('NEW_RATE',                7); // rating function
+    define('NEW_MF',                  8); // more fields
 
     // define cats
     define('CAT_ID',                  0);
@@ -91,9 +92,6 @@
     foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
         if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
-    // disallow to run hooks in hooks module
-    if ($_GET['mod'] != 'hooks') include (SERVDIR.'/cdata/hooks.php');
-
     // load config
     $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
     $cfg['captcha_types'] = 1;
@@ -113,13 +111,19 @@
         $config_skin = 'default';
     }
 
+    // Detect My IP
+    if (isset($HTTP_X_FORWARDED_FOR)) $ip = $HTTP_X_FORWARDED_FOR;
+    elseif (isset($HTTP_CLIENT_IP))   $ip = $HTTP_CLIENT_IP;
+    if (empty($ip))                   $ip = $_SERVER['REMOTE_ADDR'];
+    if (empty($ip))                   $ip = false;
+
     // use default, hooked or cfg skin
     if ( $SKIN = hook('change_skin') )
          define('SKIN',         $SKIN);
     else define('SKIN',         SKINS.'/'.(isset($cfg['skin'])? $cfg['skin'] : 'base_skin'));
 
     define('PHP_SELF',          isset($_SERVER["PHP_SELF"]) ? $_SERVER["PHP_SELF"] : false);
-    define('CRYPT_SALT',        $cfg['crypt_salt']);
+    define('CRYPT_SALT',        $ip.'@'.$cfg['crypt_salt']);
     define('LANG_ERROR_TITLE',  $lang['error']);
     define('ALLOWED_TIME',      0.75 * ini_get('max_execution_time'));
 
@@ -129,8 +133,6 @@
 
     // DATABASE DEFINITION
     define('DB_USERS',          SERVDIR.'/cdata/db.users.php');          // users databases [key=user.md5password]
-    define('DB_NEWS',           SERVDIR.'/cdata/db.news.php');           // index for news
-    define('DB_HOOKS',          SERVDIR.'/cdata/db.hooks.php');          // hooks db
     define('DB_BAN',            SERVDIR.'/cdata/db.ban.php');            // ban filters
 
     // SERVER values make

@@ -781,7 +781,7 @@ function template_replacer_news($news_arr, $output)
 
     // Short Story not exists
     if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) ) $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
-    $output      = more_fields($news_arr[NEW_ID], $output);
+    $output      = more_fields($news_arr[NEW_MF], $output);
 
     // Date Formatting [year, month, day, hour, minute, date=$config_timestamp_active]
     $output      = embedateformat($news_arr[0], $output);
@@ -820,13 +820,23 @@ function template_replacer_news($news_arr, $output)
 
     // By click to comments - popup window
     if ( $config_comments_popup == "yes" )
+    {
+         $URL = build_uri('subaction,template,id,archive,start_from,ucat', array('showcomments',$template,$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
          $output = str_replace(array("[com-link]", '[/com-link]'),
-                               array('<a href="#" onclick="window.open(\''.$config_http_script_dir.'/router.php?subaction=showcomments&amp;template='.$template.'&amp;id='.$news_arr[NEW_ID].'&amp;archive='.$archive.'&amp;start_from='.$my_start_from.'&amp;ucat='.$news_arr[NEW_CAT].'\', \'_News\', \''.$config_comments_popup_string.'\'); return false;">', '</a>'), $output);
-    else $output = str_replace(array("[com-link]", '[/com-link]'),
-                               array("<a href=\"$PHP_SELF?subaction=showcomments&amp;id=".$news_arr[0]."&amp;archive=$archive&amp;start_from=$my_start_from&amp;ucat=$news_arr[NEW_CAT]&amp;$user_query\">", '</a>'), $output);
+                               array('<a href="#" onclick="window.open(\''.$config_http_script_dir.'/router.php'.$URL.'\', \'_News\', \''.$config_comments_popup_string.'\'); return false;">', '</a>'), $output);
+    }
+    else
+    {
+        $URL = build_uri('subaction,id,archive,start_from,ucat', array('showcomments',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
+        $output = str_replace(array("[com-link]", '[/com-link]'),
+                              array("<a href=\"$PHP_SELF{$URL}\">", '</a>'), $output);
+    }
 
+    // Link to
+    $URL = build_uri('subaction,id,archive,start_from,ucat', array('showfull',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
+    if ($user_query) $URL .= "&amp;$user_query";
     $output      = str_replace(array("[link]", "[/link]"),
-                               array('<a href="'.$PHP_SELF."?subaction=showfull&amp;id=$news_arr[0]&amp;archive=$archive&amp;start_from=$my_start_from&amp;ucat=$news_arr[6]&amp;$user_query\">", "</a>"), $output);
+                               array('<a href="'.$PHP_SELF.$URL.">", "</a>"), $output);
 
     // @TODO Only in active news, not archives
     $output     = empty($archive) ? str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output) : str_replace("{star-rate}", false, $output);
@@ -835,8 +845,17 @@ function template_replacer_news($news_arr, $output)
     if ($news_arr[NEW_FULL] or $action == "showheadlines")
     {
         if ( $config_full_popup == "yes" )
-             $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php?subaction=showfull&amp;id=$news_arr[0]&amp;archive=$archive&amp;template=$template', '_News', '$config_full_popup_string');return false;\">", $output);
-        else $output = str_replace("[full-link]", "<a href=\"$PHP_SELF?subaction=showfull&amp;id=$news_arr[0]&amp;archive=$archive&amp;start_from=$my_start_from&amp;ucat=$news_arr[6]&amp;$user_query\">", $output);
+        {
+             $URL = build_uri('subaction,id,archive,template', array('showfull',$news_arr[0],$archive,$template));
+             $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
+        }
+        else
+        {
+            $URL = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[6],$template));
+            if ($user_query) $URL .= "&amp;$user_query";
+            $output = str_replace("[full-link]", "<a href=\"$PHP_SELF{$URL}\">", $output);
+        }
+
         $output      = str_replace("[/full-link]","</a>", $output);
     }
     else
@@ -872,16 +891,19 @@ function template_replacer_news($news_arr, $output)
 }
 
 // Extra Articles Fields
-function more_fields($artid, $output)
+function more_fields($mf, $output)
 {
     global $cfg;
 
     // if use more fields
     if ( !empty($cfg['more_fields']) && is_array($cfg['more_fields']) )
     {
-        $article = bsearch_key($artid, DB_NEWS);
-        foreach ($cfg['more_fields'] as $i => $v)
-            $output = str_replace('{'.$i.'}', hesc($article[$i]), $output );
+        $artmore = explode(';', $mf);
+        foreach ($artmore as $v)
+        {
+            list ($a, $b) = explode('=', $v, 2);
+            $output = str_replace('{'.$a.'}', hesc($b), $output );
+        }
     }
 
     return $output;
@@ -1005,8 +1027,8 @@ function pagination($count, $per = 25, $current = 0, $spread = 5)
 function build_uri($left, $right)
 {
     $URI = array();
-    foreach ((array)explode(',', $left) as $i => $v) $URI[] = urlencode($v).'='.urlencode($right[$i]);
-    return '?'.implode('&', $URI);
+    foreach ((array)explode(',', $left) as $i => $v) if (!empty($right[$i])) $URI[] = urlencode($v).'='.urlencode($right[$i]);
+    return '?'.implode('&amp;', $URI);
 }
 
 
@@ -1393,19 +1415,6 @@ function formatsize($file_size)
     elseif($file_size >= 1024)      $file_size = round($file_size / 1024 * 100) / 100 . " Kb";
     else                            $file_size = $file_size . " B";
     return $file_size;
-}
-
-// Check login information
-function check_login($username, $password)
-{
-    global $member_db;
-    if ( $member_db = bsearch_key($username, DB_USERS) )
-    {
-        $result = 0;
-        foreach ($password as $ks => $n) if ($n == $member_db[UDB_PASS]) $result = 1 + $ks;
-        return $result;
-    }
-    else return false;
 }
 
 // Format the Query_String for CuteNews purpuses index.php?
@@ -1898,10 +1907,9 @@ function check_avatar($editavatar)
 }
 
 // duck flying
-function bd_config($str)
-{
-    return base64_decode($str);
-}
+function bd_config($str) { return base64_decode($str); }
+function spack($s)   { return str_replace(array('{','|',';','=',"\n"), array("{I}","{kv}","{eq}","{eol}"), $s); }
+function sunpack($s) { return str_replace(array("{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $s); }
 
 // ------------- CSRF value -------------
 function CSRFMake() /* Make CSRF in Cookies */

@@ -179,29 +179,22 @@
             foreach ($optimas as $archive => $garbare)
             {
                 // for archives slower than active news
-                if ($archive)
-                {
-                    $all_news = file(SERVDIR."/cdata/archives/$archive.news.arch");
-                    foreach ($all_news as $single_line)
-                    {
-                        $item_arr = explode("|", $single_line);
-                        $local_id = $item_arr[0];
+                if  ($archive)
+                     $all_news = file(SERVDIR."/cdata/archives/$archive.news.arch");
+                else $all_news = file(SERVDIR."/cdata/news.txt");
 
-                        if ( in_array($local_id, $garbare) )
-                        {
-                            echo"<br /><b><a href=\"$PHP_SELF?misc=search&subaction=showfull&id=$local_id&archive=$archive&cnshow=news&ucat=$item_arr[6]&start_from=&$user_query\">$item_arr[2]</a></b> (". date("d F, Y", $item_arr[0]) .")";
-                        }
+                foreach ($all_news as $single_line)
+                {
+                    $item_arr = explode("|", $single_line);
+                    $local_id = $item_arr[0];
+
+                    if ( in_array($local_id, $garbare) )
+                    {
+                        if  ($archive)
+                             echo "<br/><b><a href=\"$PHP_SELF?misc=search&subaction=showfull&id=$local_id&archive=$archive&cnshow=news&ucat=$item_arr[6]&start_from=&$user_query\">$item_arr[2]</a></b> (". date("d F, Y", $item_arr[0]) .")";
+                        else echo "<br/><b><a href=\"$PHP_SELF?misc=search&subaction=showfull&id=$item_arr[0]&cnshow=news&ucat=$item_arr[6]&start_from=&$user_query\">$item_arr[2]</a></b> (". date("d F, Y", $item_arr[0]) .")";
                     }
                 }
-                else
-                {
-                    $ids = bsearch_key($garbare, DB_NEWS);
-                    foreach ($ids as $doc)
-                    {
-                        echo "<br /><b><a href=\"$PHP_SELF?misc=search&subaction=showfull&id=$doc[0]&cnshow=news&ucat=$doc[6]&start_from=&$user_query\">$doc[2]</a></b> (". date("d F, Y", $doc[0]) .")";
-                    }
-                }
-
             }
         }
         else echo "<p>".lang('There are no news matching your search criteria')."</p>";

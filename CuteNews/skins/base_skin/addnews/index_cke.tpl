@@ -5,8 +5,9 @@
 
     <input type=hidden name=mod value=addnews>
     <input type=hidden name=action value=doaddnews>
+    <input type=hidden name="csrf_code" value="{$CSRF}" />
 
-    <table border=0 cellpading=0 cellspacing=0 width="654" >
+    <table border=0 cellpadding=0 cellspacing=0 width="654" >
 
     <tr>
         <td width="75">Title</td>
@@ -53,6 +54,7 @@
         </td>
     </tr>
 
+    <tr><td colspan="3">&nbsp;</td> </tr>
     <tr id='full-story' style='display:none;z-index:1;'>
 
         <td width="75" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
@@ -64,7 +66,7 @@
     <tr>
         <td>&nbsp;</td>
         <td style="padding: 4px;">
-             <table border=0 cellspacing=0 cellpadding=0 width="546">
+             <table border=0 cellspacing=0 cellpadding=0 width="100%">
              <tr>
                <td> <input type=submit style='font-weight:bold' title="Post the New Article" value="     Add News     " accesskey="s"> </td>
                <td align=right>

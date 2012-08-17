@@ -5,6 +5,7 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+
 if ($action == "mass_delete")
 {
     if (!$selected_news)
@@ -12,7 +13,7 @@ if ($action == "mass_delete")
 
     $have_perm = 0;
     if     (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR)) $have_perm = 1;
-    elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[1] == $member_db[UDB_NAME]) $have_perm = 1;
+    elseif ($member_db[UDB_ACL]  == ACL_LEVEL_JOURNALIST and $item_db[1] == $member_db[UDB_NAME]) $have_perm = 1;
 
     if(!$have_perm)
     {
@@ -23,7 +24,7 @@ if ($action == "mass_delete")
     // if category is nice
     if(strstr($item_db[6], ','))
     {
-        $all_these_cats = explode(',',$item_db[6]);
+        $all_these_cats = explode(',', $item_db[6]);
         foreach($all_these_cats as $all_this_cat)
         {
             if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($all_this_cat, $allowed_cats) )
@@ -43,16 +44,18 @@ if ($action == "mass_delete")
         }
     }
 
+    $CSRF = CSRFMake();
     echoheader("options", "Delete News");
 
     echo "<form method=post action=\"$PHP_SELF\">
-    <table border=0 cellpading=0 cellspacing=0 width=100% height=100%>
+    <table border=0 cellpadding=0 cellspacing=0 width=100% height=100%>
     <tr><td>".lang('Are you sure you want to delete all selected news')." (<b>".count($selected_news)."</b>)?<br><br>
     <input type=button value=\" No \" onclick=\"javascript:document.location='$PHP_SELF?mod=editnews&action=list&source=$source'\"> &nbsp; <input type=submit value=\"   ".lang('Yes')."   \">
     <input type=hidden name=action value=\"do_mass_delete\">
     <input type=hidden name=mod value=\"massactions\">
-    <input type=hidden name=source value=\"$source\">";
-    foreach($selected_news as $newsid)
+    <input type=hidden name=source value=\"$source\">
+    <input type=hidden name=csrf_code value=\"$CSRF\">";
+    foreach ($selected_news as $newsid)
     {
         echo "<input type=hidden name=selected_news[] value=\"$newsid\">\n";
     }
@@ -66,16 +69,14 @@ if ($action == "mass_delete")
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 elseif($action == "do_mass_delete")
 {
+    CSRFCheck();
     if(!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles to be deleted"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
-    $Q_SOURCE = false;
-    
     if ($source == "")
     {
         $news_file = "cdata/news.txt";
         $comm_file = "cdata/comments.txt";
-        $Q_SOURCE  = DB_NEWS;
     }
     elseif($source == "postponed")
     {
@@ -138,23 +139,6 @@ elseif($action == "do_mass_delete")
     }
     fclose($new_db);
 
-    // also, delete from idx table
-    if ($Q_SOURCE)
-    {
-        $unset = bsearch_key( array('_artlist', '_total'), $Q_SOURCE);
-        foreach ($selected_news as $id)
-        {
-            foreach ($unset[0] as $i => $v)
-                if ($v == $id)
-                {
-                    $unset[1]--;
-                    delete_key($id, $Q_SOURCE);
-                    unset($unset[0][$i]);
-                }
-        }
-        edit_key( array('_artlist' => $unset[0], '_total' => $unset[1]), false, $Q_SOURCE);
-    }
-
     if ( count($selected_news) == $deleted_articles)
          msg("info",  lang("Deleted News"), str_replace('%1', $deleted_articles, lang("All articles that you selected (<b>%1</b>) were deleted")), "$PHP_SELF?mod=editnews&action=list&source=$source");
     else msg("error", lang("Deleted News (some errors occured)"), str_replace(array('%1','%2'), array($deleted_articles, count($selected_news)), lang("%1 of %2 articles that you selected were deleted")), "$PHP_SELF?mod=editnews&action=list&source=$source");
@@ -165,6 +149,8 @@ elseif($action == "do_mass_delete")
 
 elseif($action == "mass_approve")
 {
+    CSRFCheck();
+
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $member_db[UDB_ACL] != ACL_LEVEL_EDITOR)
         msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
@@ -235,9 +221,10 @@ elseif ($action == "mass_move_to_cat")
         }
     }
 
+    $CSRF = CSRFMake();
     echoheader("options", lang("Move Articles to Category"));
 
-    echo "<form action=\"$PHP_SELF\" method=post><table border=0 cellpading=0 cellspacing=0 width=100% height=100%><tr><td >Move selected articles (<b>".count($selected_news)."</b>) to category:";
+    echo "<form action=\"$PHP_SELF\" method=post><table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr><td >Move selected articles (<b>".count($selected_news)."</b>) to category:";
     echo'<table width="80%" border="0" cellspacing="0" cellpadding="0" class="panel">';
 
     foreach($cat_lines as $single_line)
@@ -260,6 +247,7 @@ elseif ($action == "mass_move_to_cat")
     echo "<br><input type=hidden name=action value=\"do_mass_move_to_cat\">
               <input type=hidden name=source value=\"$source\">
               <input type=hidden name=mod value=\"massactions\">&nbsp;
+              <input type=hidden name=csrf_code value=\"$CSRF\">
               <input type=submit value=\"".lang('Move')."\"></td></tr></table></form>";
 
     echofooter();
@@ -270,6 +258,7 @@ elseif ($action == "mass_move_to_cat")
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 elseif($action == "do_mass_move_to_cat")
 {
+    CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
         msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "$PHP_SELF?mod=editnews&action=list&source=$source");
@@ -367,13 +356,15 @@ elseif($action == "mass_archive")
     if ($source != "")
         msg("error", LANG_ERROR_TITLE, lang("These news are already archived or are in postpone queue"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
+    $CSRF = CSRFMake();
     echoheader("options", lang("Send News To Archive"));
 
     echo "<form method=post action=\"$PHP_SELF\">
-    <table border=0 cellpading=0 cellspacing=0 width=100% height=100%><tr><td >".
+    <table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr><td >".
     lang('Are you sure you want to send all selected news to the archive')." (<b>".count($selected_news)."</b>)?<br><br>
     <input type=button value=\" No \" onclick=\"javascript:document.location='$PHP_SELF?mod=editnews&action=list&source=$source'\"> &nbsp; <input type=submit value=\"   ".lang('Yes')."   \">
     <input type=hidden name=action value=\"do_mass_archive\">
+    <input type=hidden name=csrf_code value=\"$CSRF\">
     <input type=hidden name=mod value=\"massactions\">";
     
     foreach ($selected_news as $newsid)
@@ -390,6 +381,8 @@ elseif($action == "mass_archive")
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 elseif($action == "do_mass_archive")
 {
+    CSRFCheck();
+
     if( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
         msg("error", lang("Access Denied"), lang("You can not perfor this action if you are not admin"));
 

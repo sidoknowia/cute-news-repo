@@ -41,7 +41,6 @@ select, textarea, input
     border: #808080 1px solid;
     color: #000000;
     font-size: 11px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
     background-color: #ffffff;
 }
 
@@ -110,15 +109,10 @@ a.nav:hover
     padding: 4px;
 }
 
-div.center
-{
-    text-align: center;
-}
-
+div.center { text-align: center; }
 body, td, tr
 {
     text-decoration: none;
-    font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt;
     cursor: default;
 }
 
@@ -130,14 +124,16 @@ body, td, tr
     margin: 0 0 6px 0;
 }
 
-td.top_header
-{
-    padding: 8px;
+td.top_header { padding: 8px; }
 
+*, td, th
+{
+    font-size: 11px;
+    font-family: Helvetica, Arial, Verdana, sans-serif;
 }
 -->
 </style>
-        <title>{title}</title>
+<title>{title}</title>
 </head>
 
 <body bgcolor=white>
@@ -166,7 +162,7 @@ td.top_header
 </center>
 <!--SELF-->
 
-<table border=0 cellpading=0 cellspacing=0 width="100%" height="100%" >
+<table border=0 cellpadding=0 cellspacing=0 width="100%" height="100%" >
 <tr>
     <td width="10%"> <p align="center"><br /><img border="0" src="skins/images/{image-name}.gif" > </td>
     <td width="87%" height="20%"> {breadcrumbs} <div class=header>{header-text}</div> </td>

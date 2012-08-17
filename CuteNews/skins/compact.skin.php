@@ -70,7 +70,7 @@ background-color:#E0EDF3 !important;
 <tr>
 <td width="802" height="42">
 </center>
-<table border=0 cellpading=0 cellspacing=10 width="100%" height="100%" >
+<table border=0 cellpadding=0 cellspacing=10 width="100%" height="100%" >
 <tr>
 <td width="98%" height="46%">
 <!--MAIN area-->

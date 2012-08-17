@@ -5,6 +5,7 @@
     <input type="hidden" name="mod" value="tools">
     <input type="hidden" name="action" value="xfields">
     <input type="hidden" name="do" value="submit">
+    <input type="hidden" name="csrf_code" value="{$CSRF}" />
 
     <table width="650" cellspacing="0" cellpadding="4">
         <tr bgcolor="#FFFFE0"><td width="48"  align="center">Remove</td> <td width="48"  align="center">Optional</td> <td>{name}</td> <td>Visible Name</td></tr>
