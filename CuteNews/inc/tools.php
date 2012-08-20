@@ -556,7 +556,7 @@ elseif ($action == 'do_update' )
             $name = trim($name);
             $proc++;
 
-            if ($name == '.') continue;
+            if ($name == '.' || $name == false) continue;
 
             $r = fopen("http://cutephp.com/latest/?cp=".urlencode($name), 'r');
             ob_start(); fpassthru($r); $data = ob_get_clean();

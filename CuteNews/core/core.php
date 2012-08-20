@@ -777,7 +777,8 @@ function template_replacer_news($news_arr, $output)
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
            $config_auto_wrap, $config_full_popup, $config_full_popup_string, $rss_news_include_url, $my_names,
-           $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $PHP_SELF, $template, $user_query;
+           $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $PHP_SELF, $template, $user_query,
+           $_SESS;
 
     // Short Story not exists
     if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) ) $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
@@ -872,6 +873,15 @@ function template_replacer_news($news_arr, $output)
     else
     {
         $output = str_replace("{date}", date($config_timestamp_active, $news_arr[NEW_ID]), $output);
+    }
+
+    // Admin edit for news
+    if (!empty($_SESS['user']) && in_array($_SESS['data'][UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
+    {
+        $source = 0;
+        $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
+        $output = str_replace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
+        $output = str_replace('[/edit]', '</a>', $output);
     }
 
     // Star Rating

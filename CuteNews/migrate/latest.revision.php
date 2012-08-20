@@ -1,7 +1,5 @@
 <?php
 
-include ('../core/init.php');
-
 // Updater to latest revision
 function remove_if_exists($path)
 {

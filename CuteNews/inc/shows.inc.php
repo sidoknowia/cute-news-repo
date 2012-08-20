@@ -193,7 +193,11 @@ do
             // Check stored password in cookies
             if ($CNpass and $user_member[UDB_PASS] == $CNpass) $password = true;
 
-            if (empty($password))
+            if (!empty($_SESS['user']) && $_SESS['user'] == $name)
+            {
+                $is_member = true;
+            }
+            elseif (empty($password))
             {
                 $comments   = preg_replace( array("'\"'", "'\''", "''"), array("&quot;", "&#039;", ""), $comments);
                 $name       = replace_comment("add", preg_replace("/\n/", "", $name));
@@ -245,6 +249,9 @@ do
             $name      = iconv($hac, 'utf-8', $name);
             $comments  = iconv($hac, 'utf-8', $comments);
         }
+
+        // User is authorized
+        if ( !empty($_SESS['user']) && $_SESS['data'][UDB_ACL] = ACL_LEVEL_ADMIN) $captcha_enabled = false;
 
         // Captcha test (if not disabled force)
         if ($captcha != $_SESS['CSW'] && $config_use_captcha && $captcha_enabled)
@@ -637,11 +644,19 @@ do
 
         if (empty($no_prev) or empty($no_next)) echo $prev_next_msg;
 
+        $username = $usermail = false;
         $template_form = str_replace("{config_http_script_dir}", $config_http_script_dir, $template_form);
         
         //----------------------------------
         // Check if the remember script exists
         //----------------------------------
+        if ( !empty($_SESS['user']) )
+        {
+            $captcha_enabled = false;
+            $template_form = str_replace('{username}', $_SESS['data'][UDB_NAME], $template_form);
+            $template_form = str_replace('{usermail}', $_SESS['data'][UDB_EMAIL], $template_form);
+        }
+
         $gduse         = function_exists('imagecreatetruecolor')? 0 : 1;
         $captcha_form  = $config_use_captcha && $captcha_enabled ? ( proc_tpl('captcha_comments', array('cutepath' => $config_http_script_dir ), array('TEXTCAPTCHA' => $gduse) ) ) : false;
 
@@ -785,7 +800,10 @@ do
                 closedir($handle);
 
                 // get max archive id to show
-                $in_use = max($archives_arr);
+                if (count($archives_arr) > 0)
+                     $in_use = max($archives_arr);
+                else $in_use = false;
+
                 if ( $in_use )
                 {
                     $archive                = $in_use;

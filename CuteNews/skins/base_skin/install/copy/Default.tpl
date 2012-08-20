@@ -6,7 +6,7 @@ $template_active = <<<HTML
 
 <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{short-story}</div>
 
-<div style="float: right;">[full-link]Read more[/full-link] | [com-link]{comments-num} Comments[/com-link]</div>
+<div style="float: right;">[edit]Edit[/edit] [full-link]Read more[/full-link] | [com-link]{comments-num} Comments[/com-link]</div>
 
 <div><em>Posted on {date} by {author}</em></div>
 </div>
@@ -23,7 +23,7 @@ $template_full = <<<HTML
 
 <div style="float: right;">{comments-num} Comments</div>
 
-<div><em>Posted on {date} by {author}</em></div>
+<div>[edit]Edit | [/edit]<em>Posted on {date} by {author}</em></div>
 </div>
 HTML;
 
