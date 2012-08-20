@@ -88,6 +88,11 @@ if ($action == "options" or $action == '')
                'url'                => "$PHP_SELF?mod=tools&action=xfields",
                'access'             => "1",
         ),
+        array(
+               'name'               => lang('Update Cutenews', 'options'),
+               'url'                => "$PHP_SELF?mod=tools&action=update",
+               'access'             => "1",
+        )
     );
 
     hook('more_options');
@@ -535,21 +540,6 @@ elseif($action == "templates")
     <textarea rows="3" cols="98" name="edit_comments_prev_next">'.$template_comments_prev_next.'</textarea>
 </tr> <!-- End previous & next COMMENTS -->
 
-
-<tr> <!-- Customize search form -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'custom-search\',\'custom-search2\')" >Customize Search</a></b>
-    </tr>
-    <tr id=\'custom-search\' '.$tr_hidden.'>
-        
-    </tr>
-
-    <tr id=\'custom-search2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="20" cols="98" name="edit_search">'.$template_search.'</textarea>
-    </tr> <!-- End customize search form -->
-
-
 <tr>
     <td height="8"  colspan="2">
     <input type=hidden name=mod value=options>
@@ -586,7 +576,6 @@ elseif($action == "dosavetemplates")
     fwrite($handle, "\$template_form = <<<HTML\n$edit_form\nHTML;\n\n\n");
     fwrite($handle, "\$template_prev_next = <<<HTML\n$edit_prev_next\nHTML;\n");
     fwrite($handle, "\$template_comments_prev_next = <<<HTML\n$edit_comments_prev_next\nHTML;\n");
-    fwrite($handle, "\$template_search = <<<HTML\n$edit_search\nHTML;\n");
     fwrite($handle, "?>\n");
 
    msg("info", lang("Changes Saved"), "The changes to template <b>$do_template</b> were successfully saved.","$PHP_SELF?mod=options&action=templates&do_template=$do_template");

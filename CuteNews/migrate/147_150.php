@@ -128,23 +128,6 @@
         }
         echo ' done</li>';
 
-        // copy search template
-        echo '<li>Tuning default template... ';
-        include (SERVDIR.'/skins/base_skin/install/copy/Default.tpl');
-
-        $open = $ft = fopen(SERVDIR.'/data/Default.tpl', 'r');
-        ob_start(); fpassthru($open); $content = ob_get_clean();
-        fclose($open);
-
-        // don't duplicate
-        if ( strpos($content, '$template_search') == 0 )
-        {
-            $ft = fopen(SERVDIR.'/cdata/Default.tpl', 'w');
-            fwrite($ft, str_replace('?>', "\$template_search = <<<HTML\n$template_search\nHTML;\n?>", $content ));
-            fclose($ft);
-        }
-        echo ' done</li>';
-
         // -----------------------------------------------------------------------------------------------
         echo '<li>Make folders and files... ';
         $copy = array('Default', 'Headlines', 'rss');
@@ -152,7 +135,7 @@
         $files = array
         (
             'auto_archive.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
-            'db.ban.php', 'db.fulltext.php', 'db.hooks.php', 'db.users.php', 'flood.db.php',
+            'db.ban.php', 'db.hooks.php', 'db.users.php', 'flood.db.php',
             'hooks.php', 'news.txt', 'postponed_news.txt', 'replaces.php',  'rss_config.php',
             'unapproved_news.txt',
         );

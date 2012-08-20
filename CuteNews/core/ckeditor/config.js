@@ -1,9 +1,10 @@
-﻿CKEDITOR.editorConfig = function( config )
+CKEDITOR.editorConfig = function( config )
 {
     // Define changes to default configuration here. For example:
     config.skin = 'v2';
     config.resize_enabled = false;
     config.language = 'en';
+    config.defaultLanguage = 'en';
 
     config.enterMode = CKEDITOR.ENTER_P;
     config.forceEnterMode = false;

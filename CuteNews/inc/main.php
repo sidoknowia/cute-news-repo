@@ -194,7 +194,6 @@ $writables  = array('/cdata/comments.txt',
                     '/cdata/log',
                     '/cdata/config.php',
                     '/cdata/db.ban.php',
-                    '/cdata/db.fulltext.php',
                     '/cdata/db.users.php',
                     '/cdata/replaces.php',
                     '/cdata/flood.db.php',
@@ -207,7 +206,7 @@ $writables  = array('/cdata/comments.txt',
 );
 
 $filesize   = array(
-                    '/cdata/db.fulltext.php' => 'Fulltext size',
+                    '/cdata/news.txt' => 'News size',
                     '/cdata/db.users.php' => 'Users size',
                     '/cdata/cache/error_dump.log' => 'Error dump size',
 );

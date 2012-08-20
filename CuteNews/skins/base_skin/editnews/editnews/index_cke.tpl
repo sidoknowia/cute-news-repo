@@ -118,6 +118,7 @@ function confirmDelete(url)
             width: 655,
             height: 350,
             customConfig: '',
+            language: 'en',
             entities_latin: false,
             entities_greek: false,
             toolbar: [

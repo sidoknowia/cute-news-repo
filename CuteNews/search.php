@@ -49,28 +49,30 @@
         for ($i=1; $i<32; $i++) $day_f .= "<option ".(($from_date_day == $i)?'selected':'')." value=$i>$i</option>";
         for ($i=1; $i<13; $i++) { $timestamp = mktime(0,0,0,intval($i),1,2003); $month_f .= "<option ".(($from_date_month == $i)?'selected':'')." value=$i>".date("M", $timestamp)."</option>"; }
         for ($i=2003; $i<(date('Y')+3); $i++) $year_f .= "<option ".(($from_date_year == $i)?'selected':'')." value=$i>$i</option>";
-
+echo $day_f;
         for ($i=1; $i<32; $i++) $day_t .= "<option ".(($to_date_day == $i)?'selected':'')." value=$i>$i</option>";
         for ($i=1; $i<13; $i++) { $timestamp = mktime(0,0,0,intval($i),1,2003); $month_t .= "<option ".(($to_date_month == $i)?'selected':'')." value=$i>".date("M", $timestamp)."</option>"; }
         for ($i=2003; $i<(date('Y')+3); $i++) $year_t .= "<option ".(($to_date_year == $i)?'selected':'')." value=$i>$i</option>";
 
         // libastral.so?
         $selected_search_arch = $search_in_archives ? "checked='checked'" : false;
+        $template_search = read_tpl('search');
         echo str_replace
         (
-            array('{PHP_SELF}', '{user_post_query}', '{story}', '{title}', '{user}', '{selected_search_arch}', '{day_f}', '{month_f}', '{year_f}', '{day_t}', '{month_t}', '{year_t}'),
+            array('{PHP_SELF}', '{user_post_query}', '{story}', '{title}', '{user}', '{selected_search_arch}',
+                  '{day_f}', '{month_f}', '{year_f}', '{day_t}', '{month_t}', '{year_t}'),
             array( $PHP_SELF,
                    $user_post_query,
                    htmlspecialchars($story),
                    htmlspecialchars($title),
                    htmlspecialchars($user),
-                   htmlspecialchars($selected_search_arch),
-                   htmlspecialchars($day_f),
-                   htmlspecialchars($month_f),
-                   htmlspecialchars($year_f),
-                   htmlspecialchars($day_t),
-                   htmlspecialchars($month_t),
-                   htmlspecialchars($year_t)),
+                   $selected_search_arch,
+                   $day_f,
+                   $month_f,
+                   $year_f,
+                   $day_t,
+                   $month_t,
+                   $year_t),
 
             $template_search
         );
