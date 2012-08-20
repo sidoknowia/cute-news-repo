@@ -34,6 +34,7 @@
         <input type=hidden name="csrf_code" value="{$CSRF}" />
         <table border=0 cellpadding=0 cellspacing=0 width=100%>
             <tr>
+                <td width="32" align="center">Ord</td>
                 <td width="347">Title</td>
                 <td width="65">Comments</td>
                 <td width="65">Category</td>

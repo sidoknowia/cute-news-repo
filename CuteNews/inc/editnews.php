@@ -123,7 +123,12 @@ if ($action == "list")
             }
             else $my_cat = $cat[ $item_db[NEW_CAT] ];
 
-            $entries .= $my_cat."&nbsp;<td height=18 bgcolor=$bg>".$itemdate."<td height=18 bgcolor=$bg>".$item_db[1]."<td align=center bgcolor=$bg><input name=\"selected_news[]\" value=\"{$item_db[0]}\" style=\"border:0; background-color:$bg\" type='checkbox'></tr>";
+            $entries .= $my_cat."&nbsp;
+                        <td height=18 bgcolor=$bg>".$itemdate."</td>
+                        <td height=18 bgcolor=$bg>".$item_db[1]."</td>
+                        <td align=center bgcolor=$bg><input name=\"selected_news[]\" value=\"{$item_db[0]}\" style=\"border:0; background-color:$bg\" type='checkbox'></td>
+                        </tr>";
+
             $entries_showed++;
 
             if ($i >= $news_per_page + $start_from) break;
@@ -135,7 +140,9 @@ if ($action == "list")
     }
 
     $all_count_news = count($all_db);
-    if ($category != "") $cat_msg = lang("Category").": <b>".$cat[$category]."</b>;";
+    $unapproved_selected = $postponed_selected = false;
+
+    if ($category != "") $cat_msg = lang("Category").": <b>".htmlspecialchars($cat[$category])."</b>;";
 
     if ($source == "postponed")
     {
@@ -188,7 +195,7 @@ if ($action == "list")
             $first_timestamp    = (int)$arch_info[1];
             $last_timestamp     = (int)$arch_info[2];
             $arch_date          = date("d M Y", $first_timestamp) ." - ". date("d M Y",$last_timestamp);
-            $opt_source        .= "<option ".(($source == $src[0]) ? "selected" : "").' value="'.$src[0].'">'.lang('Archive').': '.$arch_date.' ('.$count.')</option>';
+            $opt_source        .= "<option ".(($source == $src[0]) ? "selected" : "").' value="'.htmlspecialchars($src[0]).'">'.lang('Archive').': '.$arch_date.' ('.$count.')</option>';
         }
     }
     closedir($handle);
@@ -199,7 +206,7 @@ if ($action == "list")
     {
         $cat_arr = explode("|", $single_line);
         $ifselected = "";
-        $opt_catlist .= "<option ".(($category == $cat_arr[0])? 'selected' : '').' value="'.$cat_arr[0].'">'.$cat_arr[1].'</option>';
+        $opt_catlist .= "<option ".(($category == $cat_arr[0])? 'selected' : '').' value="'.htmlspecialchars($cat_arr[0]).'">'.htmlspecialchars($cat_arr[1]).'</option>';
     }
 
     // If user is not journalist, show author
@@ -213,22 +220,22 @@ if ($action == "list")
             $user_arr = explode("|", $single_line, 2);
             $user_arr = unserialize($user_arr[1]);
             if ($user_arr[UDB_ACL] != ACL_LEVEL_COMMENTER)
-                $opt_author .= "<option ".(($author == $user_arr[UDB_NAME])? 'selected':'').' value="'.$user_arr[UDB_NAME].'">'.$user_arr[UDB_NAME].'</option>';
+                $opt_author .= "<option ".(($author == $user_arr[UDB_NAME])? 'selected':'').' value="'.htmlspecialchars($user_arr[UDB_NAME]).'">'.htmlspecialchars($user_arr[UDB_NAME]).'</option>';
         }
     }
 
     // SHOW OPTION BAR -----------------
     echo proc_tpl('editnews/list/optbar',
                   array('all_count_news'        => $all_count_news,
-                        'entries_showed'        => htmlspecialchars($entries_showed),
-                        'cat_msg'               => htmlspecialchars($cat_msg),
-                        'source_msg'            => htmlspecialchars($source_msg),
-                        'postponed_selected'    => htmlspecialchars($postponed_selected),
-                        'unapproved_selected'   => htmlspecialchars($unapproved_selected),
-                        'opt_source'            => htmlspecialchars($opt_source),
-                        'opt_catlist'           => htmlspecialchars($opt_catlist),
-                        'opt_author'            => htmlspecialchars($opt_author),
-                        'news_per_page'         => htmlspecialchars($news_per_page),
+                        'entries_showed'        => intval($entries_showed),
+                        'cat_msg'               => $cat_msg,
+                        'source_msg'            => $source_msg,
+                        'postponed_selected'    => $postponed_selected,
+                        'unapproved_selected'   => $unapproved_selected,
+                        'opt_source'            => $opt_source,
+                        'opt_catlist'           => $opt_catlist,
+                        'opt_author'            => $opt_author,
+                        'news_per_page'         => intval($news_per_page),
                         'CSRF'                  => $CSRF
                   ),
                   array('OPT_AUTHOR' => $opt_author)
@@ -250,7 +257,10 @@ if ($action == "list")
         $how_next = count($all_db) - $i;
 
         if ($how_next > $news_per_page) $how_next = $news_per_page;
-        $npp_nav .= '<a href="'.$PHP_SELF.'?mod=editnews&action=list&start_from='.$i.'&category='.$category.'&author='.$author.'&source='.$source.'&news_per_page='.$news_per_page.'">'.lang('Next').' '.$how_next.' &gt;&gt;</a>';
+        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page',
+                   array('editnews','list',$i,$category,$author,$source,$news_per_page));
+
+        $npp_nav .= '<a href="'.$PHP_SELF.$URL.'">'.lang('Next').' '.$how_next.' &gt;&gt;</a>';
     }
 
     // choose action
@@ -675,4 +685,63 @@ elseif ($action == "doeditnews")
     }
 
     else msg("error", LANG_ERROR_TITLE, lang("The news item can not be found or there is an error with the news database file."));
+}
+elseif ($action == 'move')
+{
+    $id = intval($id);
+
+    if (preg_match('~^[0-9]*$~', trim($source))) $src = "archives/$source.news.arch";
+    elseif ($source) $src = $source.'_news.txt';
+    else $src = 'news.txt';
+
+    // Only for present file
+    if (!file_exists(SERVDIR . '/cdata/' . $src)) $src = 'news.txt';
+    $dbpath = SERVDIR . '/cdata/' . $src;
+    $all_db = "\n" . join('', file($dbpath));
+
+    $ps = strpos( $all_db, "\n$id|" );
+    if ($ps === false) msg('error', LANG_ERROR_TITLE, lang('ID not found'));
+
+    $ps++;
+    $pe = strpos( $all_db, "\n", $ps );
+
+    if ($direct == 'up')
+    {
+        $i = $ps-2;
+        for ($i = $ps-2; $i>0; $i--) if ($all_db[$i] == "\n") break;
+
+        $item0 = trim( substr($all_db, $i+1, $ps-$i-2) );
+        $item1 = trim( substr($all_db, $ps, $pe-$ps) );
+
+        $start = $i+1;
+        $end   = $pe;
+
+    }
+    else
+    {
+        $i = strpos($all_db, "\n", $pe+1);
+        if ($i === false) $i = strlen($all_db);
+
+        $item0 = trim( substr($all_db, $ps, $pe-$ps-1) );
+        $item1 = trim( substr($all_db, $pe+1, $i-$pe-1) );
+
+        $start = $ps;
+        $end   = $i;
+    }
+
+    // Swap lines
+    if (trim($item0) && trim($item1))
+    {
+        $w = fopen($dbpath, 'w');
+        fwrite($w, substr($all_db, 1, $start));
+        fwrite($w, "$item1\n$item0");
+        fwrite($w, substr($all_db, $end));
+
+    }
+
+    $tourl = PHP_SELF.build_uri('mod,action,source', array('editnews','list',$source), false);
+    header('Location: '.$tourl);
+    die();
+
+
 }

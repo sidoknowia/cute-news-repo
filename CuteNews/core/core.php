@@ -1024,11 +1024,11 @@ function pagination($count, $per = 25, $current = 0, $spread = 5)
 }
 
 // make full URI (left & right parts)
-function build_uri($left, $right)
+function build_uri($left, $right, $html = 1)
 {
     $URI = array();
     foreach ((array)explode(',', $left) as $i => $v) if (!empty($right[$i])) $URI[] = urlencode($v).'='.urlencode($right[$i]);
-    return '?'.implode('&amp;', $URI);
+    return '?'.implode(($html?'&amp;':'&'), $URI);
 }
 
 
