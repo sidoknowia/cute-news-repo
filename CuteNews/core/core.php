@@ -379,11 +379,11 @@ function over_tpl($tpl, $over = array())
 }
 
 // Return say value of lang if present
-function lang($say)
+function lang($say, $mod = null)
 {
     global $lang;
-    $say = hook('lang_say_before', $say);
-    return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)]);
+    $say = hook('lang_say_before', $say, $mod);
+    return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)], $mod);
 }
 
 function utf8_strtolower($utf8)
