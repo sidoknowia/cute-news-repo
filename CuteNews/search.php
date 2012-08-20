@@ -49,7 +49,7 @@
         for ($i=1; $i<32; $i++) $day_f .= "<option ".(($from_date_day == $i)?'selected':'')." value=$i>$i</option>";
         for ($i=1; $i<13; $i++) { $timestamp = mktime(0,0,0,intval($i),1,2003); $month_f .= "<option ".(($from_date_month == $i)?'selected':'')." value=$i>".date("M", $timestamp)."</option>"; }
         for ($i=2003; $i<(date('Y')+3); $i++) $year_f .= "<option ".(($from_date_year == $i)?'selected':'')." value=$i>$i</option>";
-echo $day_f;
+
         for ($i=1; $i<32; $i++) $day_t .= "<option ".(($to_date_day == $i)?'selected':'')." value=$i>$i</option>";
         for ($i=1; $i<13; $i++) { $timestamp = mktime(0,0,0,intval($i),1,2003); $month_t .= "<option ".(($to_date_month == $i)?'selected':'')." value=$i>".date("M", $timestamp)."</option>"; }
         for ($i=2003; $i<(date('Y')+3); $i++) $year_t .= "<option ".(($to_date_year == $i)?'selected':'')." value=$i>$i</option>";
