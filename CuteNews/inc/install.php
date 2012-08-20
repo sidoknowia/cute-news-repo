@@ -4,13 +4,12 @@
 
     if ($action == 'make')
     {
-
         $copy = array('Default', 'Headlines', 'rss');
         $dirs = array('archives', 'backup', 'cache', 'log', 'upimages', 'plugins', 'template');
         $files = array
         (
             'auto_archive.db.php', 'idnews.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
-            'db.ban.php', 'db.fulltext.php', 'db.hooks.php', 'db.users.php', 'flood.db.php',
+            'db.ban.php', 'db.fulltext.php', 'db.users.php', 'flood.db.php',
             'news.txt', 'postponed_news.txt', 'replaces.php', 'rss_config.php',
             'unapproved_news.txt',
         );

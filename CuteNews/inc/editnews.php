@@ -28,7 +28,7 @@ $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 if ($action == "list")
 {
     $CSRF = CSRFMake();
-    echoheader("editnews", "Edit News");
+    echoheader("editnews", lang("Edit News"));
 
     // How Many News to show on one page
     if ($news_per_page == "") $news_per_page = 21;
@@ -357,7 +357,7 @@ elseif ($action == "editnews")
     $item_db[4] = replace_news("admin", $item_db[4], $use_wysiwyg);
 
     $CSRF = CSRFMake();
-    echoheader("editnews", "Edit News");
+    echoheader("editnews", lang("Edit News"));
 
     // make category lines
     $lines_html = false;
