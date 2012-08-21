@@ -1,5 +1,5 @@
 {ALREADYLAST}
-<h3>You revision is latest ({$rev})</h3>
+<h3>Your version is latest [{$rev}]</h3>
 
 {/ALREADYLAST}
 

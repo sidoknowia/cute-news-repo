@@ -90,14 +90,52 @@ if ( empty($_SESS['user']))
         {
             $_SESS['user'] = false;
             $result = "<span style='color:red;'>".lang('Wrong username or password')."</span>";
-            // $result .= add_to_ban($ip);
+            $result .= add_to_ban($ip);
 
             add_to_log($username, lang('Wrong username/password'));
             $is_loged_in = false;
         }
     }
 }
-else $is_loged_in = true;
+else
+{
+    if ($config_push_users == 'yes')
+    {
+        // If user has been deleted - disable session
+        $detect = join('', file(SERVDIR.'/cdata/actions.txt'));
+        if (strpos($detect, '%REMOVE|'.md5($_SESS['user'])."\n") !== false)
+        {
+            $detect = str_replace('%REMOVE|'.md5($_SESS['user'])."\n", '', $detect);
+            $w = fopen(SERVDIR.'/cdata/actions.txt', 'w');
+            fwrite($w, $detect);
+            fclose($w);
+
+            $_SESS       = array();
+            $is_loged_in = false;
+            $member_db   = false;
+        }
+        else
+        {
+            $member_db = $_SESS['data'];
+            $is_loged_in = true;
+        }
+    }
+    else
+    {
+        // Check existence of user
+        $member_db  = bsearch_key($_SESS['user'], DB_USERS);
+        if ($member_db)
+        {
+            $is_loged_in = true;
+        }
+        else
+        {
+            $_SESS['data'] = false;
+            $_SESS['user'] = false;
+            $is_loged_in = false;
+        }
+    }
+}
 
 /* END Login Authorization using COOKIES */
 send_cookie(true);
@@ -121,8 +159,6 @@ if (empty($is_loged_in))
 }
 elseif ($is_loged_in)
 {
-    $member_db = $_SESS['data'];
-
     // ********************************************************************************
     // Include System Module
     // ********************************************************************************

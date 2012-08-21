@@ -9,7 +9,7 @@
         $files = array
         (
             'auto_archive.db.php', 'idnews.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
-            'db.ban.php', 'db.users.php', 'flood.db.php',
+            'db.ban.php', 'db.users.php', 'flood.db.php', 'actions.txt',
             'news.txt', 'postponed_news.txt', 'replaces.php', 'rss_config.php',
             'unapproved_news.txt',
         );
@@ -55,7 +55,7 @@
 
         // Place .htaccess
         $w = fopen(SERVDIR.'/cdata/.htaccess', 'w');
-        fwrite($w, 'Deny From All');
+        fwrite($w, "Order Allow, Deny");
         chmod (SERVDIR.'/cdata/.htaccess', 0644);
         fclose($w);
 

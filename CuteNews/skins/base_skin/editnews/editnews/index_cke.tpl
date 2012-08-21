@@ -68,7 +68,8 @@ function confirmDelete(url)
             <input type=hidden name=id value={$id}>
             <input type=hidden name=action value=doeditnews>
             <input type=hidden name=mod value=editnews>
-            <input type=hidden name=source value={$source}>
+            <input type=hidden name=source value="{$source}">
+            <br/>
             <table border=0 cellspacing=0 cellpadding=2 width=100%>
                 <tr>
                     <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>

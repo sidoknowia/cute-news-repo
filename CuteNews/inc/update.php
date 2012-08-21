@@ -14,7 +14,10 @@ if ($action == 'update' )
 
     if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
     {
-        include (SERVDIR.'/cdata/log/revision.php');
+        if (file_exists(SERVDIR.'/cdata/log/revision.php'))
+             include (SERVDIR.'/cdata/log/revision.php');
+        else $my_current_rev = 0;
+
         $uselast = ($my_current_rev == $rev[1])? 1 : 0;
 
         echoheader('info', lang("Update Status"));
@@ -58,7 +61,7 @@ elseif ($action == 'do_update' )
             $name = trim($name);
             $proc++;
 
-            if ($name == '.' || $name == false) continue;
+            if ($name == '.' || $name == false || $name == 'inc/install.php') continue;
 
             $r = fopen("http://cutephp.com/latest/?cp=".urlencode($name), 'r');
             ob_start(); fpassthru($r); $data = ob_get_clean();
@@ -80,7 +83,7 @@ elseif ($action == 'do_update' )
                 fwrite($w, $data);
                 fclose($w);
 
-                $log .= date('r')." Write file ".$DEST_DIR.'/'.$name."\n";
+                $log .= date('r')." Write file {$name}\n";
             }
             else
             {
@@ -91,7 +94,7 @@ elseif ($action == 'do_update' )
                     if (!is_dir($DEST_DIR.$depth) && !file_exists($DEST_DIR.$depth))
                     {
                         mkdir($DEST_DIR . $depth);
-                        $log .= date('r')." Make dir ".$DEST_DIR.$depth."\n";
+                        $log .= date('r')." Make dir {$depth}\n";
                     }
                 }
             }
@@ -109,5 +112,22 @@ elseif ($action == 'do_update' )
                 <body><script type="text/javascript">parent.document.getElementById("progress").style.width = "'.$percent.'%";</script></body>
                 </html><head></head>');
         die();
+    }
+}
+elseif ($action == 'check')
+{
+    $r = fopen('http://cutephp.com/latest/.export.log', 'r');
+    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
+    if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
+    {
+        $my_current_rev = 0;
+        if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
+             include (SERVDIR.'/cdata/log/revision.php');
+
+        echo '<html><head><style type="text/css">body { font-size: 15px; padding: 0; margin: 0; text-align: center; }</style></head><body></body>';
+        if  ($my_current_rev < $rev[1])
+             echo '<span style="color: red;">'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].'</span>';
+        else echo '<span style="color: green;">'.lang('Your version build is latest').'</span>';
+        echo '</body></html>';
     }
 }

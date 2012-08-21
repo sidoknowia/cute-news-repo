@@ -218,7 +218,7 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
         if (is_writable(SERVDIR.CACHE))
         {
             $log = fopen(SERVDIR.CACHE.'/error_dump.log', 'a');
-            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.trim($out)."\n");
+            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out))."\n");
             fclose($log);
         }
     }
@@ -253,7 +253,7 @@ function die_stat($No, $Reason = false)
         if (is_writable(SERVDIR.CACHE))
         {
             $log = fopen(SERVDIR.CACHE.'/error_dump.log', 'a');
-            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|DIE_STAT: '.$No.'; '.str_replace(array("\n","\r"), " ", $Reason)."\n");
+            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|DIE_STAT: '.$No.'; '.str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $Reason)."\n");
             fclose($log);
         }
     }

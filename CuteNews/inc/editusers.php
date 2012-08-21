@@ -1,7 +1,7 @@
 <?PHP
 
-if( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
-    msg("error", lang("Access Denied"), lang("You don't have permission to edit users"));
+if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
+     msg("error", lang("Access Denied"), lang("You don't have permission to edit users"));
 
 // ********************************************************************************
 // List All Available Users + Show Add User Form
@@ -39,10 +39,11 @@ if ($action == "list")
         echo( date("F, d Y @ H:i a", $user_arr[UDB_ID]) );
 
         echo "</td> <td>&nbsp;</td>
-              <td width=83>&nbsp;&nbsp;".$user_arr[UDB_COUNT]." <td width=122> &nbsp;$user_level</td>
+              <td width=83>&nbsp;&nbsp;".$user_arr[UDB_COUNT]."</td>
+              <td width=122> &nbsp;$user_level</td>
               <td width=80>
-                <a onclick=\"popupedit('".$user_arr[UDB_NAME]."'); return(false)\" href=#>[edit]</a>&nbsp;
-                <a onclick=\"confirmdelete('".$user_arr[UDB_NAME]."'); return(false)\" href=\"$PHP_SELF?mod=editusers&action=dodeleteuser&id=$user_arr[0]\">[delete]</a>
+                  <a onclick=\"popupedit('".$user_arr[UDB_NAME]."'); return(false)\" href=#>[edit]</a>&nbsp;
+                  <a onclick=\"confirmdelete('".$user_arr[UDB_NAME]."'); return(false)\" href=\"$PHP_SELF?mod=editusers&action=dodeleteuser&id=$user_arr[0]\">[delete]</a>
               </td></tr>";
 
     }
@@ -164,6 +165,14 @@ elseif ($action == "dodeleteuser")
     if ( empty($id) ) die_stat(false, lang("This is not a valid user"));
 
     delete_key($id, DB_USERS);
+
+    if ($config_push_users == 'yes')
+    {
+        $a = fopen(SERVDIR.'/cdata/actions.txt', 'a');
+        fwrite($a, "%REMOVE|".md5($id)."\n");
+        fclose($a);
+    }
+
     msg("info", lang("User Deleted"), str_replace('%1', $id, lang("The user <b>%1</b> was successfully deleted")), "$PHP_SELF?mod=editusers&action=list");
 }
 

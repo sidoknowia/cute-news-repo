@@ -1,4 +1,4 @@
-<div style="margin: 0 64px 0 0">
+<div style="clear: both; margin: 0 64px 0 0">
 
     <h2 style="font-family: 'Trebuchet MS', serif; font-size: 20px; margin: 16px 0 0 0;">System self-check</h2>
     <div style="color: gray; margin: 0 0 8px 0;"><span style="color: green;">Green</span> color - all right, <span style="color: red;">Red</span> - error</div>

@@ -163,7 +163,7 @@ if ($action == "list")
         $last_news_arr      = explode("|", $news_lines[0]);
         $first_timestamp    = $first_news_arr[0];
         $last_timestamp     = $last_news_arr[0];
-        $source_msg         = lang("Archive").": <b>". date("d M Y", $first_timestamp) ." - ". date("d M Y", $last_timestamp) ."</b>;";
+        $source_msg         = lang("Archive").": <b>". date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) ."</b>;";
     }
 
     if (!$handle = opendir(SERVDIR."/cdata/archives"))

@@ -9,7 +9,7 @@
         if (agree) document.location = "{$PHP_SELF}?mod=editusers&action=dodeleteuser&id=" + id;
     }
 </script>
-<table border=0 cellpadding=0 cellspacing=0 width=654>
+<table border=0 cellpadding=3 cellspacing=0 width=654>
     <tr>
         <td width=654 colspan="6">
             <!-- Start add edit users table + info + help -->
@@ -87,7 +87,7 @@
                     <td width="330" valign="top" align=center height="70"><br>
 
                         <!-- HELP -->
-                        <table height="25" cellspacing="0" cellpadding="0">
+                        <table height="25" cellspacing="2" cellpadding="0">
                             <tr>
                                 <td width="25" align=middle><img border="0" src="skins/images/help_small.gif" width="25" height="25"></td>
                                 <td >&nbsp;<a onClick="Help('users')" href="#">Understanding user levels</a>&nbsp;</td>

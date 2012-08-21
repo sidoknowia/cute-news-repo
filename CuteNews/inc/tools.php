@@ -68,7 +68,7 @@ if ($action == "archive")
             $first_timestamp    = $first_news_arr[0];
             $last_timestamp     = $last_news_arr[0];
 
-            $duration = (date("d M Y", $first_timestamp) ." - ". date("d M Y",$last_timestamp) );
+            $duration = (date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) );
             $inc .= "<tr><td ></td> <td >$creation_date</td> <td >$duration</td> <td >$count</td>";
             $inc .= "<td><a title='Edit the news in this archive' href=\"$PHP_SELF?mod=editnews&action=list&source=$id\">[edit]</a>
                          <a title='restore news from this archive to active news' href=\"$PHP_SELF?mod=tools&action=archive&subaction=unarchive&aid=$id\">[unarchive]</a>
@@ -129,11 +129,11 @@ elseif ($action == "dodeletearchive")
     }
     closedir($handle);
 
-    if ($success == 2)
+    if ($success == 3)
         msg("info", lang("Arhcive Deleted"), lang("The archive was successfully deleted"), "$PHP_SELF?mod=tools&action=archive");
 
-    elseif ($success == 1)
-        msg("error", LANG_ERROR_TITLE, lang("Either the comments part or the news part of the archive was not deleted"), "$PHP_SELF?mod=tools&action=archive");
+    elseif ($success > 0)
+        msg("error", LANG_ERROR_TITLE, lang("Either the comments part, or the news part, or the count part of the archive was not deleted"), "$PHP_SELF?mod=tools&action=archive");
 
     else
         msg("error", LANG_ERROR_TITLE, lang("The archive you specified was not deleted, it is not on the server or you don't have permissions to delete it"), "$PHP_SELF?mod=tools&action=archive");
@@ -445,6 +445,7 @@ elseif ($action == 'xfields')
         CSRFCheck();
 
         // set optional flag and refresh vis name
+        if (!is_array($name)) $name = array();
         foreach ($name as $v)
             if ( isset($optional[$v]) && $optional[$v] == 'Y')
                  $cfg['more_fields'][$v] = '&'.$vis[$v];

@@ -40,7 +40,8 @@ select, textarea, input
 {
     border: #808080 1px solid;
     color: #000000;
-    font-size: 11px;
+    font-size: 12px;
+    padding: 3px;
     background-color: #ffffff;
 }
 
@@ -54,14 +55,14 @@ a:active,a:visited,a:link
     color: #446488;
     text-decoration: none;
     font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 8pt;
+    font-size: 12px;
 }
 a:hover
 {
     color: #00004F;
     text-decoration: none;
     font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 8pt;
+    font-size: 12px;
 }
 
 a.nav
@@ -72,7 +73,7 @@ a.nav
 a.nav:active, a.nav:visited, a.nav:link
 {
     color: #000000;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: bold;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     text-decoration: none;
@@ -80,7 +81,7 @@ a.nav:active, a.nav:visited, a.nav:link
 
 a.nav:hover
 {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: bold;
     color: black;
     font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -128,7 +129,7 @@ td.top_header { padding: 8px; }
 
 *, td, th
 {
-    font-size: 11px;
+    font-size: 12px;
     font-family: Helvetica, Arial, Verdana, sans-serif;
 }
 -->

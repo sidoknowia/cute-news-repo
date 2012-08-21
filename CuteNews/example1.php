@@ -13,6 +13,7 @@
 <a href="?go=headlines">headlines</a> ||
 <a href="?go=archives">archives</a> ||
 <a href="?go=search">search</a> ||
+<a href="?go=userlist">userlist</a> ||
 <a style="font-size:120%" href="example2.php">See Advanced Example >></a>
 
 <hr>
@@ -34,9 +35,12 @@ elseif($_GET['go'] == "archives"){
 elseif($_GET['go'] == "search"){
    include("search.php");
 }
+elseif($_GET['go'] == "userlist"){
+    $smod = 'userlist';
+    $user_flags = 'unraple';
+    include("shows.php");
+}
 ?>
-
-
 
 </body>
 </html>

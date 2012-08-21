@@ -161,7 +161,7 @@ if ($using_safe_skin)
 // Greet script
 echo str_replace(array('{member}','{greet}', '{warn}'),
                  array($member_db[UDB_NAME], $rand_msg[rand(0, count($rand_msg)-1)], $warn),
-                 read_tpl('main/greet'));
+                 proc_tpl('main/greet'));
 
 // SYSTEM CHECK
 
@@ -244,7 +244,10 @@ foreach ($writables as $v)
 $fs = 0;
 foreach ($filesize as $i => $v)
 {
-    $fs_t = filesize(SERVDIR . $i);
+    if  (file_exists(SERVDIR . $i))
+         $fs_t = filesize(SERVDIR . $i);
+    else $fs_t = 0;
+
     $msgs['fs'][] = array($v, formatsize( $fs_t, $v ));
     $fs += $fs_t;
 }
