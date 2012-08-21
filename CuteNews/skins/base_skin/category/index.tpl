@@ -41,20 +41,20 @@
     </table>
 </form>
 
-<table border=0 cellpadding=0 cellspacing=0 width="645" >
+<table border=0 cellpadding=3 cellspacing=0 width="645" >
     <tr>
         <td width=654 colspan=2 height=14>
             <b>Categories</b>
     </tr>
     <tr>
         <td width=654 colspan=2 height=1>
-            <table width=100% height=100% cellspacing=0 cellpadding=0>
+            <table width=100%% cellspacing=0 cellpadding=2>
                 <tr>
-                    <td width=6% bgcolor=#F7F6F4>&nbsp;<u>ID</u></td>
-                    <td width=30% bgcolor=#F7F6F4><u>name</u></td>
-                    <td width=14% bgcolor=#F7F6F4><u>icon</u></td>
-                    <td width=20% bgcolor=#F7F6F4><u>restriction</u></td>
-                    <td width=20% bgcolor=#F7F6F4><u>action</u></td>
+                    <td width=6% bgcolor=#F7F6F4>&nbsp;<b>ID</b></td>
+                    <td width=30% bgcolor=#F7F6F4><b>name</b></td>
+                    <td width=14% bgcolor=#F7F6F4><b>icon</b></td>
+                    <td width=20% bgcolor=#F7F6F4><b>restriction</b></td>
+                    <td width=20% bgcolor=#F7F6F4><b>action</b></td>
                 </tr>
                 {$result}
             </table>

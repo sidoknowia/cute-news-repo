@@ -811,7 +811,7 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{category-id}",     $news_arr[NEW_CAT], $output);
     $output      = str_replace("{comments-num}",    countComments($news_arr[NEW_ID], $archive), $output);
     $output      = str_replace("{archive-id}",      $archive, $output);
-    $output      = str_replace("{category-icon}",   $cat_icon[ $news_arr[NEW_CAT] ] ? '<img style="border: none;" alt="'.$caticon.' icon" src="'.$caticon.'" />' : '', $output);
+    $output      = str_replace("{category-icon}",   $cat_icon[ $news_arr[NEW_CAT] ] ? '<img style="border: none;" alt="'.$caticon.' icon" src="'.$cat_icon[ $news_arr[NEW_CAT] ].'" />' : '', $output);
     $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;" />' : '', $output);
 
     // Mail Exist in mailist
@@ -835,9 +835,9 @@ function template_replacer_news($news_arr, $output)
 
     // Link to
     $URL = build_uri('subaction,id,archive,start_from,ucat', array('showfull',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
-    if ($user_query) $URL .= "&amp;$user_query";
-    $output      = str_replace(array("[link]", "[/link]"),
-                               array('<a href="'.$PHP_SELF.$URL.">", "</a>"), $output);
+    $URL .= "&amp;#disqus_thread";
+    if ($user_query) $URL .= $user_query;
+    $output      = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);
 
     // @TODO Only in active news, not archives
     $output     = empty($archive) ? str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output) : str_replace("{star-rate}", false, $output);
