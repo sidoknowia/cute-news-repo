@@ -14,10 +14,14 @@ if ($action == 'update' )
 
     if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
     {
+        include (SERVDIR.'/cdata/log/revision.php');
+        $uselast = ($my_current_rev == $rev[1])? 1 : 0;
+
         echoheader('info', lang("Update Status"));
         echo proc_tpl('update',
             array('rev' => $rev[1]),
-            array('UPIFRAME' => (($_GET['do'] == 'do_update')? 1:0))
+            array('ALREADYLAST' => $uselast,
+                  'UPIFRAME' => (($_GET['do'] == 'do_update')? 1:0))
         );
 
         echofooter();
@@ -66,10 +70,10 @@ elseif ($action == 'do_update' )
             if (preg_match('~exported revision (\d+)~i', $bundle[$proc], $rev))
             {
                 $w = fopen(SERVDIR.'/cdata/log/revision.php', 'w');
-                fwrite($w, $rev[1]);
+                fwrite($w, '<'.'? $my_current_rev = '.$rev[1].'; ?>');
                 fclose($w);
             }
-            elseif ( preg_match('~\.[a-z0-9]+?$~i', $dirs[count($dirs)-1] ) )
+            elseif( preg_match('~\.[a-z0-9]+?$~i', $dirs[count($dirs)-1] ) )
             {
                 // Make dirs...
                 $w = fopen($DEST_DIR.'/'.$name, 'w');

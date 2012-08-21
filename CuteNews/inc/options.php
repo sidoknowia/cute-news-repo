@@ -159,6 +159,7 @@ elseif($action == "dosavepersonal")
 {
     CSRFCheck();
 
+    $username           = $member_db[UDB_NAME];
     $editnickname       = replace_comment("add", $editnickname);
     $editmail           = replace_comment("add", $editmail);
     $edithidemail       = replace_comment("add", $edithidemail);
@@ -169,7 +170,6 @@ elseif($action == "dosavepersonal")
 
     $edithidemail = $edithidemail? 1 : 0;
     $avatars = preg_replace(array("'\|'","'\n'","' '"), array("","","_"), $avatars);
-
     $pack = bsearch_key($username, DB_USERS);
 
     // editing password (with confirm)
@@ -189,6 +189,9 @@ elseif($action == "dosavepersonal")
     $pack[UDB_CBYEMAIL]     = $edithidemail;
     $pack[UDB_AVATAR]       = $change_avatar;
     edit_key($username, $pack, DB_USERS);
+
+    $_SESS['data'] = $pack;
+    send_cookie();
 
     msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "$PHP_SELF?mod=options&action=personal");
     
@@ -695,7 +698,7 @@ echo '</tr></table></tr>';
     else $ckeditorEnabled = makeDropDown(array("no"=>"No"), "save_con[use_wysiwyg]", $config_use_wysiwyg);
 
     // General
-    echo"<tr style='' id=general width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo"<tr style='' id=general><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
 
     showRow(lang("Full URL to CuteNews Directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
@@ -718,18 +721,19 @@ echo '</tr></table></tr>';
     hook('field_options_general');
     echo "</table></td></tr>";
 
-    echo"<tr style='display:none' id=news width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Use Avatars"),                            lang("if not, the avatar URL field wont be shown"),     makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
     showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
     showRow(lang("Show Full Story In PopUp"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
     showRow(lang("Settings for Full Story PopUp"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
     showRow(lang("Show Comments When Showing Full Story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
     showRow(lang("Time Format For News"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
+    showRow(lang("Make backup news"),                       lang("when you save a backup of news is done"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
     hook('field_options_news');
     echo"</table></td></tr>";
 
     // Comments
-    echo "<tr style='display:none' id=comments width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=comments><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Auto Wrap Comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
     showRow(lang("Reverse Comments"),                           lang("if yes, newest comments will be shown on the top"),           makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
     showRow(lang("Comments Flood Protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
@@ -745,7 +749,7 @@ echo '</tr></table></tr>';
     echo"</table></td></tr>";
 
     // Notifications
-    echo "<tr style='display:none' id=notifications width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
     showRow(lang("Notify of New Registrations"),            lang("when new user auto-registers"),                          makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
     showRow(lang("Notify of New Comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
@@ -760,7 +764,7 @@ echo '</tr></table></tr>';
     $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
 
-    echo "<tr style='display:none' id='facebook' width=100%><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
     showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_fbcomments]", $config_use_fbcomments));
     showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);

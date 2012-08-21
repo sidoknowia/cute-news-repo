@@ -11,9 +11,9 @@ if ($action == "add")
 {
     CSRFCheck();
 
-    $cat_name   = str_replace('<?', '', $cat_name);
-    $cat_icon   = str_replace('<?', '', $cat_icon);
-    $cat_access = str_replace('<?', '', $cat_access);
+    $cat_name   = str_replace('<'.'?', '', $cat_name);
+    $cat_icon   = str_replace('<'.'?', '', $cat_icon);
+    $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
     if(!$cat_name) msg("error", LANG_ERROR_TITLE, "Please enter name of the category", "javascript:history.go(-1)");
@@ -99,9 +99,9 @@ elseif ($action == "edit")
 elseif($action == "doedit")
 {
     CSRFCheck();
-    $cat_name   = str_replace('<?', '', $cat_name);
-    $cat_icon   = str_replace('<?', '', $cat_icon);
-    $cat_access = str_replace('<?', '', $cat_access);
+    $cat_name   = str_replace('<'.'?', '', $cat_name);
+    $cat_icon   = str_replace('<'.'?', '', $cat_icon);
+    $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
     if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), "$PHP_SELF?mod=categories");

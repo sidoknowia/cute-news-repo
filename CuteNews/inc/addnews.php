@@ -252,6 +252,16 @@ elseif($action == "doaddnews")
     $member_db[UDB_COUNT]++;
     edit_key($username, $member_db, DB_USERS);
 
+    if ($config_backup_news == 'yes')
+    {
+
+        $news_file = fopen($decide_news_file, "r");
+        $news_backup = fopen($decide_news_file.'.bak', "w");
+        while (!feof($news_file)) fwrite($news_backup, fgets($news_file));
+        fclose($news_file);
+        fclose($news_backup);
+    }
+
     // Notifications
     if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST)
     {

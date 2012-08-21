@@ -29,7 +29,7 @@ function add_key($id, $value, $file)
     $fp = fopen($file, "w") or ($lock = true);
     if ($lock) return false;
     flock($fp, LOCK_EX);
-    fwrite($fp, '<?php die(); ?>'."\n");
+    fwrite($fp, '<'.'?php die(); ?>'."\n");
 
     foreach ($xs as $v)
     {
@@ -72,7 +72,7 @@ function edit_key($id, $value, $file)
     $fp     = fopen($file, "w") or ($lock = true);
     if ($lock) return false;
     flock($fp, LOCK_EX);
-    fwrite($fp, '<?php die(); ?>'."\n");
+    fwrite($fp, '<'.'?php die(); ?>'."\n");
 
     // replace all keys to value
     unset($xs[0]);
@@ -101,7 +101,7 @@ function delete_key($id, $file)
     $fp = fopen($file, "w") or ($lock = true);
     if ($lock) return false;
     flock($fp, LOCK_EX);
-    fwrite($fp, '<?php die(); ?>'."\n");
+    fwrite($fp, '<'.'?php die(); ?>'."\n");
 
     // delete all keys
     foreach ($xs as $v)

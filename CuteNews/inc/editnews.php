@@ -677,10 +677,18 @@ elseif ($action == "doeditnews")
         else msg("info", lang("News Deleted"), lang("The news item successfully was deleted").'.<br />'.
                                                lang("If there were comments for this article they are also deleted.").'<br /><span style="color:red;">'.
                                                lang("But can not delete comments of this article!")."</span>");
-
     }
     elseif ($okchanges)
     {
+        if ($config_backup_news == 'yes')
+        {
+            $from = fopen($news_file, "r");
+            $news_backup = fopen($news_file.'.bak', "w");
+            while (!feof($from)) fwrite($news_backup, fgets($from));
+            fclose($from);
+            fclose($news_backup);
+        }
+
         header("Location: $PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
     }
 
