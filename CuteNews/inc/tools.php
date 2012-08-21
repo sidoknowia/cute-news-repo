@@ -122,8 +122,10 @@ elseif ($action == "dodeletearchive")
     while (false !== ($file = readdir($handle)))
     {
         if ($file == "$archive.news.arch" or $file == "$archive.comments.arch" or $file == "$archive.count.arch")
-            unlink(SERVDIR."/cdata/archives/$file"); $success ++;
-
+        {
+            unlink(SERVDIR."/cdata/archives/$file");
+            $success++;
+        }
     }
     closedir($handle);
 
