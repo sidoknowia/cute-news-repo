@@ -132,7 +132,7 @@ elseif($action == "do_mass_delete")
         {
             $have_perm = 0;
             if (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR)) $have_perm = 1;
-            elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[1] == $member_db[UDB_NAME]) $have_perm = 1;
+            elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[UDB_ACL] == $member_db[UDB_NAME]) $have_perm = 1;
 
             if(!$have_perm) fwrite($new_db, $old_db_line);
         }

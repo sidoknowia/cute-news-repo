@@ -143,6 +143,7 @@ elseif ($is_loged_in)
                             'help'          => 'user',
                             'debug'         => 'admin',
                             'wizards'       => 'admin',
+                            'update'        => 'admin',
                             'rating'        => 'user',
                             );
 

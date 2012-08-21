@@ -90,7 +90,7 @@ if ($action == "options" or $action == '')
         ),
         array(
                'name'               => lang('Update Cutenews', 'options'),
-               'url'                => "$PHP_SELF?mod=tools&action=update",
+               'url'                => "$PHP_SELF?mod=update&action=update",
                'access'             => "1",
         )
     );

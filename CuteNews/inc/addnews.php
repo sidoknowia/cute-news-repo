@@ -215,10 +215,11 @@ elseif($action == "doaddnews")
     }
 
     // Make unique time
+    $added_time = time();
     if ( file_exists (SERVDIR.'/cdata/newsid.txt') )
          $added_time = join('', file(SERVDIR.'/cdata/newsid.txt'));
 
-    elseif (time() <= $added_time) $added_time++;
+    if (time() <= $added_time) $added_time++;
     else $added_time = time();
 
     $w = fopen(SERVDIR.'/cdata/newsid.txt', 'w');
