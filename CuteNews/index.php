@@ -85,6 +85,7 @@ if ( empty($_SESS['user']))
             edit_key($username, $member_db, DB_USERS);
 
             $is_loged_in = true;
+            send_cookie();
         }
         else
         {
@@ -94,6 +95,7 @@ if ( empty($_SESS['user']))
 
             add_to_log($username, lang('Wrong username/password'));
             $is_loged_in = false;
+            send_cookie();
         }
     }
 }
@@ -113,6 +115,7 @@ else
             $_SESS       = array();
             $is_loged_in = false;
             $member_db   = false;
+            send_cookie();
         }
         else
         {
@@ -133,12 +136,10 @@ else
             $_SESS['data'] = false;
             $_SESS['user'] = false;
             $is_loged_in = false;
+            send_cookie();
         }
     }
 }
-
-/* END Login Authorization using COOKIES */
-send_cookie(true);
 
 // ---------------------------------------------------------------------------------------------------------------------
 // If User is Not Logged In, Display The Login Page
@@ -221,4 +222,3 @@ elseif ($is_loged_in)
 }
 
 exec_time();
-exit_cookie();

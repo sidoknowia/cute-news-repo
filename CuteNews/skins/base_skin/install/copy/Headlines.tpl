@@ -33,11 +33,11 @@ $template_form = <<<HTML
   <table border="0" width="370" cellspacing="0" cellpadding="0">
     <tr>
       <td width="60">Name:</td>
-      <td><input type="text" name="name"></td>
+      <td><input type="text" name="name" value="{username}"></td>
     </tr>
     <tr>
       <td>E-mail:</td>
-      <td><input type="text" name="mail"> (optional)</td>
+      <td><input type="text" name="mail" value="{usermail}"> (optional)</td>
     </tr>
     <tr>
       <td>Smile:</td>

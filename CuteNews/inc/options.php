@@ -1,7 +1,9 @@
 <?PHP
 
-if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and ($action != 'personal' and $action != 'options'))
+if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and ($action != 'personal' and $action != 'options' and $action != 'dosavepersonal'))
     msg('error', 'Error!', 'Access Denied for your user-level (commenter)');
+
+$do_template = preg_replace('~[^a-z0-9_]~i', '', $do_template);
 
 // ********************************************************************************
 // Options Menu
@@ -67,12 +69,12 @@ if ($action == "options" or $action == '')
                'url'                => "$PHP_SELF?mod=categories",
                'access'             => "1",
         ),
-
+        /*
         array(
                'name'               => lang("Report bug/error"),
                'url'                => "$PHP_SELF?mod=tools&action=report",
                'access'             => "1",
-        ),
+        ), */
         array(
                'name'               => lang("User logs"),
                'url'                => "$PHP_SELF?mod=tools&action=userlog",
@@ -92,7 +94,12 @@ if ($action == "options" or $action == '')
                'name'               => lang('Update Cutenews', 'options'),
                'url'                => "$PHP_SELF?mod=update&action=update",
                'access'             => "1",
-        )
+        ),
+        array(
+                'name'               => lang('Plugin manager', 'options'),
+                'url'                => "$PHP_SELF?mod=tools&action=plugins",
+                'access'             => "1",
+        ),
     );
 
     hook('more_options');
@@ -122,7 +129,7 @@ if ($action == "options" or $action == '')
 // ********************************************************************************
 // Show Personal Options
 // ********************************************************************************
-elseif($action == "personal")
+elseif ($action == "personal")
 {
     $CSRF = CSRFMake();
     echoheader("user", "Personal Options");
@@ -233,7 +240,7 @@ elseif($action == "templates")
         <input type=hidden name=subaction value=donew>
         </td></tr></table></form>';
         echofooter();
-        exit_cookie();
+        die();
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Do Create the new template
@@ -264,13 +271,13 @@ elseif($action == "templates")
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Deleting template, preparation
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-        if($subaction == "delete")
-        {
-            if (strtolower($do_template) == "default")
-                msg("Error",  LANG_ERROR_TITLE, lang("You can not delete the default template"), "$PHP_SELF?mod=options&action=templates");
+    if ($subaction == "delete")
+    {
+        if (strtolower($do_template) == "default")
+            msg("Error",  LANG_ERROR_TITLE, lang("You can not delete the default template"), "$PHP_SELF?mod=options&action=templates");
 
-            if (strtolower($do_template) == "rss")
-                msg("Error", LANG_ERROR_TITLE, lang("You can not delete the RSS template, it is not even supposed you to edit it"), "$PHP_SELF?mod=options&action=templates");
+        if (strtolower($do_template) == "rss")
+            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the RSS template, it is not even supposed you to edit it"), "$PHP_SELF?mod=options&action=templates");
 
         $msg = "<form method=post action=\"$PHP_SELF\">".lang('Are you sure you want to delete the template')." <b>$do_template</b> ?<br><br>
         <input type=submit value=\" ".lang('Yes, Delete This Template')."\"> &nbsp;
@@ -286,7 +293,7 @@ elseif($action == "templates")
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       DO Deleting template
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-    if($subaction == "dodelete")
+    if ($subaction == "dodelete")
     {
         if(strtolower($do_template) == "default")
             msg("Error", LANG_ERROR_TITLE, lang("You can not delete the default template"), "$PHP_SELF?mod=options&action=templates");
@@ -305,7 +312,7 @@ elseif($action == "templates")
         $do_template = 'Default';
         $show_delete_link = '';
     }
-    elseif (strtolower($do_template) != 'default')
+    elseif ( !in_array(strtolower($do_template), array('default','rss','headlines')) )
     {
         $show_delete_link = "<a href=\"$PHP_SELF?action=templates&mod=options&subaction=delete&do_template=$do_template\">[".lang('delete this template')."]</a>";
     }
@@ -316,263 +323,59 @@ elseif($action == "templates")
          $tr_hidden = "";
     else $tr_hidden = " style='display:none'";
 
+    $templates_names = array("template_active", "template_comment", "template_form", "template_full",
+                             "template_prev_next", "template_comments_prev_next");
 
-    $templates_names = array("template_active", "template_comment", "template_form", "template_full", "template_prev_next", "template_comments_prev_next");
-    foreach($templates_names as $template)
+    foreach ($templates_names as $template)
     {
         $$template = preg_replace("/</","&lt;",$$template);
         $$template = preg_replace("/>/","&gt;",$$template);
     }
-    echoheader("options","Templates");
 
-    echo'<table border=0 cellpadding=0 cellspacing=0 height="77" >
-    <tr>
-        <td width=373 height="75">
-        <b>Manage Templates</b>
+    echoheader("options", "Templates");
 
-        <table border=0 cellpadding=0 cellspacing=0 width=347  class="panel" height="50" >
-    <form method=get action="'.$PHP_SELF.'">
-    <tr>
-    <td width=126height="23"> &nbsp;Editing Template <td width=225height="23"> :&nbsp; <b>'.$do_template.'</b>
-    </tr>
-    <tr>
-        <td width=126 height="27"> &nbsp;Switch to Template
-        <td width=225 height="27"> :&nbsp; <select size=1 name=do_template>';
-
+    $SELECT_template = false;
     foreach($templates_list as $single_template)
     {
-            if($single_template == $do_template){ echo"<option selected value=\"$single_template\">$single_template</option>"; }
-        else{ echo"<option value=\"$single_template\">$single_template</option>"; }
+        if ($single_template == $do_template)
+             $SELECT_template .= "<option selected value='$single_template'>$single_template</option>";
+        else $SELECT_template .= "<option value='$single_template'>$single_template</option>";
     }
 
-    echo'</select>
-    <input type=submit value=Go>
-    </tr>
-    <tr>
-        <td width=351 height="25" colspan="2">
-    &nbsp;<a href="'.$PHP_SELF.'?mod=options&subaction=new&action=templates">[create new template]</a>&nbsp;
-    '.$show_delete_link.'</tr>
-        <input type=hidden name=action value=templates><input type=hidden name=mod value=options>
-        </form>
-        </table>
+    echo proc_tpl('options/templates', array
+    (
+        'SELECT_template' => $SELECT_template,
+        'template_active' => $template_active,
+        'template_full' => $template_full,
+        'template_comment' => $template_comment,
+        'template_form' => $template_form,
+        'template_prev_next' => $template_prev_next,
+        'template_comments_prev_next' => $template_comments_prev_next,
+        'show_delete_link' => $show_delete_link,
+        'do_template' => $do_template,
+        'tr_hidden' => $tr_hidden,
+    ));
 
-        <td width=268 height="75" align="center">
-  <!-- HELP -->
-   <table cellspacing="0" cellpadding="0">
-    <tr>
-      <td width="25" align=middle><img border="0" src="skins/images/help_small.gif"></td>
-      <td >&nbsp;<a onClick="javascript:Help(\'templates\')" href="#">Understanding Templates</a></td>
-    </tr>
-   </table>
-  <!-- END HELP -->
-
-    </tr>
-        </table>
-    <img height=20 border=0 src="skins/images/blank.gif" width=1>
-    <br>
-    <b>Edit Template Parts</b><table width="100%"><form method=post action="'.$PHP_SELF.'">
-
-<tr> <!- start active news -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'active-news1\',\'active-news2\')" >Active News</a></b>
-    </tr>
-    <tr id=\'active-news1\' '.$tr_hidden.'>
-    <td height="9" width="200" valign="top">
-    <b>{title}<br />
-    {avatar}<br />
-    {short-story}<br />
-    {full-story}<br />
-    {author}<br />
-    {author-name}<br />
-    [mail] </b>and<b> [/mail]<br />
-    {date}<br />
-    [link] </b>and<b> [/link]<br />
-    [full-link] </b>and<b> [/full-link]<br />
-    [com-link] </b>and<b> [/com-link]<br />
-    {comments-num}<br />
-    {category}<br />
-    {category-icon}<br />
-    {star-rate}<br />
-    <td height="9"  valign="top" width=430>
-    - Title of the article<br />
-    - Show Avatar image (if any)<br />
-    - Short story of news item<br />
-    - The full story<br />
-    - Author of the article, with link to his email (if any)<br />
-    - The name of the author, without email<br />
-    - Will generate a link to the author mail (if any) eg. [mail]Email[/mail]<br />
-    - Date when the story is written<br />
-    - Will generate a permanent link to the full story<br />
-    - Link to the full story of article, only if there is full story<br />
-    - Generate link to the comments of article<br />
-    - This will display the number of comments posted for article<br />
-    - Name of the category where article is posted (if any)<br />
-    - Shows the category icon (if any)<br />
-    - Rating bar<br />
-    </tr>
-    <tr id=\'active-news2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="9" cols="98" name="edit_active">'.$template_active.'</textarea>
-    <br />
-    &nbsp;
-</tr> <!-- End active news -->
-
-<tr> <!-- Start full story -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'full-story1\',\'full-story2\')" >Full Story</a></b>
-    </tr>
-    <tr id=\'full-story1\' '.$tr_hidden.'>
-    <td height="9" width="200" valign="top">
-    <b> {title}<br />
-    {avatar}<br />
-    {full-story}<br />
-    {short-story}</b><b><br />
-    {author}<br />
-    {author-name}<br />
-    [mail] </b>and<b> [/mail]<br />
-    {date}<br />
-    {comments-num}<br />
-    {category}    <br />
-    {category-icon}<br />
-    {back-previous}<br />
-    {index-link}<br /><br>
-    {star-rate}<br />
-    </b>
-    <td height="9"  valign="top">
-    - Title of the article<br />
-    - Show Avatar image (if any)<br />
-    - The full story<br />
-    - Short story of news item<br />
-    - Author of the article, with link to his email (if any)<br />
-    - The name of the author, without email<br />
-    - Will generate a link to the author mail (if any) eg. [mail]Email[/mail]<br />
-    - Date when the story is written<br />
-    - This will display the number of comments posted for article<br />
-    - Name of the category where article is posted (if any)<br />
-    - Shows the category icon (if any)<br />
-    - Insert back link</br>
-    - Insert direct link to main page <br>&nbsp;&nbsp;You may use <a href="'.PHP_SELF.'?mod=tools&amp;action=xfields" target="_blank">custom fields</a> there. Syntax: {your_field}</br>
-    - Rating bar<br />
-    </tr>
-    <tr id=\'full-story2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="9" cols="98" name="edit_full">'.$template_full.'</textarea>
-    <br />
-    &nbsp;
-</tr> <!-- End full story -->
-
-<tr> <!-- Start comment -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'comment1\',\'comment2\')" >Comment</a></b>
-    </tr>
-    <tr id=\'comment1\' '.$tr_hidden.'>
-    <td height="9" width="200" valign="top">
-    <b>  {author}<br />
-    {mail}<br />
-    {date}<br />
-    {comment}<br />
-    {comment-iteration}</b>
-    <td height="9"  valign="top">
-    - Name of the comment poster<br />
-    - E-mail of the poster<br />
-    - Date when the comment was posted<br />
-    - The Comment<br />
-    - Show the sequential number of individual comment
-    </tr>
-    <tr id=\'comment2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="9" cols="98" name="edit_comment">'.$template_comment.'</textarea>
-    <br />
-    &nbsp;
-</tr> <!-- End comment -->
-
-<tr> <!-- Start add comment form -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'add-comment-form1\',\'add-comment-form2\')" >Add comment form</a></b>
-    </tr>
-    <tr id=\'add-comment-form1\' '.$tr_hidden.'>
-    <td height="9" width="1094" valign="top" colspan="2">
-    Please do not edit this unless you have basic HTML knowledge !!!
-    </tr>
-    <tr id=\'add-comment-form2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="9" cols="98" name="edit_form">'.$template_form.'</textarea>
-    <br />
-    &nbsp;
-</tr> <!-- End add comment form -->
-
-<tr> <!-- Start previous & next -->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'previous-next1\',\'previous-next2\')" >News Pagination</a></b>
-    </tr>
-    <tr id=\'previous-next1\' '.$tr_hidden.'>
-    <td height="9" width="200" valign="top">
-    <b> [prev-link] </b>and<b> [/prev-link]<br />
-    [next-link] </b>and<b> [/next-link]<br />
-        {pages}<br />
-    <td height="9"  valign="top">
-    - Will generate a link to preveous page (if there is)<br />
-    - Will generate a link to next page (if there is)<br />
-    - Shows linked numbers of the pages; example: <a href=\'#\'>1</a> <a href=\'#\'>2</a> <a href=\'#\'>3</a> <a href=\'#\'>4</a>
-    </tr>
-
-    <tr id=\'previous-next2\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="3" cols="98" name="edit_prev_next">'.$template_prev_next.'</textarea>
-</tr> <!-- End previous & next -->
-
-
-
-<tr> <!-- Start previous & next COMMENTS-->
-    <td height="7"  bgcolor=#F7F6F4 colspan="2">
-    <b><a style="font-size:16px" href="javascript:ShowOrHide(\'previous-next21\',\'previous-next22\')" >Comments Pagination</a></b>
-    </tr>
-    <tr id=\'previous-next21\' '.$tr_hidden.'>
-    <td height="9" width="200" valign="top">
-    <b> [prev-link] </b>and<b> [/prev-link]<br />
-    [next-link] </b>and<b> [/next-link]<br />
-        {pages}<br />
-    <td height="9"  valign="top">
-    - Will generate a link to preveous page (if there is)<br />
-    - Will generate a link to next page (if there is)<br />
-    - Shows linked numbers of the pages; example: <a href=\'#\'>1</a> <a href=\'#\'>2</a> <a href=\'#\'>3</a> <a href=\'#\'>4</a>
-    </tr>
-
-    <tr id=\'previous-next22\' '.$tr_hidden.'>
-    <td height="8"  colspan="2">
-    <textarea rows="3" cols="98" name="edit_comments_prev_next">'.$template_comments_prev_next.'</textarea>
-</tr> <!-- End previous & next COMMENTS -->
-
-<tr>
-    <td height="8"  colspan="2">
-    <input type=hidden name=mod value=options>
-    <input type=hidden name=action value=dosavetemplates>
-    <input type=hidden name=do_template value="'.$do_template.'">
-    <br /><input type=submit value="   Save Changes   " accesskey="s">
-    </tr></form>
-    </table>';
-
-        echofooter();
+    echofooter();
 }
 // ********************************************************************************
 // Do Save Changes to Templates
 // ********************************************************************************
 elseif($action == "dosavetemplates")
 {
-    if($member_db[1] != 1)
+    if ($member_db[UDB_ACL] != 1)
         msg("error", lang("Access Denied"), lang("You don't have permissions for this type of action"));
 
     $templates_names = array("edit_active", "edit_comment", "edit_form", "edit_full", "edit_prev_next", "edit_comments_prev_next","edit_search");
-    foreach($templates_names as $template)
-        $$template = stripslashes($$template);
+    foreach($templates_names as $template) $$template = stripslashes($$template);
 
     if($do_template == "" or !$do_template){ $do_template = "Default"; }
     $template_file = SERVDIR."/cdata/$do_template.tpl";
 
-    if($do_template == "rss"){ $edit_active = str_replace("&", "&amp;",$edit_active); }
+    if($do_template == "rss") $edit_active = str_replace("&", "&amp;", $edit_active);
 
     $handle = fopen("$template_file","w");
-    fwrite($handle, "<?PHP\n///////////////////// TEMPLATE $do_template /////////////////////\n");
+    fwrite($handle, '<'.'?php'."\n///////////////////// TEMPLATE $do_template /////////////////////\n");
     fwrite($handle, "\$template_active = <<<HTML\n$edit_active\nHTML;\n\n\n");
     fwrite($handle, "\$template_full = <<<HTML\n$edit_full\nHTML;\n\n\n");
     fwrite($handle, "\$template_comment = <<<HTML\n$edit_comment\nHTML;\n\n\n");
@@ -587,7 +390,7 @@ elseif($action == "dosavetemplates")
 // ********************************************************************************
 // System Configuration
 // ********************************************************************************
-elseif($action == "syscon")
+elseif ($action == "syscon")
 {
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
         msg("error", lang("Access Denied"), lang("You don't have permissions to access this section"));
@@ -595,26 +398,16 @@ elseif($action == "syscon")
     $bc = 'main/options/options:syscon=config';
     if (isset($_REQUEST['message'])) $bc .= '/='.lang('Your Configuration Saved');
 
-    echoheader("options", lang("System Configuration"), make_breadcrumbs($bc));
 
     function showRow($title="", $description="", $field="")
     {
         global $i;
-        if ( $i%2 == 0 and $title != "") $bg = "bgcolor=#F7F6F4";
-        echo "<tr $bg >
-                <td colspan=\"2\" style=\"padding:4\">
-                &nbsp;<b>$title</b>
-                <td width=294 rowspan=\"2\" valign=\"middle\" align=middle>
-                $field<br />&nbsp;
-                </tr>
-                <tr $bg >
-        <td height=15 width=\"27\" style=\"padding:4\">
-        &nbsp;
-        <td height=15 width=\"299\" valign=top>
-        <span style='color:#808080;'>$description</span>
-        </tr>";
-        $bg = ""; $i++;
+
+        if ( $i%2 == 0 and $title != "") $bg = "bgcolor=#F7F6F4"; else $bg = "";
+        echo proc_tpl("options/syscon.row", array('bg' => $bg, 'title' => $title, 'field' => $field, 'description' => $description));
+        $i++;
     }
+
     function makeDropDown($options, $name, $selected)
     {
         $output = "<select size=1 name=\"$name\">\r\n";
@@ -628,64 +421,23 @@ elseif($action == "syscon")
         return $output;
     }
 
-    echo"<table border=0 cellpadding=0 cellspacing=0 width=654  ><form action=\"$PHP_SELF\" method=post>";
-
-echo <<<HTML
-<script language='JavaScript' type="text/javascript">
-
-        function ChangeOption(selectedOption) {
-
-                document.getElementById('general').style.display = "none";
-                document.getElementById('news').style.display = "none";
-                document.getElementById('comments').style.display = "none";
-                document.getElementById('notifications').style.display = "none";
-                document.getElementById('facebook').style.display = "none";
-
-                document.getElementById('button1').style.backgroundColor = "";
-                document.getElementById('button2').style.backgroundColor = "";
-                document.getElementById('button3').style.backgroundColor = "";
-                document.getElementById('button4').style.backgroundColor = "";
-                document.getElementById('button5').style.backgroundColor = "";
-
-                document.getElementById('currentid').value = selectedOption;
-
-                var SelectedButton = 'button1';
-                if(selectedOption == 'general') {document.getElementById('general').style.display = ""; SelectedButton='button1';}
-                if(selectedOption == 'news') {document.getElementById('news').style.display = ""; SelectedButton='button2';}
-                if(selectedOption == 'comments') {document.getElementById('comments').style.display = ""; SelectedButton='button3';}
-                if(selectedOption == 'notifications') {document.getElementById('notifications').style.display = ""; SelectedButton='button4';}
-                if(selectedOption == 'facebook') {document.getElementById('facebook').style.display = ""; SelectedButton='button5';}
-
-                document.getElementById(SelectedButton).style.backgroundColor = "#EBE8E2";
-       }
-
-</script>
-
-<tr style="position:relative" valign=top>
-<td style="padding-bottom:30px;" colspan="3"  >
-<table style="text-align:center;  padding:0px; margin:0px;" width="100%" height=35px cellpadding="0" cellspacing="0">
-<tr style="border:1px solid black; vertical-align:middle;" >
- <td id="button1" style="background-color:#EBE8E2; border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('general');">General</a>
- <td id="button2" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('news');">News</a>
- <td id="button3" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('comments');">Comments</a>
- <td id="button4" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('notifications');">Notifications</a>
- <td id="button5" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('facebook');">Facebook</a>
-HTML;
-echo hook('field_options_buttons');
-echo '</tr></table></tr>';
+    // ---------- show options
+    echoheader("options", lang("System Configuration"), make_breadcrumbs($bc));
+    echo proc_tpl('options/syscon.top', array('add_fields' => hook('field_options_buttons')));
 
     if (!$handle = opendir(SERVDIR."/skins"))
     {
         die_stat(false, "Can not open directory ./skins ");
     }
+
     while (false !== ($file = readdir($handle)))
     {
         $file_arr = explode(".",$file);
-        if($file_arr[1] == "skin")
+        if ($file_arr[1] == "skin")
         {
             $sys_con_skins_arr[$file_arr[0]] = $file_arr[0];
         }
-        elseif($file_arr[1] == "lang")
+        elseif ($file_arr[1] == "lang")
         {
             $sys_con_langs_arr[$file_arr[0]] = $file_arr[0];
         }
@@ -694,11 +446,11 @@ echo '</tr></table></tr>';
 
     // News
     if ( is_dir(SERVDIR.'/core/ckeditor') )
-         $ckeditorEnabled = makeDropDown(array("no"=>"No",'ckeditor'=>'CKEditor'), "save_con[use_wysiwyg]", $config_use_wysiwyg);
+         $ckeditorEnabled = makeDropDown(array("no"=>"No", 'ckeditor'=>'CKEditor'), "save_con[use_wysiwyg]", $config_use_wysiwyg);
     else $ckeditorEnabled = makeDropDown(array("no"=>"No"), "save_con[use_wysiwyg]", $config_use_wysiwyg);
 
     // General
-    echo"<tr style='' id=general><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='' id=general><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
 
     showRow(lang("Full URL to CuteNews Directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
@@ -712,16 +464,16 @@ echo '</tr></table></tr>';
     showRow(lang("Use captcha"),                    lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
     showRow(lang("Use rating"),                     lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
     showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
+    // showRow(lang("MOD_Rewrite"),                    lang("(experimental) allows you to make the path to the news more readable"),      makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_modrewrite]", $config_use_modrewrite));
     if ($config_use_rater)
     {
         showRow(lang("Rate symbol 1"), lang("rate full symbol"),   "<input type=text style=\"text-align: center;\"  name='save_con[ratey]' value=\"$config_ratey\" size=10>", "save_con[ratey]", $config_ratey);
         showRow(lang("Rate symbol 2"), lang("rate empty symbol"),  "<input type=text style=\"text-align: center;\"  name='save_con[raten]' value=\"$config_raten\" size=10>", "save_con[raten]", $config_raten);
     }
-
     hook('field_options_general');
     echo "</table></td></tr>";
 
-    echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Use Avatars"),                            lang("if not, the avatar URL field wont be shown"),     makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
     showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
     showRow(lang("Show Full Story In PopUp"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
@@ -733,7 +485,7 @@ echo '</tr></table></tr>';
     echo"</table></td></tr>";
 
     // Comments
-    echo "<tr style='display:none' id=comments><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=comments><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Auto Wrap Comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
     showRow(lang("Reverse Comments"),                           lang("if yes, newest comments will be shown on the top"),           makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
     showRow(lang("Comments Flood Protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
@@ -749,7 +501,7 @@ echo '</tr></table></tr>';
     echo"</table></td></tr>";
 
     // Notifications
-    echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
     showRow(lang("Notify of New Registrations"),            lang("when new user auto-registers"),                          makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
     showRow(lang("Notify of New Comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
@@ -764,7 +516,7 @@ echo '</tr></table></tr>';
     $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
 
-    echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 colspan=10 width=100%>";
+    echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_fbcomments]", $config_use_fbcomments));
     showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);

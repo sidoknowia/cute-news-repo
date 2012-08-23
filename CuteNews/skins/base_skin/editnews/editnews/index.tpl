@@ -47,7 +47,7 @@
             <p>{$short_story_smiles}</p>
         </td>
     </tr>
-
+    <tr><td colspan="3">&nbsp;</td></tr>
     <tr>
         <td valign="top"> <br />Full Story<br /><span style="font-size:7pt">(optional)</span> </td>
         <td width="472" colspan="2">

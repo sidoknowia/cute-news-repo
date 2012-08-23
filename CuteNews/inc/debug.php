@@ -10,4 +10,4 @@
 
 	phpinfo();
     echo "<hr><textarea cols=85 rows=24>"; print_r(ini_get_all()); echo"</textarea>";
-    exit_cookie();
+    die();

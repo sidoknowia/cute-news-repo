@@ -22,11 +22,8 @@
     </div>
     <div style="height: 16px;"></div>
 
-    <div style="background: #F7F6F4; padding: 4px; font: 15px/1em Arial;  margin: 0 0 4px 0;">Version Check</div>
-    <table>
-        <tr> <td style="width: 150px; font-size: 13px;">Your version</td> <td>{$config_version_name} &nbsp; (build Id - {$config_version_id})</td> </tr>
-        <tr> <td style="font-size: 13px;">Latest Version</td> <td><script type="text/javascript" src="http://cutephp.com/cutenews/check_version.php?config_http_script_dir={$config_http_script_dir}&mybid={$config_version_id}&reglicense={$reg_site_key}&functions_md5={$functions_md5}"></script></td> </tr>
-    </table>
+    <div style="background: #F7F6F4; font: 15px/1em Arial; margin: 0 0 4px 0;">Version Check</div>
+    <script type="text/javascript" src="{$PHP_SELF}?mod=update&amp;action=check"></script>
 
     <div style="height: 16px;"></div>
     

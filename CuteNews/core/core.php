@@ -215,10 +215,11 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
     // Store data
     if (defined('STORE_ERRORS') && STORE_ERRORS)
     {
+        $str = trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out));
         if (is_writable(SERVDIR.CACHE))
         {
             $log = fopen(SERVDIR.CACHE.'/error_dump.log', 'a');
-            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out))."\n");
+            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.$str."\n");
             fclose($log);
         }
     }
@@ -235,9 +236,6 @@ function die_stat($No, $Reason = false)
         503 => '503 Service Unavailable',
     );
 
-    ob_get_clean();
-    ob_start();
-    
     $Response = isset($HTTP[$No])? $HTTP[$No] : $HTTP[503];
 
     if ($No)
@@ -257,8 +255,7 @@ function die_stat($No, $Reason = false)
             fclose($log);
         }
     }
-    
-    exit_cookie();
+    die();
 }
 
 // Modified from http://en.wikibooks.org/wiki/Algorithm_implementation/Sorting/Quicksort#PHP for quicksort cutenews
@@ -317,6 +314,16 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
     // predefined arguments
     $args['PHP_SELF'] = PHP_SELF;
 
+    // Globals are saved too
+    foreach ($GLOBALS as $gi => $gv)
+    {
+        if ( in_array($gi, array('session', '_CACHE', '_HOOKS', 'HTML_SPECIAL_CHARS', '_SESS',
+                                 'GLOBALS', '_ENV', '_REQUEST', '_SERVER', '_FILES', '_COOKIE', '_POST', '_GET')))
+             continue;
+
+        if (!isset($args[$gi])) $args[$gi] = $gv;
+    }
+
     // retrieve options
     list ($tpl, $opts) = explode(':', $tpl, 2);
 
@@ -354,6 +361,13 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
             }
             $d = str_replace($v[0], $rpl, $d);
         }
+    }
+
+    // Skins lang support
+    if ( preg_match_all('~{{(.*?)}}~i', $d, $rep, PREG_SET_ORDER) )
+    {
+        foreach ($rep as $v)
+            $d = str_replace($v[0], lang($v[1]), $d);
     }
 
     // override process template (filter)
@@ -613,16 +627,6 @@ function send_cookie()
     else setcookie('session', $cookie, 0, '/');
 }
 
-function exit_cookie($url = false)
-{
-    send_cookie();
-
-    if ($url) header('Location: '.$url);
-    $echo = ob_get_clean();
-    echo $echo;
-    exit();
-}
-
 // hash type MD5 and SHA256
 function hash_generate($password)
 {
@@ -776,9 +780,9 @@ function template_replacer_news($news_arr, $output)
 {
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
-           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $rss_news_include_url, $my_names,
-           $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $PHP_SELF, $template, $user_query,
-           $_SESS;
+           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $config_use_modrewrite, $rss_news_include_url,
+           $my_names, $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $template, $user_query,
+           $_SESS, $PHP_SELF;
 
     // Short Story not exists
     if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) ) $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
@@ -852,12 +856,13 @@ function template_replacer_news($news_arr, $output)
         }
         else
         {
-            $URL = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[6],$template));
-            if ($user_query) $URL .= "&amp;$user_query";
-            $output = str_replace("[full-link]", "<a href=\"$PHP_SELF{$URL}\">", $output);
+            if ($template == 'Default') $template = false;
+            $URL = $bld = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[6],$template));
+            if ($user_query) $URL = $PHP_SELF . $URL . ($bld ? '&amp;' : '?') . $user_query;
+            $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
         }
 
-        $output      = str_replace("[/full-link]","</a>", $output);
+        $output = str_replace("[/full-link]","</a>", $output);
     }
     else
     {
@@ -880,8 +885,12 @@ function template_replacer_news($news_arr, $output)
     {
         $source = 0;
         $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
-        $output = str_replace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
-        $output = str_replace('[/edit]', '</a>', $output);
+        $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
+        $output = str_ireplace('[/edit]', '</a>', $output);
+    }
+    else
+    {
+        $output = preg_replace('~\[edit\].*?\[/edit\]~i', '', $output);
     }
 
     // Star Rating
@@ -933,9 +942,11 @@ function add_to_log($username, $action, $try = 3)
     // create log file if not exists
     if ( !file_exists($flog) )
     {
-        fclose(fopen($flog,'w'));
-        chmod ($flog, 0666);
+        @fclose(@fopen($flog,'w'));
+        @chmod ($flog, 0666);
     }
+
+    if ( !file_exists($flog) ) return false;
 
     // add to log
     $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m').'.php', 'a') or ($locked = true);
@@ -1038,6 +1049,8 @@ function build_uri($left, $right, $html = 1)
 {
     $URI = array();
     foreach ((array)explode(',', $left) as $i => $v) if (!empty($right[$i])) $URI[] = urlencode($v).'='.urlencode($right[$i]);
+
+    if (empty($URI)) return false;
     return '?'.implode(($html?'&amp;':'&'), $URI);
 }
 
@@ -1485,7 +1498,7 @@ function msg($type, $title, $text, $back = false, $bc = false)
     if ($back) $back = '<a href="'.$back.'">go back</a>';
     echo over_tpl('msg', array($text, '<br /><br>' . $back) );
     echofooter();
-    exit_cookie();
+    die();
 }
 
 // Displays header skin
@@ -1926,7 +1939,7 @@ function CSRFMake() /* Make CSRF in Cookies */
 {
     global $_SESS;
     $_SESS['U:CSRF'] = md5(mt_rand() . mt_rand());
-    send_cookie(true);
+    send_cookie();
     return $_SESS['U:CSRF'];
 }
 
@@ -1936,9 +1949,9 @@ function CSRFCheck($token = 'csrf_code') /* Check CSRF code  */
     if ($_SESS['U:CSRF'] != $_REQUEST[$token])
     {
         add_to_log($_SESS['user'], 'CSRF Missed when add user');
-        msg("error", LANG_ERROR_TITLE, lang("CSRF is missing"), "javascript:history.go(-1)");
+        header('Location: '.$_SERVER['HTTP_REFERER']."#csrf_is_missing");
+        msg("error", LANG_ERROR_TITLE, "<script> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
     }
-
 }
 
 ?>

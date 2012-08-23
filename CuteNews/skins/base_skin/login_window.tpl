@@ -10,13 +10,13 @@
         </tr>
         <tr>
             <td>Password: </td>
-            <td><input type="password" name="password" id="login_password" style='width:150'></td>
+            <td><input tabindex=1 type="password" name="password" id="login_password" style='width:150'></td>
             <td>&nbsp;<a href='register.php?action=lostpass'>(lost password)</a> </td>
         </tr>
         <tr>
             <td>&nbsp;</td>
             <td style='text-align:left'>
-                <input accesskey='s' type=submit style="width:150; background-color: #F3F3F3;" value='      Login...      '><br/>
+                <input tabindex=1 accesskey='s' type=submit style="width:150px; background-color: #F3F3F3;" value='      Login...      '><br/>
             </td>
             <td style='text-align:left'><label for=rememberme title='Remmber me for 30 days, Do not use on Public-Terminals!'>
                 <input id=rememberme type=checkbox value=yes style="border:0px;" name=rememberme>Remember Me</label>

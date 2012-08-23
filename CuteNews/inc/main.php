@@ -5,7 +5,8 @@ hook('init_main');
 //If member access level is commenter, redirect him to personal options
 if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and $action == "dologin")
 {
-    exit_cookie($config_http_script_dir."/index.php?mod=options&action=personal");
+    header('Location: '.$config_http_script_dir."/index.php?mod=options&action=personal");
+    die();
 }
 
 // ----------------------------------------

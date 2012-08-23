@@ -6,6 +6,9 @@
     // plugin tells us: he is fork, stop
     if ( hook('fork_archives', false) ) return;
 
+    // Save path for htaccess
+    $w = fopen(SERVDIR.'/cdata/htpath.php', 'w'); fwrite($w, '<'.'?php $ht_path = "'.dirname(__FILE__).'"; ?>'); fclose($w);
+
     // Check including
     $Uri = '//'.dirname( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
     if (strpos($config_http_script_dir, $Uri) !== false && strpos($PHP_SELF, 'show_archives.php') !== false) die_stat(403, 'Wrong including show_archives.php! Check manual to get more information about this issue.');

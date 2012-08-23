@@ -18,7 +18,6 @@ if ($action == "mass_delete")
     if(!$have_perm)
     {
         msg("error", lang("No Access"), lang("You dont have access for this action"), "$PHP_SELF?mod=editnews&action=list");
-        exit_cookie();
     }
 
     // if category is nice
@@ -30,7 +29,6 @@ if ($action == "mass_delete")
             if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($all_this_cat, $allowed_cats) )
             {
                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
-                exit_cookie();
             }
         }
     }
@@ -40,7 +38,6 @@ if ($action == "mass_delete")
         if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($item_db[6], $allowed_cats) )
         {
             msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
-            exit_cookie();
         }
     }
 
@@ -61,8 +58,6 @@ if ($action == "mass_delete")
     }
     echo "</td></tr></table></form>";
     echofooter();
-
-    exit_cookie();
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Do Mass Delete
@@ -192,7 +187,6 @@ elseif($action == "mass_approve")
          msg("info",  lang("News Approved"), str_replace('%1', $approved_articles, "All articles that you selected (%1) were approved and are now active"), "$PHP_SELF?mod=editnews&action=list");
     else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")), "$PHP_SELF?mod=editnews&action=list");
 
-    exit_cookie();
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Mass Move to Cat
@@ -251,7 +245,6 @@ elseif ($action == "mass_move_to_cat")
               <input type=submit value=\"".lang('Move')."\"></td></tr></table></form>";
 
     echofooter();
-    exit_cookie();
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   DO Mass Move to One Category
@@ -374,7 +367,6 @@ elseif($action == "mass_archive")
     echo"</td></tr></table></form>";
 
     echofooter();
-    exit_cookie();
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   DO Mass Send To Archive

@@ -124,10 +124,9 @@ elseif ($action == 'check')
         if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
              include (SERVDIR.'/cdata/log/revision.php');
 
-        echo '<html><head><style type="text/css">body { font-size: 15px; padding: 0; margin: 0; text-align: center; }</style></head><body></body>';
         if  ($my_current_rev < $rev[1])
-             echo '<span style="color: red;">'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].'</span>';
-        else echo '<span style="color: green;">'.lang('Your version build is latest').'</span>';
-        echo '</body></html>';
+             echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
+        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest').'</span>");';
+        die();
     }
 }

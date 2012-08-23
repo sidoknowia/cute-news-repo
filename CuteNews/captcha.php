@@ -18,8 +18,4 @@
 
     // Image generation
     $captcha->CreateImage();
-
-    // Save captcha to COOKIE
-    $_SESS[$code] = $_SESSION[$code];
-
-    exit_cookie();
+    die();

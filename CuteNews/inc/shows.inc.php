@@ -402,7 +402,10 @@ do
             send_mail($config_notify_email, lang("CuteNews - New Comment Added"), lang("New Comment was added by")." $name:\n--------------------------$comments");
         }
 
-        echo '<script type="text/javascript">window.location="'.$PHP_SELF.'?subaction=showfull&id='.$id.'&ucat='.$ucat.'&archive='.$archive.'&start_from='.$start_from.'&'.$user_query.'";</script>';
+        $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from', array('showfull',$id,$ucat,$archive,$start_from), false);
+        if ($user_query) $URL .= '&' . $user_query;
+
+        echo '<script type="text/javascript">window.location="'.$URL.'";</script>';
     }
 
     // Show Full Story -------------------------------------------------------------------------------------------------

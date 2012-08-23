@@ -93,13 +93,18 @@ class SimpleCaptcha
 
     function CreateImage()
     {
+        global $_SESS;
+
         $ini = microtime(true);
 
         // is GD not installed
         if ( !function_exists('imagecreatetruecolor') )
         {
             list($text, $reply) = $this->GetCaptchaText();
-            $_SESSION[ $this->session_var ] = $reply;
+
+            $_SESS[$this->session_var] = $reply;
+            send_cookie();
+
             header("Content-Type: text/html; charset=UTF-8");
             echo '<html><body style="font-size: 42px; font-family: Arial, Tahoma, Serif;">'.$reply.'</body></html>';
         }
@@ -114,7 +119,8 @@ class SimpleCaptcha
             $fontcfg  = $this->fonts[array_rand($this->fonts)];
             $this->WriteText($text, $fontcfg);
 
-            $_SESSION[$this->session_var] = $reply;
+            $_SESS[$this->session_var] = $reply;
+            send_cookie();
 
             /** Transformations */
             $this->WaveImage();

@@ -40,7 +40,6 @@
         </td>
         <td>&nbsp;</td>
     </tr>
-
     <tr>
         <td width="75" valign="top"><br />Short Story</td>
         <td>
@@ -51,7 +50,7 @@
             <p>{$insertsmiles}</p>
         </td>
     </tr>
-
+    <tr><td colspan="3">&nbsp;</td></tr>
     <tr id='full-story' style='display:none; z-index:1;'>
 
         <td width="75" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>

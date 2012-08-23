@@ -56,7 +56,7 @@ elseif($action == "doeditcomment")
     if (empty($poster) and empty($deletecomment))
     {
         echo lang("The poster can not be blank");
-        exit_cookie();
+        die();
     }
 
     if (empty($mail))   $mail   = lang("none");

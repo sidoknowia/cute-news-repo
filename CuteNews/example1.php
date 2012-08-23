@@ -36,7 +36,7 @@ elseif($_GET['go'] == "search"){
    include("search.php");
 }
 elseif($_GET['go'] == "userlist"){
-    $smod = 'userlist';
+    $imod = 'userlist';
     $user_flags = 'unraple';
     include("shows.php");
 }

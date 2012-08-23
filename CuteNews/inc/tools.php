@@ -311,7 +311,7 @@ elseif ($action == 'report')
         fclose($ds);
 
         header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
-        exit_cookie();
+        die();
     }
     elseif ($do == 'complete')
     {
@@ -461,7 +461,6 @@ elseif ($action == 'xfields')
 
         fv_serialize('conf', $cfg);
         msg('info', 'Saved', 'Config successfully saved', false, make_breadcrumbs('main/options/tools:xfields=More fields', true));
-        exit_cookie();
     }
 
     $CSRF = CSRFMake();
@@ -506,6 +505,67 @@ elseif ($action == 'language')
     foreach ($lang as $i => $v) $langprepared[] = array($i, $v,ucfirst($i));
 
     echo proc_tpl('tools/lang/index', array("lang" => $langprepared, 'CSRF' => $CSRF));
+    echofooter();
+}
+elseif ($action == 'plugins')
+{
+    $error = false;
+    $urlpath = $_POST['urlpath'];
+
+    if ($do == 'upload')
+    {
+        CSRFCheck();
+        if (!empty($_FILES['file']) && $_FILES['file']['name'])
+        {
+            if ( !move_uploaded_file($_FILES['file']['tmp_name'], SERVDIR.'/cdata/plugins/'.$_FILES['file']['name']) )
+            {
+                $error = lang('File not uploaded');
+            }
+            $urlpath = false;
+        }
+        elseif ($urlpath && (preg_match('~(\w+)\.plg$~i', $urlpath, $filename)))
+        {
+            $r = fopen($urlpath, 'r');
+            ob_start(); fpassthru($r); $file = ob_get_clean();
+
+            $w = fopen(SERVDIR.'/cdata/plugins/'.$filename[1].'.php', 'w');
+            fwrite($w, $file);
+            fclose($w);
+        }
+        else $error = lang('File empty');
+    }
+    elseif ($do == 'uninstall')
+    {
+        CSRFCheck();
+        unlink(SERVDIR.'/cdata/plugins/'.$name.'.php');
+    }
+
+    $CSRF = CSRFMake();
+    echoheader('home', lang("Install plugins"), make_breadcrumbs('main=main/options:options=options/tools:plugins=Plugins', true));
+
+    $list = array();
+    foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
+    {
+        if (preg_match('~\.php$~i', $plugin))
+        {
+            $r = fopen(SERVDIR.$plugin, 'r');
+            $description = '-';
+            if (preg_match('~// description: (.*)~i', fgets($r), $match))
+                $description = $match[1];
+
+            fclose($r);
+
+            $list[] = array
+            (
+                'name' => str_replace( array('/cdata/plugins/', '.php'), '', $plugin),
+                'path' => $plugin,
+                'desc' => $description
+            );
+        }
+    }
+
+    echo proc_tpl('plugins/list');
+
     echofooter();
 }
 

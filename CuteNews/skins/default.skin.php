@@ -142,35 +142,24 @@ td.top_header { padding: 8px; }
 <table border="0" cellspacing="0" cellpadding="2" style="width:800px; margin: 0 auto;">
   <tr>
         <td class="bborder" bgcolor="#FFFFFF" style="border-radius: .8em; -moz-border-radius: .8em;">
-<table border=0 cellpadding=0 cellspacing=0 bgcolor="#ffffff" width="800" >
-<tr>
-        <td bgcolor="#FFFFFF" >&nbsp;</td>
-</tr>
-<tr>
-        <td bgcolor="#000000" ><img src="skins/images/blank.gif" width=1 height=1></td>
-</tr>
-<tr>
-        <td bgcolor="#F7F6F4" >
-            {menu}
-        </td>
-</tr>
-<tr>
-        <td bgcolor="#000000" ><img src="skins/images/blank.gif" width=1 height=1></td>
-</tr>
-<tr><td bgcolor="#FFFFFF" ><img src="skins/images/blank.gif" width=1 height=5></td></tr>
-<tr>
-        <td >
-</center>
-<!--SELF-->
 
-<table border=0 cellpadding=0 cellspacing=0 width="100%" height="100%" >
-<tr>
-    <td width="10%"> <p align="center"><br /><img border="0" src="skins/images/{image-name}.gif" > </td>
-    <td width="87%" height="20%"> {breadcrumbs} <div class=header>{header-text}</div> </td>
-</tr>
-<tr>
-    <td width="10%">&nbsp;</td>
-    <td width="87%">
+            <table border=0 cellpadding=0 cellspacing=0 bgcolor="#ffffff" width="800" >
+            <tr> <td bgcolor="#FFFFFF" >&nbsp;</td> </tr>
+            <tr> <td bgcolor="#000000" ><img src="skins/images/blank.gif" width=1 height=1></td> </tr>
+            <tr> <td bgcolor="#F7F6F4"> {menu} </td> </tr>
+            <tr> <td bgcolor="#000000"><img src="skins/images/blank.gif" width=1 height=1></td> </tr>
+            <tr> <td bgcolor="#FFFFFF"><img src="skins/images/blank.gif" width=1 height=5></td></tr>
+            <tr> <td>
+
+            <!--SELF-->
+            <table border=0 cellpadding=0 cellspacing=0 width="100%" height="100%" >
+            <tr>
+                <td width="10%"> <p align="center"><br /><img border="0" src="skins/images/{image-name}.gif" > </td>
+                <td width="87%" height="20%"> {breadcrumbs} <div class=header>{header-text}</div> </td>
+            </tr>
+            <tr>
+                <td width="10%">&nbsp;</td>
+                <td width="87%">
 <!--MAIN area-->
 HTML;
 

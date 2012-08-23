@@ -54,7 +54,7 @@ if($action == "doregister")
 
     // ----------------------------------------
     if ( bsearch_key($regusername, DB_USERS) )
-        msg("error", LANG_ERROR_TITLE, lang("This username is already taken"), true);
+        msg("error", LANG_ERROR_TITLE, lang("This username is already taken"));
         
     $add_time = time() + $config_date_adjust*60;
 
@@ -142,5 +142,4 @@ else
 }
 
 exec_time();
-exit_cookie();
 ?>
