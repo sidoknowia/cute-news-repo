@@ -26,7 +26,8 @@
 
                         <!-- Add User Table -->
                         <form method=post action="{$PHP_SELF}">
-                        <input type="hidden" name="csrf_code" value="{$CSRF}" />
+                        <input type="hidden" id="csrf_code" name="csrf_code" value="{$CSRF}" />
+                        <script src="{$PHP_SELF}?csrfmake=csrfmake"></script>
                         <table class="panel" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
                                 <td><label for="regusername">Username</label></td>

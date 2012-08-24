@@ -1,6 +1,8 @@
 <?PHP
 
 include ('core/init.php');
+include ('core/loadenv.php');
+
 require_once(SERVDIR.'/skins/'.$config_skin.'.skin.php');
 
 // plugin tells us: he is fork, stop
@@ -23,13 +25,13 @@ $register_level = $config_registration_level;
 // sanitize
 extract(filter_request('captcha,confirm,regusername,regpassword,regemail,regnickname,user,email,s'), EXTR_OVERWRITE);
 
-if($action == "doregister")
+if ($action == "doregister")
 {
 
-    if($config_allow_registration != "yes")     msg("error", LANG_ERROR_TITLE, "User registration is Disabled");
-    if(!$regusername)                           msg("error", LANG_ERROR_TITLE, "Username can not be blank");
-    if(!$regpassword)                           msg("error", LANG_ERROR_TITLE, "Password can not be blank");
-    if(!$regemail)                              msg("error", LANG_ERROR_TITLE, "Email can not be blank");
+    if ($config_allow_registration != "yes")     msg("error", LANG_ERROR_TITLE, "User registration is Disabled");
+    if (!$regusername)                           msg("error", LANG_ERROR_TITLE, "Username can not be blank");
+    if (!$regpassword)                           msg("error", LANG_ERROR_TITLE, "Password can not be blank");
+    if (!$regemail)                              msg("error", LANG_ERROR_TITLE, "Email can not be blank");
     if ($confirm != $regpassword)               msg("error", LANG_ERROR_TITLE, "Confirm password don't match");
     if (!$captcha || $captcha != $_SESS['CSW']) msg("error", LANG_ERROR_TITLE, "Captcha code not valid");
 
@@ -47,10 +49,10 @@ if($action == "doregister")
         msg("error", LANG_ERROR_TITLE, lang("Your nickname must only contain valid characters, numbers and the symbol '_'"));
 
     elseif(!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
-        msg("error", LANG_ERROR_TITLE, lang("Not valid Email."));
+        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"));
 
     elseif(!preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regpassword))
-        msg("error", LANG_ERROR_TITLE, lang("Your password must conatain only valid characters and numbers"));
+        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"));
 
     // ----------------------------------------
     if ( bsearch_key($regusername, DB_USERS) )

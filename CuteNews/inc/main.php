@@ -107,7 +107,7 @@ if($member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
     {
         if ($count_my_news == 1)
              $rand_msg[] = ", ".str_replace(array('%1','%2'), array($todaynews, $s), lang('today we have <b>%1</b> new article%2, <b>1</b> of them is yours'));
-        else $rand_msg[] = ", ".str_replace(array('%1','%2'), array($todaynews, $s), lang('today we have <b>%1</b> new article%2, <b>$count_my_news</b> of them are yours'));
+        else $rand_msg[] = ", ".str_replace(array('%1','%2','%3'), array($todaynews, $s, $count_my_news), lang('today we have <b>%1</b> new article%2, <b>%3</b> of them are yours'));
     }
 
     $rand_msg[] = ", ".str_replace('%1', $PHP_SELF.'?mod=addnews&action=addnews', lang('are you in a mood of <a href="%1"><b>adding</b></a> some news?'));

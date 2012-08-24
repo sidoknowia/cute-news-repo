@@ -1,6 +1,7 @@
 <?PHP
 
 require_once("core/init.php");
+include ('core/loadenv.php');
 
 if ($id != "")
 {

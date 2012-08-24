@@ -586,7 +586,7 @@ function send_mail($to, $subject, $message, $hdr = false)
         if ($v)
         {
             $mx = false;
-            $pt = SERVDIR.CACHE.'/mail.log';
+            $pt = SERVDIR.'/cdata/cache/mail.log';
             $ms = "-------------\n".$headers."Subject: $subject\n\n".$message."\n\n";
             mail($v, $subject, $message, $headers) or $mx = true;
             if ($mx) { $log = fopen($pt, 'a'); fwrite($log, $ms); fclose($log); }
@@ -838,7 +838,7 @@ function template_replacer_news($news_arr, $output)
     }
 
     // Link to
-    $URL = build_uri('subaction,id,archive,start_from,ucat', array('showfull',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
+    $URL = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT],$template));
     $URL .= "&amp;#disqus_thread";
     if ($user_query) $URL .= $user_query;
     $output      = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);

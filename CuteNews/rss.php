@@ -1,6 +1,7 @@
 <?php
 
 require_once('core/init.php');
+require_once('core/loadenv.php');
 require_once('cdata/rss_config.php');
 
 // plugin tells us: he is fork, stop

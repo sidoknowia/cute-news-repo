@@ -8,6 +8,7 @@
     */
     $NotHeaders = true;
     require_once ('core/init.php');
+    include ('core/loadenv.php');
 
     // plugin tells us: he is fork, stop
     if ( hook('fork_news', false) ) return;

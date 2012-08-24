@@ -56,8 +56,15 @@ if ($action == "list")
 // ********************************************************************************
 elseif ($action == "adduser")
 {
-    if (!$regusername) msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "javascript:history.go(-1)");
-    if (!$regpassword) msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "javascript:history.go(-1)");
+    if (!$regusername)
+        msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "javascript:history.go(-1)");
+
+    if (!$regpassword)
+        msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "javascript:history.go(-1)");
+
+    if (!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
+        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"), "javascript:history.go(-1)");
+
     CSRFCheck();
 
     $all_users = file(SERVDIR."/cdata/db.users.php");
@@ -95,7 +102,6 @@ elseif ($action == "adduser")
 // ********************************************************************************
 elseif ($action == "edituser")
 {
-
     $CSRF = CSRFMake();
     if ( false === ($user_arr = bsearch_key($id, DB_USERS)) )
          die( lang('User not exist') );

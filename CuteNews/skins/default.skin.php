@@ -142,7 +142,7 @@ td.top_header { padding: 8px; }
 <title>{title}</title>
 </head>
 
-<body>
+<body style="width: 800px; margin: 8px auto;">
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>

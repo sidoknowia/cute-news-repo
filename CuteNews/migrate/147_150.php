@@ -12,6 +12,7 @@
 
     // Migration script
     include ('../core/init.php');
+    include ('../core/loadenv.php');
 
     function iconv_self($text, $cp) // to UTF8
     {

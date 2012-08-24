@@ -124,9 +124,9 @@ elseif ($action == 'check')
         if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
              include (SERVDIR.'/cdata/log/revision.php');
 
-        if  ($my_current_rev < $rev[1])
+        if  ($my_current_rev < $rev[1] && $my_current_rev)
              echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
-        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest').'</span>");';
+        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest. Check updates in Options > Update Cutenews').'</span>");';
         die();
     }
 }

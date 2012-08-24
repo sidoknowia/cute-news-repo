@@ -42,10 +42,7 @@
     <tr style="display:none;" id='multicat'>
         <td width="75"> Category </td>
         <td>
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel">
-                {$multi_cat_html}
-            </tr>
-            </table>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$multi_cat_html} </table>
         </td>
         <td> </td>
     </tr>

@@ -12,6 +12,7 @@ header( 'Cache-Control: post-check=0, pre-check=0', false );
 header( 'Pragma: no-cache' );
 
 include ('core/init.php');
+include ('core/loadenv.php');
 
 if ( $using_safe_skin )
      require_once(SERVDIR."/skins/base_skin/default.skin.php");
@@ -58,6 +59,14 @@ if ($action == "logout")
 // sanitize
 $is_loged_in = false;
 extract(filter_request('mod'), EXTR_OVERWRITE);
+
+if ($csrfmake == 'csrfmake')
+{
+    $CSRF = CSRFMake();
+    echo "document.getElementById('csrf_code').value = '{$CSRF}';";
+    send_cookie();
+    die();
+}
 
 // Check the User is Identified -------------------------------------------------------------------------------------
 $result      = false;

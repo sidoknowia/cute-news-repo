@@ -1,6 +1,8 @@
 <form  name="login" id="login_form" action='{$PHP_SELF}' method="post">
-    
-    <input type="hidden" name="csrf_code" value="{$CSRF}">
+
+    <input type="hidden" id="csrf_code" name="csrf_code" value="{$CSRF}">
+    <script src="{$PHP_SELF}?csrfmake=csrfmake"></script>
+
     <input type="hidden" name="action" value="dologin">
     <table width="100%" border=0 cellpadding=1 cellspacing=0>
         <tr>

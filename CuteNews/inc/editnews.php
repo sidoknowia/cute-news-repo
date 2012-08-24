@@ -3,20 +3,21 @@
 if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST)
     msg("error", "Access Denied", "You don't have permission to edit news");
 
-$orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
 
-//only show allowed categories
+// only show allowed categories
 $allowed_cats = array();
 $cat_lines = array();
-
+$orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
 foreach ($orig_cat_lines as $single_line)
 {
     $ocat_arr = explode("|", $single_line);
-    $cat[$ocat_arr[0]] = $ocat_arr[1];
-    if ($member_db[UDB_ACL] <= $ocat_arr[3] or ($ocat_arr[3] == '0' || $ocat_arr[3] == ''))
+    $cat[ $ocat_arr[CAT_ID] ] = $ocat_arr[CAT_NAME];
+
+    // If PERM=empty, allowed from All, else only for userlevel < PERM, or member is admin
+    if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN or $member_db[UDB_ACL] <= $ocat_arr[CAT_PERM] or empty($ocat_arr[CAT_PERM]))
     {
         $cat_lines[] = $single_line;
-        $allowed_cats[] = $ocat_arr[0];
+        $allowed_cats[] = $ocat_arr[CAT_ID];
     }
 }
 
@@ -88,55 +89,67 @@ if ($action == "list")
             $itemdate   = date("d/m/y", $item_db[0]);
             $bg         = $flag ? "#F7F6F4" : "#FFFFFF";
             $flag       = 1 - $flag;
+            $entry_show = true;
 
-            if (strlen($item_db[2]) > 74)
-                $title = substr($item_db[2], 0, 70)." ...";
-
-            // Safety
-            $title = $item_db[2];
-            $title = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $title) );
-            $title = preg_replace("/<[^>]*>/", "", $title) ;
-            
-            $entries .= proc_tpl
-            (
-                'editnews/list/line',
-                array(  'item_db0'  => $item_db[0],
-                        'title'     => $title,
-                        'bg'        => $bg,
-                        'source'    => $source)
-            );
-
-            $count_comments = countComments($item_db[0], $source);
-            if ($count_comments == 0)
-                 $entries .= "<span style='color:gray;'>".$count_comments."</span>";
-            else $entries .= $count_comments;
-
-            $entries .= "&nbsp;&nbsp;&nbsp;&nbsp;<td height=18 bgcolor=$bg nowrap>&nbsp;&nbsp;&nbsp;";
-
-            if ($item_db[NEW_CAT] == "") $my_cat = "<span style='color:gray;'>---</span>";
-            elseif (strstr($item_db[NEW_CAT], ','))
+            // Check access user for category
+            if ( !empty($item_db[NEW_CAT]) )
             {
-                $all_this_cats_arr      = explode(',',$item_db[6]);
-                $my_multy_cat_labels    = '';
-                foreach ($all_this_cats_arr as $this_single_cat) $my_multy_cat_labels .= $cat[$this_single_cat].", ";
-                $my_cat = "<span onmouseover=\" window.status='categories: $my_multy_cat_labels'; return true\" onmouseout=\"window.status=''; return true\"><span style='color:#7979FF;' title='$my_multy_cat_labels'>(".lang('multiple')."</span></span>";
+                foreach (explode(',', $item_db[NEW_CAT]) as $all_this_cat)
+                {
+                    if ( !in_array($all_this_cat, $allowed_cats) )
+                    {
+                        $entry_show = false;
+                        break;
+                    }
+                }
             }
-            else $my_cat = $cat[ $item_db[NEW_CAT] ];
 
-            $entries .= $my_cat."&nbsp;
-                        <td height=18 bgcolor=$bg>".$itemdate."</td>
-                        <td height=18 bgcolor=$bg>".$item_db[1]."</td>
-                        <td align=center bgcolor=$bg><input name=\"selected_news[]\" value=\"{$item_db[0]}\" style=\"border:0; background-color:$bg\" type='checkbox'></td>
-                        </tr>";
+            if ($entry_show)
+            {
+                // If news title over 74, truncate it
+                if (strlen($item_db[NEW_TITLE]) > 74) $title = substr($item_db[2], 0, 70)." ...";
 
-            $entries_showed++;
+                // Safety
+                $title = $item_db[NEW_TITLE];
+                $title = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $title) );
+                $title = preg_replace("/<[^>]*>/", "", $title) ;
+
+                $entries .= proc_tpl
+                (
+                    'editnews/list/line',
+                    array(  'item_db0'  => $item_db[0],
+                            'title'     => $title,
+                            'bg'        => $bg,
+                            'source'    => $source)
+                );
+
+                $count_comments = countComments($item_db[NEW_ID], $source);
+                if ($count_comments == 0)
+                     $entries .= "<span style='color:gray;'>".$count_comments."</span>";
+                else $entries .= $count_comments;
+
+                $entries .= "&nbsp;&nbsp;&nbsp;&nbsp;<td height=18 bgcolor=$bg nowrap>&nbsp;&nbsp;&nbsp;";
+
+                if (empty($item_db[NEW_CAT])) $my_cat = "<span style='color:gray;'>---</span>";
+                elseif (strstr($item_db[NEW_CAT], ','))
+                {
+                    $all_this_cats_arr      = explode(',', $item_db[6]);
+                    $my_multy_cat_labels    = '';
+                    foreach ($all_this_cats_arr as $this_single_cat) $my_multy_cat_labels .= $cat[$this_single_cat].", ";
+                    $my_cat = "<span onmouseover=\" window.status='categories: $my_multy_cat_labels'; return true\" onmouseout=\"window.status=''; return true\"><span style='color:#7979FF;' title='$my_multy_cat_labels'>(".lang('multiple')."</span></span>";
+                }
+                else $my_cat = $cat[ $item_db[NEW_CAT] ];
+
+                $entries .= $my_cat."&nbsp;
+                            <td height=18 bgcolor=$bg>".$itemdate."</td>
+                            <td height=18 bgcolor=$bg>".$item_db[1]."</td>
+                            <td align=center bgcolor=$bg><input name=\"selected_news[]\" value=\"{$item_db[0]}\" style=\"border:0; background-color:$bg\" type='checkbox'></td>
+                            </tr>";
+                $entries_showed++;
+            }
 
             if ($i >= $news_per_page + $start_from) break;
-
-        //foreach news line
         }
-        
-    // End prelisting
     }
 
     $all_count_news = count($all_db);
@@ -298,14 +311,17 @@ elseif ($action == "editnews")
 {
     // Show The Article for Editing
     if ($source == "")
+    {
         $all_db = file(SERVDIR."/cdata/news.txt");
-
+    }
     elseif($source == "postponed")
+    {
         $all_db = file(SERVDIR."/cdata/postponed_news.txt");
-
+    }
     elseif($source == "unapproved")
+    {
         $all_db = file(SERVDIR."/cdata/unapproved_news.txt");
-
+    }
     else
     {
         $db = SERVDIR."/cdata/archives/".$source.".news.arch";
@@ -314,46 +330,42 @@ elseif ($action == "editnews")
         else $all_db = file(SERVDIR."/cdata/news.txt");
     }
 
+    // Check for exists news ID
     $found = FALSE;
     foreach ($all_db as $line)
     {
-        $item_db=explode("|",$line);
+        $item_db = explode("|", $line);
         if ($id == $item_db[0])
         {
             $found = TRUE;
             break;
         }
-        // foreach news line
-    }
-
-    $have_perm = 0;
-    if(($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR))
-        $have_perm = 1;
-
-    elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[NEW_USER] == $member_db[UDB_NAME])
-        $have_perm = 1;
-
-    if(!$have_perm)
-        msg("error", lang("No Access"), lang("You don't have access for this action"), $PHP_SELF."?mod=editnews&action=list");
-
-    // Check access user for category
-    if (strstr($item_db[6], ','))
-    {
-        $all_these_cats = explode(',', $item_db[6]);
-        foreach($all_these_cats as $all_this_cat)
-        {
-            if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($all_this_cat, $allowed_cats) )
-                msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
-        }
-    }
-    else
-    {
-        if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($item_db[6], $allowed_cats) )
-            msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
     }
 
     if (!$found)
         msg("error", LANG_ERROR_TITLE, "The selected news item can <b>not</b> be found.");
+
+    // Check permission to edit news
+    $have_perm = 0;
+    if (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR))
+        $have_perm = 1;
+
+    elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[NEW_USER] == $member_db[UDB_NAME])
+        $have_perm = 1;
+
+    if (!$have_perm)
+        msg("error", lang("No Access"), lang("You don't have access for this action"), $PHP_SELF."?mod=editnews&action=list");
+
+    // Check access user for category
+    if ( !empty($item_db[NEW_CAT]) )
+    {
+        $all_these_cats = explode(',', $item_db[NEW_CAT]);
+        foreach ($all_these_cats as $all_this_cat)
+        {
+            if ( !in_array($all_this_cat, $allowed_cats) )
+                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
+        }
+    }
 
     $newstime   = date("D, d F Y h:i:s", $item_db[0]);
     $item_db[2] = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $item_db[2]) );

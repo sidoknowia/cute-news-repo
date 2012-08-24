@@ -38,3 +38,4 @@ $config_fb_inactive = "no";
 $config_fb_comments = "4";
 $config_fb_box_width = "420";
 $config_xss_strict = "1";
+$config_ipauth = "1";
