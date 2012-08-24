@@ -370,20 +370,23 @@ elseif ($action == "editnews")
     echoheader("editnews", lang("Edit News"));
 
     // make category lines
-    $lines_html = false;
-    foreach($cat_lines as $single_line)
+    if ( count($cat_lines) > 0)
     {
-        $cat_arr = explode("|", $single_line);
+        $lines_html = false;
+        foreach($cat_lines as $single_line)
+        {
+            $cat_arr = explode("|", $single_line);
 
-        $lines_html .= "<td style='font-size:10px;' valign=top><label for='cat{$cat_arr[0]}'>";
-        if ( in_array($cat_arr[0], explode(',',$item_db[6])) )
-             $lines_html .= "<input checked style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
-        else $lines_html .= "<input style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
+            $lines_html .= "<td style='font-size:10px;' valign=top><label for='cat{$cat_arr[0]}'>";
+            if ( in_array($cat_arr[0], explode(',',$item_db[6])) )
+                 $lines_html .= "<input checked style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
+            else $lines_html .= "<input style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
 
-        $i++;
-        if ($i%4 == 0) $lines_html .= '<tr>';
+            $i++;
+            if ($i%4 == 0) $lines_html .= '<tr>';
+        }
+        $lines_html .= "</tr>";
     }
-    $lines_html .= "</tr>";
 
     // Show the Comments for Editing
     $Comments_HTML = false;
@@ -516,6 +519,7 @@ elseif ($action == "editnews")
         ),
         array
         (
+            'CATEGORY'              => $cat_lines? 1 : 0,
             'SAVED'                 => $saved,
             'USE_AVATAR'            => ($config_use_avatar == 'yes') ? 1 : 0,
             'WYSIWYG'               => $use_wysiwyg,

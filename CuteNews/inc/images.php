@@ -55,7 +55,7 @@ elseif ($action != "doimagedelete")
             $type           = end($img_name_arr);
 
             if (empty($image_name)) $img_result .= "<br><span style='color: red;'>$current_image -> No File Specified For Upload!</span>";
-            elseif( !isset($overwrite) and file_exists(SERVDIR."/cdata/upimages/".$image_name)){ $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";}
+            elseif( !isset($overwrite) and file_exists(SERVDIR."/uploads/".$image_name)){ $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";}
             elseif( !(in_array($type, $allowed_extensions) or in_array(strtolower($type), $allowed_extensions)) )
             {
                 $img_result .= "<br><span style='color:red;'>$image_name ->This type of file is not allowed!</span>";
@@ -63,8 +63,8 @@ elseif ($action != "doimagedelete")
             else
             {
                 // Image is OK, upload it
-                copy($image, SERVDIR."/cdata/upimages/".$image_name) or $img_result .= "<br><span style='color: red;'>$image_name -> Couldn't copy image to server</span><br />Check if file_uploads is allowed in the php.ini file of your server";
-                if (file_exists(SERVDIR."/cdata/upimages/".$image_name))
+                copy($image, SERVDIR."/uploads/".$image_name) or $img_result .= "<br><span style='color: red;'>$image_name -> Couldn't copy image to server</span><br />Check if file_uploads is allowed in the php.ini file of your server";
+                if (file_exists(SERVDIR."/uploads/".$image_name))
                 {
                     $img_result .= "<br><span style='color: green;'>$image_name -> Image was uploaded</span>";
                     if ($action == "quick")
@@ -93,7 +93,7 @@ elseif ($action != "doimagedelete")
     );
 
     $i = 0;
-    $img_dir = opendir(SERVDIR."/cdata/upimages");
+    $img_dir = opendir(SERVDIR."/uploads");
     while ($file = readdir($img_dir))
     {
         //Yes we'll store them in array for sorting
@@ -106,12 +106,12 @@ elseif ($action != "doimagedelete")
     {
         $img_name_arr = explode(".",$file);
         $img_type     = end($img_name_arr);
-        if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/cdata/upimages/".$file))
+        if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/uploads/".$file))
         {
             $i++;
-            $this_size =  filesize(SERVDIR."/cdata/upimages/".$file);
+            $this_size =  filesize(SERVDIR."/uploads/".$file);
             $total_size += $this_size;
-            $img_info = getimagesize(SERVDIR."/cdata/upimages/".$file);
+            $img_info = getimagesize(SERVDIR."/uploads/".$file);
             if ( $i%2 != 0 ) $bg = "bgcolor=#F7F6F4"; $bg = "";
             if ($action == "quick")
             {
@@ -127,7 +127,7 @@ elseif ($action != "doimagedelete")
             else
             {
                 echo "<tr $bg>
-                        <td height=16><a target=_blank href=\"". $config_http_script_dir ."/cdata/upimages/$file\">$file</a></td>
+                        <td height=16><a target=_blank href=\"". $config_http_script_dir ."/uploads/$file\">$file</a></td>
                         <td width=100 height=16 align=right>$img_info[0]x$img_info[1]</td>
                         <td width=72 height=16 align=right>&nbsp;". formatsize($this_size) ."</td>
                         <td width=48 height=16 align=center><input type=checkbox name=images[$file] value=\"$file\"></td>
@@ -169,7 +169,7 @@ elseif ($action == "doimagedelete")
         msg("info", lang("No Images selected"), lang("You must select images to be deleted"), $PHP_SELF."?mod=images");
 
     foreach ($images as $image)
-        unlink(SERVDIR."/cdata/upimages/".$image) or print(lang("Could not delete image")." <b>$file</b>");
+        unlink(SERVDIR."/uploads/".$image) or print(lang("Could not delete image")." <b>$file</b>");
 
     msg("info", lang("Image(s) Deleted"), lang("The image was successfully deleted"), $PHP_SELF."?mod=images");
 

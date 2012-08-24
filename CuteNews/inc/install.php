@@ -5,7 +5,7 @@
     if ($action == 'make')
     {
         $copy = array('Default', 'Headlines', 'rss');
-        $dirs = array('archives', 'backup', 'cache', 'log', 'upimages', 'plugins', 'template');
+        $dirs = array('archives', 'backup', 'cache', 'log', 'plugins', 'template');
         $files = array
         (
             'auto_archive.db.php', 'idnews.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
@@ -24,7 +24,7 @@
                 $x = fopen($dir.'/index.html', 'w');
                 fwrite($x, 'Access denied');
                 fclose($x);
-                chmod ( $dir.'/index.html', 0666 );
+                chmod ( $dir.'/index.html', 0664 );
             }
         }
 
@@ -55,9 +55,17 @@
 
         // Place .htaccess
         $w = fopen(SERVDIR.'/cdata/.htaccess', 'w');
-        fwrite($w, "Order Allow, Deny");
+        fwrite($w, "Deny From All");
         chmod (SERVDIR.'/cdata/.htaccess', 0644);
         fclose($w);
+
+        // Make Upload folder
+        mkdir(SERVDIR.'/uploads');
+        chmod(SERVDIR.'/uploads', 0777);
+
+        $x = fopen(SERVDIR.'/uploads/index.html', 'w');
+        fwrite($x, 'Access denied');
+        fclose($x);
 
         header("Location: ".PHP_SELF.'?action=register');
 
@@ -65,7 +73,8 @@
     // step 2
     elseif ($action == 'register')
     {
-        echo str_replace('{site}', $_SERVER['SERVER_NAME'] . dirname($_SERVER['REQUEST_URI']), proc_tpl('install/copy'));
+        $site = $_SERVER['SERVER_NAME'] . dirname($_SERVER['REQUEST_URI']);
+        echo str_replace('{site}', preg_replace('~/$~', '', $site), proc_tpl('install/copy'));
     }
     // step 3
     elseif ($action == 'finish')

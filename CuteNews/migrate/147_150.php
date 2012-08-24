@@ -51,6 +51,7 @@
                     <div><input type="checkbox" checked="checked" name="acts[active]" value="Y" /> Convert active dbs</div>
                     <div><input type="checkbox" checked="checked" name="acts[archives]" value="Y" /> Convert archives</div>
                     <div><input type="checkbox" checked="checked" name="acts[backups]" value="Y" /> Convert backups</div>
+                    <div><input type="checkbox" checked="checked" name="acts[images]" value="Y" /> Copy uploaded images</div>
                 </p>
                 <p><input type="submit" value="Start migration script" /></p>
             </form>
@@ -131,7 +132,7 @@
         // -----------------------------------------------------------------------------------------------
         echo '<li>Make folders and files... ';
         $copy = array('Default', 'Headlines', 'rss');
-        $dirs = array('archives', 'backup', 'cache', 'log', 'upimages', 'plugins', 'template');
+        $dirs = array('archives', 'backup', 'cache', 'log', 'plugins', 'template');
         $files = array
         (
             'auto_archive.db.php', 'cat.num.php', 'category.db.php', 'comments.txt', 'config.php',
@@ -179,6 +180,18 @@
             }
         }
         echo 'done</li>';
+
+        // Copy uploads [try to copy]
+        if ($acts['images'] == 'Y')
+        {
+            echo '<li>Copy images... ';
+            $dirv = read_dir(SERVDIR.'/data/upimages');
+            foreach ($dirv as $v)
+            {
+                copy(SERVDIR.$v, SERVDIR.str_replace('/data/upimages/', '/uploads/', $v));
+            }
+            echo 'done</li>';
+        }
 
         // Translate codepage in all files
         if ($cp != 'utf-8')

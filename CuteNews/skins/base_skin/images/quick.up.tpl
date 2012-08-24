@@ -25,7 +25,7 @@
     function insertimage(selectedImage)
     {
         {WYSYWIG}
-            window.opener.CKEDITOR.tools.callFunction("{$CKEditorFuncNum}", '{$config_http_script_dir}/cdata/upimages/' + selectedImage);
+            window.opener.CKEDITOR.tools.callFunction("{$CKEditorFuncNum}", '{$config_http_script_dir}/uploads/' + selectedImage);
             window.close();
         {/WYSYWIG}
         {-WYSYWIG}
@@ -41,7 +41,7 @@
             if (imageWidth) appends += ' width=' + imageWidth;
             if (imageHeight) appends += ' height=' + imageWidth;
 
-            finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='{$config_http_script_dir}/cdata/upimages/" + selectedImage +"'>";
+            finalImage = " <img " + appends + " border='" + imageBorder + "' align='" + imageAlign +"' alt='" + alternativeText + "' src='{$config_http_script_dir}/uploads/" + selectedImage +"'>";
             opener.document.getElementById(area).value += finalImage;
             window.close();
         {/-WYSYWIG}

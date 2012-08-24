@@ -28,8 +28,11 @@
     <tr id='singlecat'>
         <td width="75">Category</td>
         <td width="575" colspan="2">
+        {CATEGORY}
             <select id='selecsinglecat' name=category tabindex=3> <option value=""> --- </option> {$cat_html} </select>
             <a href="javascript:ShowOrHide('multicat','singlecat');" onClick="javascript:document.getElementById('selecsinglecat').name='';">(multiple categories)</a>
+        {/CATEGORY}
+        {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
         </td>
     </tr>
 

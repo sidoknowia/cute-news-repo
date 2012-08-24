@@ -1882,7 +1882,7 @@ function check_avatar($editavatar)
     if ( strpos($editavatar, $config_http_script_dir) === false)
     {
         // check if avatar always exists
-        $Px = SERVDIR.'/cdata/upimages/'.md5($editavatar).'.jpeg';
+        $Px = SERVDIR.'/uploads/'.md5($editavatar).'.jpeg';
 
         if ( !file_exists($Px) )
         {
@@ -1948,7 +1948,7 @@ function CSRFCheck($token = 'csrf_code') /* Check CSRF code  */
     global $_SESS;
     if ($_SESS['U:CSRF'] != $_REQUEST[$token])
     {
-        add_to_log($_SESS['user'], 'CSRF Missed when add user');
+        add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
         header('Location: '.$_SERVER['HTTP_REFERER']."#csrf_is_missing");
         msg("error", LANG_ERROR_TITLE, "<script> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
     }

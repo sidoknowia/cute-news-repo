@@ -32,7 +32,9 @@
 
     <tr>
         <td>Category</td>
-        <td width="400" colspan="3"> <table width="400" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table>
+        <td width="400" colspan="3">
+            {CATEGORY}<table width="400" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table>{/CATEGORY}
+            {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
         <td>&nbsp;</td>
     </tr>
 

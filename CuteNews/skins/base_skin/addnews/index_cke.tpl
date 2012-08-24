@@ -7,7 +7,7 @@
     <input type=hidden name=action value=doaddnews>
     <input type=hidden name="csrf_code" value="{$CSRF}" />
 
-    <table border=0 cellpadding=0 cellspacing=0 width="654" >
+    <table border=0 cellpadding=2 cellspacing=0 width="654" >
 
     <tr>
         <td width="75">Title</td>
@@ -31,8 +31,11 @@
     <tr id='singlecat'>
         <td width="75">Category</td>
         <td width="575" colspan="2">
+        {CATEGORY}
             <select id='selecsinglecat' name=category tabindex=3> <option value=""> --- </option> {$cat_html} </select>
             <a href="javascript:ShowOrHide('multicat','singlecat');" onClick="javascript:document.getElementById('selecsinglecat').name='';">(multiple categories)</a>
+        {/CATEGORY}
+        {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
         </td>
     </tr>
 

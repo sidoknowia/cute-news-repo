@@ -98,7 +98,6 @@ if ($action == "addnews")
             'addnews/'.$tpl,
             array
             (
-                'PHP_SELF'               => PHP_SELF,
                 'member_db8'             => $member_db[UDB_AVATAR],
                 'use_wysiwyg'            => $use_wysiwyg,
                 'short_story_id'         => $short_story_id,
@@ -117,6 +116,7 @@ if ($action == "addnews")
             ),
             array
             (
+                'CATEGORY'               => $cat_lines? 1 : 0,
                 'WYSIWYG'                => $use_wysiwyg,
                 'USE_AVATAR'             => ($config_use_avatar == 'yes') ? 1 : 0,
             )
@@ -254,7 +254,6 @@ elseif($action == "doaddnews")
 
     if ($config_backup_news == 'yes')
     {
-
         $news_file = fopen($decide_news_file, "r");
         $news_backup = fopen($decide_news_file.'.bak', "w");
         while (!feof($news_file)) fwrite($news_backup, fgets($news_file));

@@ -18,5 +18,5 @@
         body { margin: 0; padding: 0; background: white; }
     </style>
 </HEAD>
-<body onload="fitPic()"> <img src='{$config_http_script_dir}/cdata/upimages/{$image}' border=0> </body>
+<body onload="fitPic()"> <img src='{$config_http_script_dir}/uploads/{$image}' border=0> </body>
 </HTML>

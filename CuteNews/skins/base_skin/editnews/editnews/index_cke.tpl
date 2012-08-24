@@ -13,7 +13,7 @@ function confirmDelete(url)
 <form onSubmit= "return submitForm();" method="POST" name="addnews" action="{$PHP_SELF}">
 
     <input type=hidden name="csrf_code" value="{$CSRF}" />
-    <table border=0 cellpadding=0 cellspacing=0 width="720" height="100%" >
+    <table border=0 cellpadding=2 cellspacing=0 >
     <tr>
         <td width="100">Info.</td>
         <td width="571" colspan="6"> Posted on {$newstime} by {$item_db1} </td>
@@ -42,7 +42,9 @@ function confirmDelete(url)
 
     <tr>
         <td>Category</td>
-        <td width="400" colspan="3"> <table width="400" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table>
+        <td width="400" colspan="3">
+            {CATEGORY} <table width="400" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table> {/CATEGORY}
+            {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
         <td>&nbsp;</td>
     </tr>
 
