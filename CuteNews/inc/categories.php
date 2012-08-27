@@ -16,7 +16,7 @@ if ($action == "add")
     $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
-    if(!$cat_name) msg("error", LANG_ERROR_TITLE, "Please enter name of the category", "javascript:history.go(-1)");
+    if(!$cat_name) msg("error", LANG_ERROR_TITLE, "Please enter name of the category", "#GOBACK");
 
     $cat_icon = preg_replace("/ /", "", $cat_icon);
     if ($cat_icon == "(optional)") $cat_icon = "";
@@ -105,7 +105,7 @@ elseif($action == "doedit")
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
     if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), "$PHP_SELF?mod=categories");
-    if ($cat_name == "") msg("error", LANG_ERROR_TITLE, lang("Category name can not be blank"), "javascript:history.go(-1)");
+    if ($cat_name == "") msg("error", LANG_ERROR_TITLE, lang("Category name can not be blank"), "#GOBACK");
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");

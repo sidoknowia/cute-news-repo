@@ -109,3 +109,4 @@ function CNSetCookie (name, value)
     ((secure == true) ? "; secure" : "");
 }
 </script>
+<script type="text/javascript">CNreadCookie();</script>

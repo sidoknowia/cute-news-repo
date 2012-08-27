@@ -564,7 +564,7 @@ elseif($action == "dosavesyscon")
     fwrite($handler, "?>");
     fclose($handler);
 
-    header('Location: '.PHP_SELF.'?mod=options&action=syscon&message=1#'.$_REQUEST['current']);
+    relocation(PHP_SELF.'?mod=options&action=syscon&message=1#'.$_REQUEST['current']);
     include (SERVDIR."/skins/".$save_con["skin"].".skin.php");
 }
 

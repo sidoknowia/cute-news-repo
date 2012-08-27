@@ -10,7 +10,7 @@ $source         = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 if ($action == "mass_delete")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     // Check permissions
     $have_perm = 0;
@@ -19,20 +19,14 @@ if ($action == "mass_delete")
 
     if (!$have_perm)
     {
-        msg("error", lang("No Access"), lang("You dont have access for this action"), "$PHP_SELF?mod=editnews&action=list");
+        msg("error", lang("No Access"), lang("You dont have access for this action"), "#GOBACK");
     }
 
     // Check access user for category
     if ( !empty($item_db[NEW_CAT]) )
-    {
         foreach (explode(',', $item_db[NEW_CAT]) as $all_this_cat)
-        {
             if ( !in_array($all_this_cat, $allowed_cats) )
-            {
-                msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
-            }
-        }
-    }
+                msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."), "#GOBACK");
 
     $CSRF = CSRFMake();
     echoheader("options", "Delete News");
@@ -59,7 +53,7 @@ elseif($action == "do_mass_delete")
 {
     CSRFCheck();
     if(!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles to be deleted"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles to be deleted"), "#GOBACK");
 
     if ($source == "")
     {
@@ -128,8 +122,8 @@ elseif($action == "do_mass_delete")
     fclose($new_db);
 
     if ( count($selected_news) == $deleted_articles)
-         msg("info",  lang("Deleted News"), str_replace('%1', $deleted_articles, lang("All articles that you selected (<b>%1</b>) were deleted")), "$PHP_SELF?mod=editnews&action=list&source=$source");
-    else msg("error", lang("Deleted News (some errors occured)"), str_replace(array('%1','%2'), array($deleted_articles, count($selected_news)), lang("%1 of %2 articles that you selected were deleted")), "$PHP_SELF?mod=editnews&action=list&source=$source");
+         msg("info",  lang("Deleted News"), str_replace('%1', $deleted_articles, lang("All articles that you selected (<b>%1</b>) were deleted")), "#GOBACK");
+    else msg("error", lang("Deleted News (some errors occured)"), str_replace(array('%1','%2'), array($deleted_articles, count($selected_news)), lang("%1 of %2 articles that you selected were deleted")), "#GOBACK");
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    Mass Approve
@@ -140,10 +134,10 @@ elseif ($action == "mass_approve")
     CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $member_db[UDB_ACL] != ACL_LEVEL_EDITOR)
-        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "#GOBACK");
 
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     $news_file = SERVDIR."/cdata/unapproved_news.txt";
 
@@ -177,8 +171,8 @@ elseif ($action == "mass_approve")
     fclose($new_db);
 
     if ( count($selected_news) == $approved_articles)
-         msg("info",  lang("News Approved"), str_replace('%1', $approved_articles, "All articles that you selected (%1) were approved and are now active"), "$PHP_SELF?mod=editnews&action=list");
-    else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")), "$PHP_SELF?mod=editnews&action=list");
+         msg("info",  lang("News Approved"), str_replace('%1', $approved_articles, "All articles that you selected (%1) were approved and are now active"), "#GOBACK");
+    else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")), "#GOBACK");
 
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,7 +181,7 @@ elseif ($action == "mass_approve")
 elseif ($action == "mass_move_to_cat")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     $CSRF = CSRFMake();
     echoheader("options", lang("Move Articles to Category"));
@@ -227,7 +221,7 @@ elseif ($action == "do_mass_move_to_cat")
     CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "#GOBACK");
 
     if( is_array($category) )
     {
@@ -244,7 +238,7 @@ elseif ($action == "do_mass_move_to_cat")
     }
 
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     if ($source == "")
         $news_file = SERVDIR."/cdata/news.txt";
@@ -289,8 +283,8 @@ elseif ($action == "do_mass_move_to_cat")
     fclose($new_db);
 
     if ( count($selected_news) == $moved_articles)
-         msg("info",  lang("News Moved"), str_replace('%1', $moved_articles, lang("All articles that you selected (%1) were moved to the specified category")), "$PHP_SELF?mod=editnews&action=list&source=$source");
-    else msg("error", lang("News Moved (with errors)"), str_replace(array('%1','%2'), array($moved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were moved to the specified category")), "$PHP_SELF?mod=editnews&action=list&source=$source");
+         msg("info",  lang("News Moved"), str_replace('%1', $moved_articles, lang("All articles that you selected (%1) were moved to the specified category")), "#GOBACK");
+    else msg("error", lang("News Moved (with errors)"), str_replace(array('%1','%2'), array($moved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were moved to the specified category")), "#GOBACK");
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Mass Archive
@@ -298,10 +292,10 @@ elseif ($action == "do_mass_move_to_cat")
 elseif($action == "mass_archive")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     if ($source != "")
-        msg("error", LANG_ERROR_TITLE, lang("These news are already archived or are in postpone queue"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+        msg("error", LANG_ERROR_TITLE, lang("These news are already archived or are in postpone queue"), "#GOBACK");
 
     $CSRF = CSRFMake();
     echoheader("options", lang("Send News To Archive"));
@@ -330,13 +324,13 @@ elseif ($action == "do_mass_archive")
     CSRFCheck();
 
     if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-         msg("error", lang("Access Denied"), lang("You can not perfor this action if you are not admin"));
+         msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
 
     if ( !$selected_news )
-         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
     if (!is_writable(SERVDIR."/cdata/archives/"))
-         msg("error", LANG_ERROR_TITLE, lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"));
+         msg("error", LANG_ERROR_TITLE, lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"), "#GOBACK");
     
     $news_file = SERVDIR."/cdata/news.txt";
     $comm_file = SERVDIR."/cdata/comments.txt";
@@ -377,7 +371,7 @@ elseif ($action == "do_mass_archive")
     fclose($new_db);
 
     if ($archived_news == 0)
-        msg("error", LANG_ERROR_TITLE, lang("No news were found for archiving"));
+        msg("error", LANG_ERROR_TITLE, lang("No news were found for archiving"), "#GOBACK");
 
     // Prepare the comments for Archiving
     $old_db = file($comm_file);
@@ -426,14 +420,14 @@ elseif ($action == "do_mass_archive")
     }
     fclose($arch_comm);
 
-    msg("info", lang("News Archived"), str_replace('%1', $archived_news, lang("All articles that you selected (%1) are now archived under"))." ./cdata/archives/<b>$arch_name</b>.news.arch", "$PHP_SELF?mod=editnews&action=list&source=$source");
+    msg("info", lang("News Archived"), str_replace('%1', $archived_news, lang("All articles that you selected (%1) are now archived under"))." ./cdata/archives/<b>$arch_name</b>.news.arch", "#GOBACK");
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   If No Action Is Choosed
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 else
 {
-    msg("info", lang("Choose Action"), lang("Please choose action from the drop-down menu"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+    msg("info", lang("Choose Action"), lang("Please choose action from the drop-down menu"), "#GOBACK");
 }
 
 ?>

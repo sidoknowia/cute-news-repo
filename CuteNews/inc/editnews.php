@@ -6,7 +6,7 @@ if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST)
 
 // only show allowed categories
 $source = preg_replace('~[^a-z0-9_\.]~i', '', $source);
-list($allowed_cats, $cat_lines) = get_allowed_cats($member_db);
+list($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
 
 // ********************************************************************************
 // List all news available for editing
@@ -17,10 +17,10 @@ if ($action == "list")
     echoheader("editnews", lang("Edit News"));
 
     // How Many News to show on one page
-    if ($news_per_page == "") $news_per_page = 21;
+    if ($news_per_page == false) $news_per_page = 21;
 
     $all_db = array();
-    if ($source == "")
+    if ($source == false)
     {
         $all_db = file(SERVDIR."/cdata/news.txt");
     }
@@ -39,117 +39,123 @@ if ($action == "list")
         $all_db = file_exists($db) ? file($db) : file(SERVDIR."/cdata/news.txt");
     }
 
-    // choose only needed news items
-    if ($category != '' or $author != '' or $member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST)
+    // Choose only needed news items
+    $all_db_tmp = array();
+    $authors = array();
+    foreach ($all_db as $raw_line)
     {
-        foreach ($all_db as $raw_line)
-        {
-            $raw_arr = explode("|", $raw_line);
-            if ( ($category == '' or in_array($category, explode(',',$raw_arr[6]))) &&
-                 ($author == "" or $raw_arr[1] == $author) &&
-                 ($member_db[UDB_ACL] != ACL_LEVEL_JOURNALIST or $raw_arr[1] == $member_db[UDB_NAME] ) ) $all_db_tmp[] = $raw_line;
-                
-        }
-        $all_db = $all_db_tmp;
+        $raw_arr = explode("|", $raw_line);
+
+        // Save author name
+        $authors[ $raw_arr[NEW_USER] ]++;
+
+        // Check access user for category
+        if ( !empty($item_db[NEW_CAT]) )
+             foreach (explode(',', $raw_arr[NEW_CAT]) as $all_this_cat)
+                if ( !in_array($all_this_cat, $allowed_cats) )
+                     continue;
+
+        // If author is present, but author not match
+        if ( $author && $raw_arr[NEW_USER] != $author) continue;
+
+        // Skip category if present, and not exists
+        if ( $category && !in_array($category, explode(',', $raw_arr[NEW_CAT])) ) continue;
+
+        // If journalist, but not him article
+        if ( $member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST && $raw_arr[NEW_USER] != $member_db[UDB_NAME]) continue;
+
+        $all_db_tmp[] = $raw_line;
     }
+    $all_db = $all_db_tmp;
 
     // Prelist Entries
+    if (empty($start_from)) $start_from = false;
+
+    $ipos = 0;
     $flag = 1;
-    if ($start_from == "0") $start_from = "";
-    $i = $start_from;
     $entries_showed = 0;
 
     if (!empty($all_db))
     {
+        $the_entry  = array();
         foreach ($all_db as $line)
         {
-            if ($j < $start_from)
-            {
-                $j++;
-                continue;
-            }
-            
-            $i++;
+            // Skip $start_from news
+            $ipos++;
+            if ($ipos < $start_from) continue;
+
             $item_db    = explode("|", $line);
             $itemdate   = date("d/m/y", $item_db[0]);
             $bg         = $flag ? "#F7F6F4" : "#FFFFFF";
             $flag       = 1 - $flag;
             $entry_show = true;
 
-            // Check access user for category
-            if ( !empty($item_db[NEW_CAT]) )
+            // Sanitize
+            $title = $item_db[NEW_TITLE];
+            $title = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $title) );
+            $title = preg_replace("/<[^>]*>/", "", $title) ;
+
+            // If news title over 74 chars, truncate it
+            if (strlen($title) > 74) $title = substr($title, 0, 74)." ...";
+
+            $the_oneln = array
+            (
+                'id'        => $item_db[0],
+                'title'     => $title,
+                'bg'        => $bg,
+                'source'    => $source
+            );
+
+            $count_comments = countComments($item_db[NEW_ID], $source);
+            if  ($count_comments)
+                 $the_oneln['comments'] = $count_comments;
+            else $the_oneln['comments'] = "<span style='color:gray;'>".$count_comments."</span>";
+
+            // Make category names
+            if (empty($item_db[NEW_CAT]))
             {
-                foreach (explode(',', $item_db[NEW_CAT]) as $all_this_cat)
-                {
-                    if ( !in_array($all_this_cat, $allowed_cats) )
-                    {
-                        $entry_show = false;
-                        break;
-                    }
-                }
+                $the_oneln['category'] = "<span style='color: gray;'>---</span>";
+            }
+            elseif (strstr($item_db[NEW_CAT], ','))
+            {
+                $my_multy_cat_labels    = array();
+                $all_this_cats_arr      = explode(',', $item_db[NEW_CAT]);
+
+                foreach ($all_this_cats_arr as $this_single_cat) $my_multy_cat_labels[] = $cat[$this_single_cat];
+                $my_multy_cat_labels    = join(', ', $my_multy_cat_labels);
+
+                $the_oneln['category'] = "<span style='color:#7979FF;' title='$my_multy_cat_labels'>(".lang('multiple', 'editnews').")</span>";
+            }
+            else
+            {
+                $the_oneln['category'] = $cat[ $item_db[NEW_CAT] ];
             }
 
-            if ($entry_show)
-            {
-                // If news title over 74, truncate it
-                if (strlen($item_db[NEW_TITLE]) > 74) $title = substr($item_db[2], 0, 70)." ...";
+            $the_oneln['itemdate'] = $itemdate;
+            $the_oneln['user'] = $item_db[NEW_USER];
+            $entries_showed++;
 
-                // Safety
-                $title = $item_db[NEW_TITLE];
-                $title = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $title) );
-                $title = preg_replace("/<[^>]*>/", "", $title) ;
-
-                $entries .= proc_tpl
-                (
-                    'editnews/list/line',
-                    array(  'item_db0'  => $item_db[0],
-                            'title'     => $title,
-                            'bg'        => $bg,
-                            'source'    => $source)
-                );
-
-                $count_comments = countComments($item_db[NEW_ID], $source);
-                if ($count_comments == 0)
-                     $entries .= "<span style='color:gray;'>".$count_comments."</span>";
-                else $entries .= $count_comments;
-
-                $entries .= "&nbsp;&nbsp;&nbsp;&nbsp;<td height=18 bgcolor=$bg nowrap>&nbsp;&nbsp;&nbsp;";
-
-                if (empty($item_db[NEW_CAT])) $my_cat = "<span style='color:gray;'>---</span>";
-                elseif (strstr($item_db[NEW_CAT], ','))
-                {
-                    $all_this_cats_arr      = explode(',', $item_db[6]);
-                    $my_multy_cat_labels    = '';
-                    foreach ($all_this_cats_arr as $this_single_cat) $my_multy_cat_labels .= $cat[$this_single_cat].", ";
-                    $my_cat = "<span onmouseover=\" window.status='categories: $my_multy_cat_labels'; return true\" onmouseout=\"window.status=''; return true\"><span style='color:#7979FF;' title='$my_multy_cat_labels'>(".lang('multiple')."</span></span>";
-                }
-                else $my_cat = $cat[ $item_db[NEW_CAT] ];
-
-                $entries .= $my_cat."&nbsp;
-                            <td height=18 bgcolor=$bg>".$itemdate."</td>
-                            <td height=18 bgcolor=$bg>".$item_db[1]."</td>
-                            <td align=center bgcolor=$bg><input name=\"selected_news[]\" value=\"{$item_db[0]}\" style=\"border:0; background-color:$bg\" type='checkbox'></td>
-                            </tr>";
-                $entries_showed++;
-            }
-
-            if ($i >= $news_per_page + $start_from) break;
+            $the_entry[] = $the_oneln;
+            if ($entries_showed >= $news_per_page) break;
         }
+
+        $entries = proc_tpl('editnews/list/line');
     }
 
     $all_count_news = count($all_db);
     $unapproved_selected = $postponed_selected = false;
 
-    if ($category != "") $cat_msg = lang("Category").": <b>".htmlspecialchars($cat[$category])."</b>;";
+    // Messages in top of editnews options bar
+    if ($category != "") $cat_msg = lang("Category", 'editnews').": <b>".htmlspecialchars($cat[$category])."</b>;";
 
     if ($source == "postponed")
     {
-        $source_msg = "<span style='background-color:yellow;'>".lang("Postponed News").", <a title='".lang('Refresh the postponed news file')."' href=\"$PHP_SELF?mod=editnews&action=list&source=postponed\">[".lang('Resynchronize')."]</a></span>";
+        $source_msg = "<span style='background-color: yellow;'>".lang("Postponed News").", <a title='".lang('Refresh the postponed news file')."' href=\"$PHP_SELF?mod=editnews&action=list&source=postponed\">[".lang('Resynchronize')."]</a></span>";
         $postponed_selected = " selected ";
     }
     elseif ($source == "unapproved")
     {
-        $source_msg = "<span style='background-color:yellow;'>".lang('Unapproved News')."</span>";
+        $source_msg = "<span style='background-color: yellow;'>".lang('Unapproved News')."</span>";
         $unapproved_selected = " selected ";
     }
     elseif ($source != "" )
@@ -161,17 +167,17 @@ if ($action == "list")
         $last_news_arr      = explode("|", $news_lines[0]);
         $first_timestamp    = $first_news_arr[0];
         $last_timestamp     = $last_news_arr[0];
-        $source_msg         = lang("Archive").": <b>". date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) ."</b>;";
+        $source_msg         = lang("Archive", 'editnews').": <b>". date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) ."</b>;";
     }
 
     if (!$handle = opendir(SERVDIR."/cdata/archives"))
-        die_stat(false, lang("Can not open directory cdata/archives"));
+        msg('error', LANG_ERROR_TITLE, lang("Can not open directory cdata/archives"), "#GOBACK");
 
     // Source: archives
     $opt_source = false;
     while ( false !== ($file = readdir($handle)) )
     {
-        if($file != "." and $file != ".." and !is_dir(SERVDIR."/cdata/archives/$file") and substr($file, -9) == 'news.arch')
+        if ($file != "." and $file != ".." and !is_dir(SERVDIR."/cdata/archives/$file") and substr($file, -9) == 'news.arch')
         {
             $src                = explode('.', $file);
             $info_file          = SERVDIR."/cdata/archives/" . substr($file, 0, -9) . 'count.arch';
@@ -203,7 +209,7 @@ if ($action == "list")
     foreach ($cat_lines as $single_line)
     {
         $cat_arr = explode("|", $single_line);
-        $ifselected = "";
+        $ifselected   = "";
         $opt_catlist .= "<option ".(($category == $cat_arr[0])? 'selected' : '').' value="'.htmlspecialchars($cat_arr[0]).'">'.htmlspecialchars($cat_arr[1]).'</option>';
     }
 
@@ -211,15 +217,8 @@ if ($action == "list")
     $opt_author = false;
     if ($member_db[UDB_ACL] != ACL_LEVEL_JOURNALIST)
     {
-        $user_lines = file(SERVDIR."/cdata/db.users.php");
-        unset($user_lines[0]);
-        foreach ($user_lines as $single_line)
-        {
-            $user_arr = explode("|", $single_line, 2);
-            $user_arr = unserialize($user_arr[1]);
-            if ($user_arr[UDB_ACL] != ACL_LEVEL_COMMENTER)
-                $opt_author .= "<option ".(($author == $user_arr[UDB_NAME])? 'selected':'').' value="'.htmlspecialchars($user_arr[UDB_NAME]).'">'.htmlspecialchars($user_arr[UDB_NAME]).'</option>';
-        }
+        foreach ($authors as $author_name => $news)
+            $opt_author .= "<option ".(($author == $author_name)? 'selected':'').' value="'.htmlspecialchars($author_name).'">'.htmlspecialchars($author_name).' ('.$news.')</option>';
     }
 
     // SHOW OPTION BAR -----------------
@@ -242,22 +241,26 @@ if ($action == "list")
     // show entries -----------------
 
     $npp_nav = $tmp = false;
+
+    // Prev button
     if ($start_from > 0)
     {
         $previous = $start_from - $news_per_page;
-        $npp_nav .= '<a href="'.$PHP_SELF.'?mod=editnews&action=list&start_from='.$previous.'&category='.$category.'&author='.$author.'&source='.$source.'&news_per_page='.$news_per_page.'">&lt;&lt; '.lang('Previous').'</a>';
+        if ($previous < 0) $previous = 0;
+
+        $uri = build_uri('mod,action,start_from,category,author,source,news_per_page', array('editnews','list',$previous,$category,$author,$source,$news_per_page));
+        $npp_nav .= '<a href="'.$PHP_SELF.$uri.'">&lt;&lt; '.lang('Previous').'</a>';
         $tmp = true;
     }
 
-    if (count($all_db) > $i)
+    // Next button
+    if (count($all_db) > $ipos)
     {
         if ($tmp) $npp_nav .= "&nbsp;&nbsp;||&nbsp;&nbsp;";
-        $how_next = count($all_db) - $i;
+        $how_next = count($all_db) - $ipos;
 
         if ($how_next > $news_per_page) $how_next = $news_per_page;
-        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page',
-                   array('editnews','list',$i,$category,$author,$source,$news_per_page));
-
+        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page', array('editnews','list', $ipos+1, $category, $author, $source, $news_per_page));
         $npp_nav .= '<a href="'.$PHP_SELF.$URL.'">'.lang('Next').' '.$how_next.' &gt;&gt;</a>';
     }
 
@@ -271,7 +274,7 @@ if ($action == "list")
         if ($source == "unapproved" and ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN or $member_db[UDB_ACL] == ACL_LEVEL_EDITOR))
             $do_action .= '<option '.(( $source == "unapproved" )?  'selected' : '').' title="'.lang('approve selected news').'" value="mass_approve">'.lang('Approve News').'</option>';
 
-        if($member_db[UDB_ACL] == ACL_LEVEL_ADMIN)
+        if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN)
             $do_action .= '<option title="'.lang('move all selected news to one category').'" value="mass_move_to_cat">'.lang('Change Category').'</option>';
     }
 
@@ -333,13 +336,16 @@ elseif ($action == "editnews")
     // Check permission to edit news
     $have_perm = 0;
     if (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR))
+    {
         $have_perm = 1;
-
+    }
     elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $item_db[NEW_USER] == $member_db[UDB_NAME])
+    {
         $have_perm = 1;
+    }
 
     if (!$have_perm)
-        msg("error", lang("No Access"), lang("You don't have access for this action"), $PHP_SELF."?mod=editnews&action=list");
+        msg("error", lang("No Access"), lang("You don't have access for this action"), '#GOBACK');
 
     // Check access user for category
     if ( !empty($item_db[NEW_CAT]) )
@@ -447,23 +453,23 @@ elseif ($action == "editnews")
                         );
 
                     }//if not blank
-                }//foreach comment
+                }
 
                 $Comments_HTML .= proc_tpl('editnews/editnews/comment_actions', array('id' => $id, 'source' => $source));
 
                 //foreach comment line
                 break;
 
-            }//if there are any comments
-            else
+            }
+            else //if there are any comments
             {
                 $Comments_HTML = proc_tpl('editnews/editnews/nocomments');
                 $found_newsid  = false;
             }
 
-        }//if these are comments for our story
+        } //if these are comments for our story
 
-    }//foreach comments line
+    }
 
     if ($found_newsid == false)
         $Comments_HTML = proc_tpl('editnews/editnews/nocomments');
@@ -572,10 +578,10 @@ elseif ($action == "doeditnews")
         msg('error', LANG_ERROR_TITLE, lang('Some fields can not be blank').': '.implode(', ', $optfields));
 
     if (trim($title) == "" and $ifdelete != "yes")
-        msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "javascript:history.go(-1)");
+        msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "#GOBACK");
 
     if ($short_story == "" and $ifdelete != "yes")
-        msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "javascript:history.go(-1)");
+        msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "#GOBACK");
 
     $n_to_br        = ($if_convert_new_lines == "yes")? 1 : 0;
     $use_html       = ($if_use_html == "yes")? 1 : 0;
@@ -690,7 +696,7 @@ elseif ($action == "doeditnews")
             fclose($news_backup);
         }
 
-        header("Location: $PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
+        relocation("$PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
     }
 
     else msg("error", LANG_ERROR_TITLE, lang("The news item can not be found or there is an error with the news database file."));
@@ -735,9 +741,6 @@ elseif ($action == 'move')
     fwrite($w, join('', $all_db));
     fclose($w);
 
-    $tourl = PHP_SELF.build_uri('mod,action,source', array('editnews','list',$source), false);
-    header('Location: '.$tourl);
-    die();
-
-
+    // Redirect after move
+    relocation( PHP_SELF.build_uri('mod,action,source', array('editnews','list',$source), false) );
 }

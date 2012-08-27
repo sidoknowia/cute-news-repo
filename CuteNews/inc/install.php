@@ -1,7 +1,5 @@
 <?php
 
-    echoheader('info', 'Cute News v'.VERSION.' Installer');
-
     if ($action == 'make')
     {
         $copy = array('Default', 'Headlines', 'rss');
@@ -67,12 +65,13 @@
         fwrite($x, 'Access denied');
         fclose($x);
 
-        header("Location: ".PHP_SELF.'?action=register');
+        relocation( PHP_SELF.'?action=register' );
 
     }
     // step 2
     elseif ($action == 'register')
     {
+        echoheader('info', 'Cute News v'.VERSION.' Installer');
         $site = $_SERVER['SERVER_NAME'] . dirname($_SERVER['REQUEST_URI']);
         echo str_replace('{site}', preg_replace('~/$~', '', $site), proc_tpl('install/copy'));
     }
@@ -83,7 +82,7 @@
 
         // error in password
         if ($password && $password != $retype or !$password)
-            header("Location: ".PHP_SELF.'?action=register');
+            relocation( PHP_SELF.'?action=register' );
 
         // add config.php
         $hac = $_SERVER['HTTP_ACCEPT_CHARSET'];
@@ -114,16 +113,8 @@
         add_key($user, array(0 => time(), ACL_LEVEL_ADMIN, $user, $pwd, $nick, $email, 0, 0), DB_USERS);
 
         // auto-login
-        header('Location: '.PHP_SELF);
-        setcookie('session', base64_encode( xxtea_encrypt(serialize( array(
-                    'user'=>$user,
-                    'pwd' => $password,
-                    'csrf' => md5(mt_rand()).'@'.$_SERVER['REMOTE_ADDR'])),
-                    $CryptSalt)), 0, '/');
-
-        ob_get_clean();
-        die();
-
+        setcookie('session', base64_encode( xxtea_encrypt(serialize( array( 'user' => $user )), "$ip@$CryptSalt")), 0, '/');
+        relocation(PHP_SELF);
     }
     // step 1
     else
@@ -135,9 +126,13 @@
         // Check - ok?
         if (is_writable(SERVDIR.'/cdata'))
         {
-            header('Location: '.PHP_SELF.'?action=make');
+            relocation(PHP_SELF.'?action=make');
         }
-        echo proc_tpl('install/welcome', array(), array('WRITABLE' => is_writable(SERVDIR.'/cdata')));
+        else
+        {
+            echoheader('info', 'Cute News v'.VERSION.' Installer');
+            proc_tpl('install/welcome', array(), array('WRITABLE' => is_writable(SERVDIR.'/cdata')));
+        }
     }
 
     echofooter();

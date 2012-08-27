@@ -23,7 +23,7 @@
     <body>
         <form action="{$PHP_SELF}" method=post>
             <input type="hidden" name="csrf_code" value="{$CSRF}" />
-            <table width="828" cellspacing="0" cellpadding="0" height="13">
+            <table width="828" cellspacing="0" cellpadding="0">
                 <tr>
                 <td width="826" height="21" colspan="2"><div class=header>{$user_arr[2]} <span>({$user_arr[4]})</span></div>
                 </tr>

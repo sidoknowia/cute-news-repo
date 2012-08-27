@@ -52,7 +52,7 @@ PRINTABLE;
     }
     else
     {
-        echo lang("The news you what to print was not found");
+        echo lang("The news you what to print was not found", 'print');
     }
 
 }

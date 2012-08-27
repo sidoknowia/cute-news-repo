@@ -310,7 +310,7 @@ elseif ($action == 'report')
         fwrite($ds, 'KY '.base64_encode(xxtea_encrypt(mt_rand().mt_rand().mt_rand().'@'.$title.'@'.$desc, $key))."\n"); // key code (registration check)
         fclose($ds);
 
-        header('Location: '.$config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
+        relocation($config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
         die();
     }
     elseif ($do == 'complete')

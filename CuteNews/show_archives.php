@@ -15,7 +15,7 @@
     if (strpos($config_http_script_dir, $Uri) !== false && strpos($PHP_SELF, 'show_archives.php') !== false) die_stat(403, 'Wrong including show_archives.php! Check manual to get more information about this issue.');
 
     // Prepare requested categories
-    if(preg_match('/[a-z]/i', $category))
+    if (preg_match('/[a-z]/i', $category))
     {
         die_stat(false, "<b>Error</b>!<br>CuteNews has detected that you use \$category = \"".htmlspecialchars($category)."\"; but you can call the categories only with their <b>ID</b> numbers and not with names<br>example:<br><blockquote>&lt;?PHP<br>\$category = \"1\";<br>include(\"path/to/show_archives.php\");<br>?&gt;</blockquote>");
     }
@@ -41,7 +41,7 @@
     }
     else
     {
-        die_stat(false, "Archive varialbe is invalid");
+        die_stat(false, "Archive variable is invalid");
     }
 
     if ($subaction == "" or !isset($subaction))

@@ -63,6 +63,8 @@ extract(filter_request('mod'), EXTR_OVERWRITE);
 if ($csrfmake == 'csrfmake')
 {
     $CSRF = CSRFMake();
+    header("Content-Type: text/javascript; charset=UTF-8");
+
     if (empty($cs)) $cs = false; else $cs = intval($cs);
     echo "document.getElementById('csrf_code{$cs}').value = '{$CSRF}';";
     send_cookie();
@@ -71,7 +73,8 @@ if ($csrfmake == 'csrfmake')
 
 // Check the User is Identified -------------------------------------------------------------------------------------
 $result      = false;
-$username    = empty($_REQUEST['user']) ? $_REQUEST['username'] : $_SESS['ix'];
+$username    = empty($_POST['user']) ? $_POST['username'] : $_SESS['ix'];
+$password    = $_POST['password'];
 
 if ( empty($_SESS['user']))
 {

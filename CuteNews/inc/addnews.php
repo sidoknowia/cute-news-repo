@@ -129,8 +129,7 @@ if ($action == "addnews")
 // ********************************************************************************
 elseif($action == "doaddnews")
 {
-
-    /// Format our categories variable
+    // Format our categories variable
     if( is_array($category) )
     {
         // User has selected multiple categories
@@ -139,7 +138,7 @@ elseif($action == "doaddnews")
 
         foreach ($category as $ckey => $cvalue)
         {
-            if ( !in_array($cvalue, $allowed_cats) ) die_stat(false, 'Not allowed category');
+            if ( !in_array($cvalue, $allowed_cats) ) msg('error', lang('Not allowed category'), '#GOBACK');
             $nice_category[] = $cvalue;
         }
         $nice_category = implode(',', $nice_category);
@@ -148,7 +147,7 @@ elseif($action == "doaddnews")
     {
         //Single or Not category
         //don't format $nice_cats because we have not selected any.
-        if ( $category && !in_array($category, $allowed_cats) ) die_stat(false, 'Not allowed category');
+        if ( $category && !in_array($category, $allowed_cats) ) msg('error', lang('Not allowed category'), '#GOBACK');
         $nice_category = $category;
     }
 
@@ -164,7 +163,7 @@ elseif($action == "doaddnews")
     elseif($postpone_draft == "postpone")
     {
          if( !preg_match("~^[0-9]{1,}$~", $from_date_hour) or !preg_match("~^[0-9]{1,}$~", $from_date_minutes) )
-             msg("error", LANG_ERROR_TITLE, lang("You want to add a postponed article, but the hour format is invalid."), "javascript:history.go(-1)");
+             msg("error", LANG_ERROR_TITLE, lang("You want to add a postponed article, but the hour format is invalid."), "#GOBACK");
 
          $postpone          = true;
          $added_time        = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60;
@@ -197,10 +196,10 @@ elseif($action == "doaddnews")
         msg('error', LANG_ERROR_TITLE, lang('Some fields can not be blank').': '.implode(', ', $optfields));
 
     if (trim($title) == false)
-        msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "javascript:history.go(-1)");
+        msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "#GOBACK");
 
     if (trim($short_story) == false)
-        msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "javascript:history.go(-1)");
+        msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "#GOBACK");
 
     if ( $member_db[UDB_CBYEMAIL] == 1)
          $added_by_email = $member_db[UDB_EMAIL];
@@ -277,7 +276,7 @@ elseif($action == "doaddnews")
     }
 
     if  ($postpone)
-         msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" r",$added_time));
-    else msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg);
+         msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" r",$added_time), '#GOBACK');
+    else msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
 
 }

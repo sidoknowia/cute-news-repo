@@ -671,15 +671,14 @@ do
         $smilies_form  = proc_tpl('remember_js') . insertSmilies('short', FALSE) . $captcha_form;
         $template_form = str_replace("{smilies}", $smilies_form, $template_form);
         $template_form = hook('comment_template_form', $template_form);
+        $remember_js   = read_tpl('remember');
 
-        echo over_tpl('comment_form', array($template_form, $ucat, $show, $user_post_query,
-                                      read_tpl('remember').'<script type="text/javascript">CNreadCookie();</script>'));
+        echo proc_tpl('comment_form');
     }
 
     // Active News -----------------------------------------------------------------------------------------------------
     if ($allow_active_news)
     {
-
         $in_use         = 0;
         $used_archives  = array();
         $all_news       = file($news_file);

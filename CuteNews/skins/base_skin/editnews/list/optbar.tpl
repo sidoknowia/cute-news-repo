@@ -1,6 +1,6 @@
 <table class=panel border=0 cellpadding=0 cellspacing=0 width=99% >
 <tr>
-    <td title='Show More Options' style="cursor:pointer;" onclick="getElementById('options').style.display='';">
+    <td title="Show More Options">
         Showing <b>{$entries_showed}</b> articles from total <b>{$all_count_news}</b>; {$cat_msg} {$source_msg}
     </td>
     <td align="right"><a href="javascript:ShowOrHide('options','');">show options&nbsp;</a> </td>

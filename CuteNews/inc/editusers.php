@@ -9,20 +9,20 @@ if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
 if ($action == "list")
 {
     $CSRF = CSRFMake();
-
     echoheader ("users", lang("Manage Users"));
-    echo proc_tpl('editusers', array('CSRF' => $CSRF));
 
-    $i = 1;
+    $i = 0;
+    $userlist  = array();
     $all_users = file(SERVDIR."/cdata/db.users.php");
-    unset($all_users[0]);
+    unset ($all_users[0]);
+
     foreach ($all_users as $user_line)
     {
         list(,$user_arr) = explode("|", $user_line, 2);
         $user_arr        = unserialize($user_arr);
 
-        $bg = ($i++%2 == 0) ? 'bgcolor="#f7f6f4"' : false;
-        $last_login         = !empty($user_arr[UDB_LAST]) ? date('r', $user_arr[UDB_LAST]) : 'never';
+        $bg = ($i++%2 == 1) ? 'bgcolor="#f7f6f4"' : false;
+        $last_login = !empty($user_arr[UDB_LAST]) ? date('r', $user_arr[UDB_LAST]) : 'never';
 
         switch ($user_arr[1])
         {
@@ -32,23 +32,18 @@ if ($action == "list")
             case 4: $user_level = "commenter"; break;
         }
 
-        echo "<tr $bg title='".$user_arr[UDB_NAME]."'&#039;s last login was on: $last_login'>
-        <td width=143> &nbsp;".$user_arr[UDB_NAME]."</td>
-        <td width=197>";
-
-        echo( date("F, d Y @ H:i a", $user_arr[UDB_ID]) );
-
-        echo "</td> <td>&nbsp;</td>
-              <td width=83>&nbsp;&nbsp;".$user_arr[UDB_COUNT]."</td>
-              <td width=122> &nbsp;$user_level</td>
-              <td width=80>
-                  <a onclick=\"popupedit('".$user_arr[UDB_NAME]."'); return(false)\" href=#>[edit]</a>&nbsp;
-                  <a onclick=\"confirmdelete('".$user_arr[UDB_NAME]."'); return(false)\" href=\"$PHP_SELF?mod=editusers&action=dodeleteuser&id=$user_arr[0]\">[delete]</a>
-              </td></tr>";
-
+        $userlist[] = array
+        (
+            'bg'            => $bg,
+            'title'         => htmlspecialchars($user_arr[UDB_NAME]),
+            'date'          => date("F, d Y @ H:i a", $user_arr[UDB_ID]),
+            'user_level'    => $user_level,
+            'last_login'    => $last_login,
+            'count'         => intval( $user_arr[UDB_COUNT] ),
+        );
     }
-    echo "</table>";
-    
+
+    echo proc_tpl('editusers');
     echofooter();
 }
 // ********************************************************************************
@@ -56,24 +51,35 @@ if ($action == "list")
 // ********************************************************************************
 elseif ($action == "adduser")
 {
-    if (!$regusername)
-        msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "javascript:history.go(-1)");
-
-    if (!$regpassword)
-        msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "javascript:history.go(-1)");
-
-    if (!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
-        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"), "javascript:history.go(-1)");
-
     CSRFCheck();
 
+    if (!empty($userdel))
+    {
+        foreach ($userdel as $uid => $perm)
+        {
+            // Except myself
+            if ($member_db[UDB_NAME] != $uid)
+                delete_key($uid, DB_USERS);
+        }
+        msg('info', lang('Deleted'), lang('The user(s) was successfully deleted'), "#GOBACK");
+    }
+
+    if (!$regusername)
+        msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "#GOBACK");
+
+    if (!$regpassword)
+        msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "#GOBACK");
+
+    if (!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
+        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"), "#GOBACK");
+
     $all_users = file(SERVDIR."/cdata/db.users.php");
-    unset($all_users[0]);
+    unset ($all_users[0]);
     foreach ($all_users as $user_line)
     {
         list(,$user_arr) = explode("|", $user_line, 2);
         $user_arr        = unserialize($user_arr);
-        if ($user_arr[UDB_NAME]  == $regusername) msg("error", LANG_ERROR_TITLE, lang("Sorry but user with this username already exist"), "javascript:history.go(-1)");
+        if ($user_arr[UDB_NAME]  == $regusername) msg("error", LANG_ERROR_TITLE, lang("Sorry but user with this username already exist"), "#GOBACK");
     }
 
     $add_time = time() + ($config_date_adjust*60);
@@ -82,7 +88,7 @@ elseif ($action == "adduser")
     $ht = hash_generate($regpassword);
     $regpassword = $ht[ count($ht)-1 ];
 
-    switch($reglevel)
+    switch ($reglevel)
     {
         case "1": $level = "administrator"; break;
         case "2": $level = "editor"; break;
@@ -95,7 +101,7 @@ elseif ($action == "adduser")
 
     msg("info", lang("User Added"),
                 str_replace(array('%1', '%2'), array($regusername, $level), lang("The user <b>%1</b> was successfully added as <b>%2</b>")),
-                $PHP_SELF . "?mod=editusers&action=list");
+                '#GOBACK');
 }
 // ********************************************************************************
 // Edit User Details
@@ -142,10 +148,11 @@ elseif ($action == "doedituser")
 {
     CSRFCheck();
 
-    if (empty($id)) die_stat(false, lang("This is not a valid user."));
+    if (empty($id))
+         msg('error', lang("This is not a valid user"), '#GOBACK');
 
     if ( false === ($the_user = bsearch_key($id, DB_USERS)) )
-         die_stat(false, lang("This is not a valid user."));
+         msg('error', lang("This is not a valid user"), '#GOBACK');
 
     // Change password if present
     if (!empty($editpassword))
@@ -162,24 +169,6 @@ elseif ($action == "doedituser")
 
     echo proc_tpl('editusers/doedituser/saved');
 
-}
-// ********************************************************************************
-// Delete User
-// ********************************************************************************
-elseif ($action == "dodeleteuser")
-{
-    if ( empty($id) ) die_stat(false, lang("This is not a valid user"));
-
-    delete_key($id, DB_USERS);
-
-    if ($config_push_users == 'yes')
-    {
-        $a = fopen(SERVDIR.'/cdata/actions.txt', 'a');
-        fwrite($a, "%REMOVE|".md5($id)."\n");
-        fclose($a);
-    }
-
-    msg("info", lang("User Deleted"), str_replace('%1', $id, lang("The user <b>%1</b> was successfully deleted")), "$PHP_SELF?mod=editusers&action=list");
 }
 
 ?>

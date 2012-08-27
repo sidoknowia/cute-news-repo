@@ -30,23 +30,28 @@
     }
     -->
     </script>
+    <br />
     <form method="post" name="editnews">
         <input type=hidden name="csrf_code" value="{$CSRF}" />
         <table border=0 cellpadding=0 cellspacing=0 width=100%>
             <tr>
-                <td width="32" align="center">Ord</td>
-                <td width="347">Title</td>
-                <td width="65">Comments</td>
-                <td width="65">Category</td>
-                <td width="58">Date</td>
-                <td width="78">Author</td>
-                <td width="21" align="center"><input style="border: 0px; background:transparent;" type=checkbox name=master_box title="Check All" onclick="javascript:ckeck_uncheck_all();"> </td>
+                <td align="center" width="32">Ord</td>
+                <td>Title</td>
+                <td width="50" align="center">Comments</td>
+                <td width="70" align="center">Category</td>
+                <td width="80" align="center">Date</td>
+                <td width="100">Author</td>
+                <td width="32" align="center"><input style="border: 0; background: transparent;" type=checkbox name=master_box title="Check All" onclick="javascript:ckeck_uncheck_all();"> </td>
             </tr>
             {$entries}
-            <tr> <td colspan="7" align="right">&nbsp; </tr>
+        </table>
+
+        <!-- Pagination and actions -->
+        <table width="100%">
             <tr>
                 <td>{$npp_nav}</td>
-                <td colspan="7" align="right"> With selected:
+                <td align="right">
+                    With selected:
                     <select name="action">
                         <option value="">-- Choose Action --</option>
                         <option title="delete all selected news" value="mass_delete">Delete</option>
@@ -56,7 +61,6 @@
                     <input type=hidden name=mod value="massactions">
                     <input type=submit value=Go>
                 </td>
-                </tr>
             </tr>
         </table>
     </form>

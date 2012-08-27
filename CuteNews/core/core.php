@@ -377,21 +377,6 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
     return ( $d );
 }
 
-// Get template file and replace %N{1...n} to same items [0...n-1] in $vars
-function over_tpl($tpl, $over = array())
-{
-    $d = read_tpl($tpl);
-
-    $keys = $vals = array();
-    foreach ($over as $i => $v)
-    {
-        $keys[] = '%'.($i+1);
-        $vals[] = $v;
-    }
-
-    return (str_replace($keys, $vals, $d));
-}
-
 // Return say value of lang if present
 function lang($say, $mod = null)
 {
@@ -1499,8 +1484,12 @@ function flooder($ip, $comid)
 function msg($type, $title, $text, $back = false, $bc = false)
 {
     echoheader($type, $title, $bc);
-    if ($back) $back = '<a href="'.$back.'">go back</a>';
-    echo over_tpl('msg', array($text, '<br /><br>' . $back) );
+
+    // Back By Referef
+    if ($back == '#GOBACK')
+        $back = '| <a href="'.htmlspecialchars($_SERVER['HTTP_REFERER']).'">'.lang('Go back').'</a>';
+
+    echo proc_tpl('msg', array('text' => $text, 'back' => $back));
     echofooter();
     die();
 }
@@ -1512,7 +1501,7 @@ function echoheader($image, $header_text, $bread_crumbs = false)
 
     if ($is_loged_in == true )
          $skin_header = preg_replace("/{menu}/", $skin_menu, $skin_header);
-    else $skin_header = preg_replace("/{menu}/", " &nbsp; ".$config_version_name, $skin_header);
+    else $skin_header = preg_replace("/{menu}/", "<div style='padding: 5px;'>$config_version_name</div>", $skin_header);
 
     $skin_header = get_skin($skin_header);
     $skin_header = str_replace('{title}', ($header_text? $header_text.' / ' : ''). 'CuteNews', $skin_header);
@@ -1558,7 +1547,6 @@ function b64dck()
 // Count How Many Comments Have a Specific Article
 function CountComments($id, $archive = FALSE)
 {
-
     $result = "0";
     if  ($archive and ($archive != "postponed" and $archive != "unapproved"))
          $all_comments = file(SERVDIR."/cdata/archives/${archive}.comments.arch");
@@ -1952,7 +1940,15 @@ function get_allowed_cats($member_db)
             $allowed_cats[] = $ocat_arr[CAT_ID];
         }
     }
-    return array($allowed_cats, $cat_lines);
+    return array($allowed_cats, $cat_lines, $cat);
+}
+
+// Force relocation
+function relocation($url)
+{
+    header("Location: $url");
+    echo '<html><head><title>Redirect...</title><meta http-equiv="refresh" content="0;url='.htmlspecialchars($url).'"></head><body>'.lang('Please wait... Redirecting to ').htmlspecialchars($url).'...<br/><br/></body></html>';
+    die();
 }
 
 // duck flying
@@ -1975,8 +1971,7 @@ function CSRFCheck($token = 'csrf_code') /* Check CSRF code  */
     if ($_SESS['U:CSRF'] != $_REQUEST[$token])
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
-        header('Location: '.$_SERVER['HTTP_REFERER']."#csrf_is_missing");
-        msg("error", LANG_ERROR_TITLE, "<script> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
+        msg("error", LANG_ERROR_TITLE, "<script type='text/javascript'> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
     }
 }
 
