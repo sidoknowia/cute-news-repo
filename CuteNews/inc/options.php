@@ -197,9 +197,6 @@ elseif($action == "dosavepersonal")
     $pack[UDB_AVATAR]       = $change_avatar;
     edit_key($username, $pack, DB_USERS);
 
-    $_SESS['data'] = $pack;
-    send_cookie();
-
     msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "$PHP_SELF?mod=options&action=personal");
     
 }

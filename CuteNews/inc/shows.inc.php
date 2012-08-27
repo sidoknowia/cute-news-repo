@@ -251,7 +251,11 @@ do
         }
 
         // User is authorized
-        if ( !empty($_SESS['user']) && $_SESS['data'][UDB_ACL] = ACL_LEVEL_ADMIN) $captcha_enabled = false;
+        if ( !empty($_SESS['user']))
+        {
+            $member_db = bsearch_key($_SESS['user'], DB_USERS);
+            if ($member_db[UDB_ACL] = ACL_LEVEL_ADMIN) $captcha_enabled = false;
+        }
 
         // Captcha test (if not disabled force)
         if ($captcha != $_SESS['CSW'] && $config_use_captcha && $captcha_enabled)
@@ -656,8 +660,9 @@ do
         if ( !empty($_SESS['user']) )
         {
             $captcha_enabled = false;
-            $template_form = str_replace('{username}', $_SESS['data'][UDB_NAME], $template_form);
-            $template_form = str_replace('{usermail}', $_SESS['data'][UDB_EMAIL], $template_form);
+            $member_db = bsearch_key($_SESS['user'], DB_USERS);
+            $template_form = str_replace('{username}', $member_db[UDB_NAME], $template_form);
+            $template_form = str_replace('{usermail}', $member_db[UDB_EMAIL], $template_form);
         }
 
         $gduse         = function_exists('imagecreatetruecolor')? 0 : 1;

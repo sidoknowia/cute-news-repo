@@ -63,7 +63,8 @@ extract(filter_request('mod'), EXTR_OVERWRITE);
 if ($csrfmake == 'csrfmake')
 {
     $CSRF = CSRFMake();
-    echo "document.getElementById('csrf_code').value = '{$CSRF}';";
+    if (empty($cs)) $cs = false; else $cs = intval($cs);
+    echo "document.getElementById('csrf_code{$cs}').value = '{$CSRF}';";
     send_cookie();
     die();
 }
@@ -87,7 +88,6 @@ if ( empty($_SESS['user']))
         {
             $_SESS['ix']    = $username;
             $_SESS['user']  = $username;
-            $_SESS['data']  = $member_db;
 
             if ($rememberme == 'yes') $_SESS['@'] = true;
             elseif (isset($_SESS['@'])) unset($_SESS['@']);
@@ -116,43 +116,17 @@ if ( empty($_SESS['user']))
 }
 else
 {
-    if ($config_push_users == 'yes')
+    // Check existence of user
+    $member_db  = bsearch_key($_SESS['user'], DB_USERS);
+    if ($member_db)
     {
-        // If user has been deleted - disable session
-        $detect = join('', file(SERVDIR.'/cdata/actions.txt'));
-        if (strpos($detect, '%REMOVE|'.md5($_SESS['user'])."\n") !== false)
-        {
-            $detect = str_replace('%REMOVE|'.md5($_SESS['user'])."\n", '', $detect);
-            $w = fopen(SERVDIR.'/cdata/actions.txt', 'w');
-            fwrite($w, $detect);
-            fclose($w);
-
-            $_SESS       = array();
-            $is_loged_in = false;
-            $member_db   = false;
-            send_cookie();
-        }
-        else
-        {
-            $member_db = $_SESS['data'];
-            $is_loged_in = true;
-        }
+        $is_loged_in = true;
     }
     else
     {
-        // Check existence of user
-        $member_db  = bsearch_key($_SESS['user'], DB_USERS);
-        if ($member_db)
-        {
-            $is_loged_in = true;
-        }
-        else
-        {
-            $_SESS['data'] = false;
-            $_SESS['user'] = false;
-            $is_loged_in = false;
-            send_cookie();
-        }
+        $_SESS['user'] = false;
+        $is_loged_in = false;
+        send_cookie();
     }
 }
 

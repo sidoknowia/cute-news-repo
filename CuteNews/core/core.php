@@ -780,8 +780,8 @@ function template_replacer_news($news_arr, $output)
 {
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
-           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $config_use_modrewrite, $rss_news_include_url,
-           $my_names, $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $template, $user_query,
+           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $rss_news_include_url,
+           $my_names, $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $template, $user_query, $member_db,
            $_SESS, $PHP_SELF;
 
     // Short Story not exists
@@ -881,12 +881,16 @@ function template_replacer_news($news_arr, $output)
     }
 
     // Admin edit for news
-    if (!empty($_SESS['user']) && in_array($_SESS['data'][UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
+    if (!empty($_SESS['user']))
     {
-        $source = 0;
-        $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
-        $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
-        $output = str_ireplace('[/edit]', '</a>', $output);
+        $member_db = bsearch_key($_SESS['user'], DB_USERS);
+        if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
+        {
+            $source = 0;
+            $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
+            $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
+            $output = str_ireplace('[/edit]', '</a>', $output);
+        }
     }
     else
     {
@@ -1927,6 +1931,28 @@ function check_avatar($editavatar)
     }
 
     return $editavatar;
+}
+
+function get_allowed_cats($member_db)
+{
+
+    // only show allowed categories
+    $allowed_cats = array();
+    $cat_lines    = array();
+    $orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
+    foreach ($orig_cat_lines as $single_line)
+    {
+        $ocat_arr = explode("|", $single_line);
+        $cat[ $ocat_arr[CAT_ID] ] = $ocat_arr[CAT_NAME];
+
+        // If PERM=empty, allowed from All, else only for userlevel < PERM, or member is admin
+        if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN or $member_db[UDB_ACL] <= $ocat_arr[CAT_PERM] or empty($ocat_arr[CAT_PERM]))
+        {
+            $cat_lines[] = $single_line;
+            $allowed_cats[] = $ocat_arr[CAT_ID];
+        }
+    }
+    return array($allowed_cats, $cat_lines);
 }
 
 // duck flying

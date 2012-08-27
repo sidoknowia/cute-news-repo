@@ -4,40 +4,33 @@
   Mass Delete
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+list($allowed_cats, $cat_lines) = get_allowed_cats($member_db);
+$source         = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 
 if ($action == "mass_delete")
 {
     if (!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
+    // Check permissions
     $have_perm = 0;
     if     (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR)) $have_perm = 1;
     elseif ($member_db[UDB_ACL]  == ACL_LEVEL_JOURNALIST and $item_db[1] == $member_db[UDB_NAME]) $have_perm = 1;
 
-    if(!$have_perm)
+    if (!$have_perm)
     {
         msg("error", lang("No Access"), lang("You dont have access for this action"), "$PHP_SELF?mod=editnews&action=list");
     }
 
-    // if category is nice
-    if(strstr($item_db[6], ','))
+    // Check access user for category
+    if ( !empty($item_db[NEW_CAT]) )
     {
-        $all_these_cats = explode(',', $item_db[6]);
-        foreach($all_these_cats as $all_this_cat)
+        foreach (explode(',', $item_db[NEW_CAT]) as $all_this_cat)
         {
-            if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($all_this_cat, $allowed_cats) )
+            if ( !in_array($all_this_cat, $allowed_cats) )
             {
                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
             }
-        }
-    }
-    // else find single
-    else
-    {
-        if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and !in_array($item_db[6], $allowed_cats) )
-        {
-            msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
         }
     }
 
@@ -142,7 +135,7 @@ elseif($action == "do_mass_delete")
    Mass Approve
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-elseif($action == "mass_approve")
+elseif ($action == "mass_approve")
 {
     CSRFCheck();
 
@@ -193,27 +186,8 @@ elseif($action == "mass_approve")
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 elseif ($action == "mass_move_to_cat")
 {
-
-    if(!$selected_news)
+    if (!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
-
-    $orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
-
-    //only show allowed categories
-    $allowed_cats = array();
-    $cat_lines = array();
-
-    foreach($orig_cat_lines as $single_line)
-    {
-        $ocat_arr = explode("|", $single_line);
-        $cat[ $ocat_arr[0] ] = $ocat_arr[1];
-
-        if ( $member_db[UDB_ACL] >= $ocat_arr[3] or ($ocat_arr[3] == '0' || $ocat_arr[3] == ''))
-        {
-            $cat_lines[] = $single_line;
-            $allowed_cats[] = $ocat_arr[0];
-        }
-    }
 
     $CSRF = CSRFMake();
     echoheader("options", lang("Move Articles to Category"));
@@ -221,7 +195,7 @@ elseif ($action == "mass_move_to_cat")
     echo "<form action=\"$PHP_SELF\" method=post><table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr><td >Move selected articles (<b>".count($selected_news)."</b>) to category:";
     echo'<table width="80%" border="0" cellspacing="0" cellpadding="0" class="panel">';
 
-    foreach($cat_lines as $single_line)
+    foreach ($cat_lines as $single_line)
     {
         $i++;
         $cat_arr = explode("|", $single_line);
@@ -230,8 +204,7 @@ elseif ($action == "mass_move_to_cat")
         <input $if_is_selected style='background-color:transparent;border:0px;' type=checkbox name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
         if ($i%4 == 0) echo'<tr>';
     }
-    echo"</tr>";
-    echo "</table>";
+    echo "</tr></table>";
 
     foreach($selected_news as $newsid)
     {
@@ -249,31 +222,12 @@ elseif ($action == "mass_move_to_cat")
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   DO Mass Move to One Category
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-elseif($action == "do_mass_move_to_cat")
+elseif ($action == "do_mass_move_to_cat")
 {
     CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
         msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "$PHP_SELF?mod=editnews&action=list&source=$source");
-
-    ///Format our categories variable
-    $orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
-
-    //only show allowed categories
-    $allowed_cats = array();
-    $cat_lines = array();
-    
-    foreach($orig_cat_lines as $single_line)
-    {
-        $ocat_arr = explode("|", $single_line);
-        $cat[$ocat_arr[0]] = $ocat_arr[1];
-
-        if ($member_db[UDB_ACL] <= $ocat_arr[3] or ($ocat_arr[3] == '0' || $ocat_arr[3] == ''))
-        {
-            $cat_lines[] = $single_line;
-            $allowed_cats[] = $ocat_arr[0];
-        }
-    }
 
     if( is_array($category) )
     {
@@ -292,13 +246,13 @@ elseif($action == "do_mass_move_to_cat")
     if (!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
-    if($source == "")
+    if ($source == "")
         $news_file = SERVDIR."/cdata/news.txt";
 
-    elseif($source == "postponed")
+    elseif ($source == "postponed")
         $news_file = SERVDIR."/cdata/postponed_news.txt";
 
-    elseif($source == "unapproved")
+    elseif ($source == "unapproved")
         $news_file = SERVDIR."/cdata/unapproved_news.txt";
 
     else $news_file = SERVDIR."/cdata/archives/$source.news.arch";
@@ -307,10 +261,10 @@ elseif($action == "do_mass_move_to_cat")
     $old_db = file($news_file);
     $new_db = fopen($news_file, 'w');
     flock($new_db, LOCK_EX);
-    foreach($old_db as $old_db_line)
+    foreach ($old_db as $old_db_line)
     {
         $old_db_arr = explode("|", $old_db_line);
-        if(!in_array($old_db_arr[0], (array)$selected_news))
+        if (!in_array($old_db_arr[0], (array)$selected_news))
         {
             fwrite($new_db,"$old_db_line");
         }
@@ -318,7 +272,7 @@ elseif($action == "do_mass_move_to_cat")
         {
             $have_perm = 0;
             if (($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) or ($member_db[UDB_ACL] == ACL_LEVEL_EDITOR)) $have_perm = 1;
-            elseif($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[1] == $member_db[UDB_NAME]) $have_perm = 1;
+            elseif ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST and $old_db_arr[1] == $member_db[UDB_NAME]) $have_perm = 1;
 
             if(!$have_perm)
             {
@@ -364,25 +318,25 @@ elseif($action == "mass_archive")
     {
         echo "<input type=hidden name=selected_news[] value=\"$newsid\">\n";
     }
-    echo"</td></tr></table></form>";
+    echo "</td></tr></table></form>";
 
     echofooter();
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   DO Mass Send To Archive
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-elseif($action == "do_mass_archive")
+elseif ($action == "do_mass_archive")
 {
     CSRFCheck();
 
-    if( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-        msg("error", lang("Access Denied"), lang("You can not perfor this action if you are not admin"));
+    if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
+         msg("error", lang("Access Denied"), lang("You can not perfor this action if you are not admin"));
 
-    if( !$selected_news )
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
+    if ( !$selected_news )
+         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "$PHP_SELF?mod=editnews&action=list&source=$source");
 
     if (!is_writable(SERVDIR."/cdata/archives/"))
-        msg("error", LANG_ERROR_TITLE, lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"));
+         msg("error", LANG_ERROR_TITLE, lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"));
     
     $news_file = SERVDIR."/cdata/news.txt";
     $comm_file = SERVDIR."/cdata/comments.txt";
@@ -422,17 +376,17 @@ elseif($action == "do_mass_archive")
     flock($new_db, LOCK_UN);
     fclose($new_db);
 
-    if($archived_news == 0)
+    if ($archived_news == 0)
         msg("error", LANG_ERROR_TITLE, lang("No news were found for archiving"));
 
     // Prepare the comments for Archiving
     $old_db = file($comm_file);
     $new_db = fopen($comm_file, 'w');
     flock($new_db, LOCK_EX);
-    foreach($old_db as $old_db_line)
+    foreach ($old_db as $old_db_line)
     {
         $old_db_arr = explode("|", $old_db_line);
-        if( !in_array($old_db_arr[0], (array)$selected_news))
+        if ( !in_array($old_db_arr[0], (array)$selected_news))
         {
             fwrite($new_db,"$old_db_line");
         }
@@ -466,7 +420,7 @@ elseif($action == "do_mass_archive")
     fclose($arch_news);
 
     $arch_comm = fopen(SERVDIR."/cdata/archives/$arch_name.comments.arch", 'w');
-    foreach($prepeared_comments_for_archive as $item)
+    foreach ($prepeared_comments_for_archive as $item)
     {
         fwrite($arch_comm, "$item");
     }

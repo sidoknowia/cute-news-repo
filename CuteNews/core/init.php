@@ -79,23 +79,25 @@
     // include necessary libs
     include_once (SERVDIR.'/core/core.php');
 
+    // catch errors
+    set_error_handler("user_error_handler", E_ALL);
+
     // configuration files
-    include_once (SERVDIR.'/cdata/config.php');
+    if (file_exists(SERVDIR.'/cdata/config.php'))
+        include_once (SERVDIR.'/cdata/config.php');
 
     if (function_exists('date_default_timezone_set'))
         date_default_timezone_set( empty($config_timezone)?  'Europe/London' : $config_timezone );
 
     // loading plugins
     $_HOOKS = array();
+    if (is_dir(SERVDIR.'/cdata/plugins'))
     foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
         if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
     // load config
     $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
     $cfg['captcha_types'] = 1;
-
-    // catch errors
-    set_error_handler("user_error_handler", E_ALL);
 
     // language initialize
     include_once (SERVDIR.'/skins/language.php');

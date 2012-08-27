@@ -5,23 +5,8 @@ if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST)
 
 
 // only show allowed categories
-$allowed_cats = array();
-$cat_lines = array();
-$orig_cat_lines = file(SERVDIR."/cdata/category.db.php");
-foreach ($orig_cat_lines as $single_line)
-{
-    $ocat_arr = explode("|", $single_line);
-    $cat[ $ocat_arr[CAT_ID] ] = $ocat_arr[CAT_NAME];
-
-    // If PERM=empty, allowed from All, else only for userlevel < PERM, or member is admin
-    if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN or $member_db[UDB_ACL] <= $ocat_arr[CAT_PERM] or empty($ocat_arr[CAT_PERM]))
-    {
-        $cat_lines[] = $single_line;
-        $allowed_cats[] = $ocat_arr[CAT_ID];
-    }
-}
-
-$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+$source = preg_replace('~[^a-z0-9_\.]~i', '', $source);
+list($allowed_cats, $cat_lines) = get_allowed_cats($member_db);
 
 // ********************************************************************************
 // List all news available for editing
@@ -721,47 +706,34 @@ elseif ($action == 'move')
     // Only for present file
     if (!file_exists(SERVDIR . '/cdata/' . $src)) $src = 'news.txt';
     $dbpath = SERVDIR . '/cdata/' . $src;
-    $all_db = "\n" . join('', file($dbpath));
 
-    $ps = strpos( $all_db, "\n$id|" );
-    if ($ps === false) msg('error', LANG_ERROR_TITLE, lang('ID not found'));
-
-    $ps++;
-    $pe = strpos( $all_db, "\n", $ps );
-
-    if ($direct == 'up')
+    // Search and swap lines
+    $all_db = file($dbpath);
+    foreach ($all_db as $i => $ln)
     {
-        $i = $ps-2;
-        for ($i = $ps-2; $i>0; $i--) if ($all_db[$i] == "\n") break;
-
-        $item0 = trim( substr($all_db, $i+1, $ps-$i-2) );
-        $item1 = trim( substr($all_db, $ps, $pe-$ps) );
-
-        $start = $i+1;
-        $end   = $pe;
-
-    }
-    else
-    {
-        $i = strpos($all_db, "\n", $pe+1);
-        if ($i === false) $i = strlen($all_db);
-
-        $item0 = trim( substr($all_db, $ps, $pe-$ps-1) );
-        $item1 = trim( substr($all_db, $pe+1, $i-$pe-1) );
-
-        $start = $ps;
-        $end   = $i;
+        list ($lnid) = explode('|', $ln, 2);
+        if ($lnid == $id)
+        {
+            if ($direct == 'up' && $i > 0)
+            {
+                $a = $all_db[$i-1];
+                $all_db[$i-1] = $all_db[$i];
+                $all_db[$i] = $a;
+                break;
+            }
+            elseif ($direct == 'down' && $i < count($all_db))
+            {
+                $a = $all_db[$i+1];
+                $all_db[$i+1] = $all_db[$i];
+                $all_db[$i] = $a;
+                break;
+            }
+        }
     }
 
-    // Swap lines
-    if (trim($item0) && trim($item1))
-    {
-        $w = fopen($dbpath, 'w');
-        fwrite($w, substr($all_db, 1, $start));
-        fwrite($w, "$item1\n$item0");
-        fwrite($w, substr($all_db, $end));
-
-    }
+    $w = fopen($dbpath, 'w');
+    fwrite($w, join('', $all_db));
+    fclose($w);
 
     $tourl = PHP_SELF.build_uri('mod,action,source', array('editnews','list',$source), false);
     header('Location: '.$tourl);
