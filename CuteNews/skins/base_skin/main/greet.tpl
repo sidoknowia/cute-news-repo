@@ -1,6 +1,6 @@
-<table border=0 cellpadding=0 cellspacing=0 width=654>
+<table border=0 cellpadding=0 cellspacing=0 width=754>
     <tr>
-        <td width=650 colspan=5 height=1>&nbsp;
+        <td style="font-size: 14px;">
             <script type="text/javascript">
                 datetoday = new Date();
                 timenow=datetoday.getTime();

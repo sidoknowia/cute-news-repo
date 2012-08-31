@@ -29,7 +29,7 @@ if ($action == "add")
     foreach($all_cats as $cat_line)
     {
         $cat_arr = explode("|", $cat_line);
-        if ($cat_arr[1] == $cat_name) msg("error", LANG_ERROR_TITLE, "Category with this name already exist", "?mod=categories");
+        if ($cat_arr[1] == $cat_name) msg("error", LANG_ERROR_TITLE, "Category with this name already exist", '#GOBACK');
         if ($cat_arr[0] == $big_num)  $big_num = 33;
     }
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "a");
@@ -49,7 +49,7 @@ if ($action == "add")
 elseif ($action == "remove")
 {
     CSRFCheck();
-    if(!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", "$PHP_SELF?mod=categories");
+    if(!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");
@@ -67,7 +67,7 @@ elseif ($action == "remove")
 elseif ($action == "edit")
 {
     $CSRF = CSRFMake();
-    if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", "$PHP_SELF?mod=categories");
+    if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
 
     $all_cats = file(SERVDIR."/cdata/category.db.php");
     foreach($all_cats as $cat_line)
@@ -89,7 +89,7 @@ elseif ($action == "edit")
                             'CSRF'           => $CSRF)
             );
 
-            msg("options", "Edit Category", $msg);
+            msg("options", lang("Edit Category"), $msg);
         }
     }
 }
@@ -104,7 +104,7 @@ elseif($action == "doedit")
     $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
-    if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), "$PHP_SELF?mod=categories");
+    if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), '#GOBACK');
     if ($cat_name == "") msg("error", LANG_ERROR_TITLE, lang("Category name can not be blank"), "#GOBACK");
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
@@ -123,7 +123,7 @@ elseif($action == "doedit")
 // List all Categories
 // ********************************************************************************
 $CSRF = CSRFMake();
-echoheader("options", "Categories");
+echoheader("options", "Categories", make_breadcrumbs('main/options=options/Manage Categories'));
 
 $count_categories = 0;
 $all_cats = hook('read_categories', file(SERVDIR."/cdata/category.db.php"));
@@ -137,15 +137,15 @@ foreach($all_cats as $cat_line)
     $cat_help_names[]   = $cat_arr[1];
     $cat_help_ids[]     = $cat_arr[0];
 
-    $result .= "<tr><td $bg >&nbsp;<b>$cat_arr[0]</b></td><td $bg >$cat_arr[1]</td> <td $bg >";
-    if($cat_arr[2] != "") $result .= "<img border=0 src=\"$cat_arr[2]\" high=40 width=40 alt=\"$cat_arr[2]\">"; else $result .= "---";
-    $result .= "</td><td $bg >";
+    $result .= "<tr><td $bg>&nbsp;<b>$cat_arr[0]</b></td><td $bg >$cat_arr[1]</td> <td $bg align=center>";
+    if ($cat_arr[2] != "") $result .= "<img border=0 src=\"$cat_arr[2]\" high=40 width=40 alt=\"$cat_arr[2]\">"; else $result .= "---";
+    $result .= "</td><td $bg align=center>";
 
     $result .= ($cat_arr[3] == "" || $cat_arr[3] == "0") ? "<span title='".lang('Everyone can Write')."'>---</span>" :  "";
     $result .= ($cat_arr[3] == "1") ? lang("Only Admin") :  "";
     $result .= ($cat_arr[3] == "2") ? lang("Only Editors & Admin") :  "";
 
-    $result .= "</td> <td $bg>
+    $result .= "</td> <td $bg align=center>
                     <a href=\"$PHP_SELF?mod=categories&action=edit&amp;catid=$cat_arr[0]\">[".lang('edit')."]</a>
                     <a href=\"$PHP_SELF?mod=categories&action=remove&amp;catid=$cat_arr[0]&amp;csrf_code=$CSRF\">[".lang('delete')."]</a></td> </tr>";
 

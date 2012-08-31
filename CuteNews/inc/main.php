@@ -3,10 +3,9 @@
 hook('init_main');
 
 //If member access level is commenter, redirect him to personal options
-if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and $action == "dologin")
+if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
 {
     relocation($config_http_script_dir."/index.php?mod=options&action=personal");
-    die();
 }
 
 // ----------------------------------------
@@ -158,7 +157,6 @@ if($phpversion and $phpversion < '4.1.0') $warn .= proc_tpl('main/php_old', arra
 if ($using_safe_skin)
     $warn .= proc_tpl('main/safe_skin', array('config_skin' => $config_skin));
 
-
 // Greet script
 echo str_replace(array('{member}','{greet}', '{warn}'),
                  array($member_db[UDB_NAME], $rand_msg[rand(0, count($rand_msg)-1)], $warn),
@@ -256,8 +254,8 @@ foreach ($filesize as $i => $v)
 if (function_exists('disk_free_space') && function_exists('disk_total_space'))
 {
     $msgs['fs'][] = array('Free disk space', formatsize( disk_free_space(SERVDIR) ) );
-    $factor = (int)(650 * (1 - disk_free_space('/') / disk_total_space('/')));
-    if ($factor > 650) $factor = 650;
+    $factor = (int)(100 * (1 - disk_free_space('/') / disk_total_space('/')));
+    if ($factor > 100) $factor = 100;
     if ($factor < 0) $factor = 0;
 }
 else $factor = false;

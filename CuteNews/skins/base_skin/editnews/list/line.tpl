@@ -1,11 +1,9 @@
 {foreach from=the_entry}
 
-    <tr bgcolor="{$the_entry.bg}">
-        <td align="center"> <a href="{$PHP_SELF}?mod=editnews&amp;action=move&amp;direct=up&amp;id={$the_entry.id}&amp;source={$the_entry.source}">&uarr;</a> <a href="{$PHP_SELF}?mod=editnews&amp;action=move&amp;direct=down&amp;id={$the_entry.id}&amp;source={$the_entry.source}">&darr;</a> </td>
+    <tr bgcolor="{$the_entry.bg}" class="hover">
+        <td align="center"> {$the_entry.order} </td>
 
-        <td>
-            <a title='Edit: {$the_entry.title}' href="{$PHP_SELF}?mod=editnews&amp;action=editnews&amp;id={$the_entry.id}&amp;source={$the_entry.source}">{$the_entry.title}</a>
-        </td>
+        <td> <a title='Edit: {$the_entry.title}' href="{$PHP_SELF}?mod=editnews&amp;action=editnews&amp;id={$the_entry.id}&amp;source={$the_entry.source}">{$the_entry.title}</a> {$the_entry.pros}</td>
 
         <td align='center'>{$the_entry.comments}</td>
         <td align='center'>{$the_entry.category}</td>

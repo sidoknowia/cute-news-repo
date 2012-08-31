@@ -105,7 +105,6 @@ class SimpleCaptcha
             $_SESS[$this->session_var] = $reply;
             send_cookie();
 
-            header("Content-Type: text/html; charset=UTF-8");
             echo '<html><body style="font-size: 42px; font-family: Arial, Tahoma, Serif;">'.$reply.'</body></html>';
         }
         else
@@ -185,16 +184,14 @@ class SimpleCaptcha
      */
     function GetCaptchaText()
     {
-        global $cfg;
-
         // use different captcha types
-        $type = mt_rand(1, $cfg['captcha_types']);
-        if ($type == 1)
+        $type = hook("select_captcha_types");
+        if ($type == 0)
         {
             $text = $this->GetRandomCaptchaText();
             $reply = $text;
         }
-        elseif ($type == 2)
+        elseif ($type == 1)
         {
             $method = mt_rand(1,2);
             $a      = mt_rand(1,9);
@@ -213,7 +210,7 @@ class SimpleCaptcha
 
         // #input $type = 3..n
         // #return $text and $reply
-        hook('captcha_text_type');
+        list($text, $reply) = hook('captcha_text_type', array($text, $reply));
 
         return array($text, $reply);
     }

@@ -79,12 +79,96 @@ CuteNews 1.5.0 release notes.
     - Added code dump storage module for further sending into consideration (for licensed versions only!);
     - Integrated module of additional substitution of words, which allows the user to specify the rules of regular
       expressions, how to convert news data;
-
     - Added X-Fields, additional fields that can be used for expanding information on every news;
     - Added ban by IP and by nickname;
     - Added build-in news sorting option (&ldquo;$orderby&rdquo; before including show.news.php), the algorithm QuickSort is used;
     - Added the ability to mix the news randomly;
     - Added news displaying by user name.
+
+    <strong>Fixed in beta-stage</strong>
+
+    - Fixed CSRF login window
+    + Add IP checker for authenticated sessions
+    - Fixed [link] $template var
+    - Fixed bug showing list of news: users can view news which category is not allowed
+    - Fixed bug: editor can't delete news without category
+    - Fixed sort news bug
+    + Security bug fix: anyone may delete users
+    - Remove deprecated function:over_tpl
+    + Add styling for button in default.skin.tpl
+    + Add gradient panel for admin
+    - Fixed bug with table at editnews
+    - Change logic to show authors in editnews listing: using real author names
+    - Fixed autologin, login cookies bug
+    + Add safe redirects
+    + Add print.php hack
+    + Add Update function
+    - Remove /skins/images/Thumbs.db
+    - Remove db.fulltext.php
+    - Remove deprecated template skins/base_skin/images/quick.tpl
+    - Remove CKEditor unused language packets
+    - Remove default search template
+    + Add reorder news in admin panel
+    - For authorized user disable enter passcode; for admin - disable captcha anyway
+    + Add possibility to [edit]edit news[/edit] from news
+    - Fixed discus thread [link]...[/link]
+    + Add backup for news
+    - Refactor image module: fix wysiwyg insertion, fix preview
+    - Fixed some warnings
+    + Add $config_push_users for user kicks
+    - Fixed user check existed status
+    + Add version checker to main page
+    + Add userlist imod
+    - Fixed path disclosure in options.php:do_template
+    - Fixed exit_cookies and send_cookies authorization
+    + Use $GLOBALS in proc_tpl
+    + Add to function proc_tpl language translation support
+    + Add plugin manager
+    - Fixed migration/installation bug
+    - Security fix for data section
+    - Fixed: show "No category" in add/edit news
+    + Add "no cache" headers
+    + Add CSRF checking in images, archives, backup, personal, xfiels, massactions, comments
+    - Fixed template error in backup
+    - Change 'cellpading' to 'cellpadding'
+    - Remove hooks.php from code, reason: unused
+    - Increase performance by using encrypted login session, remove weak CSRF checking
+    - Remove function check_login
+    + Add .htaccess in installation process
+    - Move 'more fields' at news.txt db
+    - Shorten links
+    - Fixed date formatting, add new fields {weekday}, {since}
+    + Add the possibility of uploading images from server to CKEditor
+    - Fixed bugs concerning removing comments, execution persmission status in admin panel, xss security: add allowed tags
+      for iframe,object,param,embed
+    - Remove xss_strip deprecated function
+    + Add [truncate=N]...[/truncate] possibility
+    + Add linked categories hacks
+    + Add possibility for adding options with plugins
+    - Don't allow posting urls in comments
+    - Fixed UTF8 html encoding for comments only for the author/comment
+    - Fixed bug concerning adding comment to broken link in comments.txt
+    + Added a field for selection of the XSS level
+    - Fixed XSS in register.php
+    - Fixed reflected cross site scripting in search.php, editnews, categories module
+    - Fixed partial file disclosure $source in addnews, editnews, massaction
+    - Remove [link] bbcode from all cutenews codes
+    - Fixed file Path Disclosure in search.php mktime in search.php
+    + Add a XSS level "Total Filter" for disable all disallowed tags
+    - Fixed CSRF with adding/editing users and categories: high vulnerable
+    - Fixed PHP Code Injection for categories module
+    - Fixed saving 'skin path' with invalid characters
+    + Modify Postponed news logic
+    - EOL is always transformed into BR while saving without visual editing program
+    - The tick 'Use html' is kept
+    + Change of the appearance of administrative board: enlargement of the space on the left side
+    - The check up of the empty comments while archiving was deleted
+    + Users logs are sorted by decrease
+    + Option of users logs turning up
+    + Option of compulsory turning up of UTF-8 on the site
+    + The migration script has been changed: copying of all files non registering codepage excepting users/ipban
+      (they are separate)
+    - Fix string truncation
 
 1.1 Requirements
 

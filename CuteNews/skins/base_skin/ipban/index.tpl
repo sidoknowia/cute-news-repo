@@ -2,7 +2,7 @@
     <input type=hidden name="csrf_code" value="{$CSRF}" />
     <input type=hidden name=action value=add>
     <input type=hidden name=mod value=ipban>
-    <table border=0 cellpadding=0 cellspacing=0 width="645">
+    <table border=0 cellpadding=0 cellspacing=0 width="100%">
         <tr>
             <td width=321 height="33">
                 <p><b>Block IP or Nickname</b></p>
@@ -21,35 +21,25 @@
     </table>
 </form>
 
-<table border=0 cellpadding=0 cellspacing=0 width="645">
-    <tr>
-        <td height="28"><b>Blocked IP Addresses</b></td>
+<div><b>Blocked IP Addresses</b></div>
+<table cellspacing=0 cellpadding=3 width="100%">
+
+    <tr  bgcolor=#F7F6F4>
+        <td width=15></td>
+        <td width=260><b>IP</b></td>
+        <td width=200 align="center"><b>times been blocked</b></td>
+        <td width=120 align="center"><b>expire</b></td>
+        <td width=140 align="center"><b>unblock</td>
     </tr>
 
-    <tr>
-        <td height=1>
-
-            <table cellspacing=0 cellpadding=0>
-
-                <tr>
-                    <td width=15 bgcolor=#F7F6F4></td>
-                    <td width=260 bgcolor=#F7F6F4><b>IP</b></td>
-                    <td width=200 bgcolor=#F7F6F4><b>times been blocked</b></td>
-                    <td width=120 bgcolor=#F7F6F4><b>expire</b></td>
-                    <td width=140 bgcolor=#F7F6F4><b>unblock</td>
-                </tr>
-
-                {foreach from=iplist}
-                <tr height="18" {$iplist.bg}>
-                    <td> &nbsp; </td>
-                    <td> <a href="http://www.ripe.net/perl/whois?searchtext={$iplist.ip}" target=_blank title="Get more information about this ip">{$iplist.ip}</a> </td>
-                    <td> {$iplist.times} </td>
-                    <td> {$iplist.expire} </td>
-                    <td> <a href="{$PHP_SELF}?mod=ipban&action=remove&remove_ip={$iplist.ip}">[unblock]</a></td>
-                </tr>
-                {/foreach}
-
-            </table>
-        </td>
+    {foreach from=iplist}
+    <tr {$iplist.bg}>
+        <td> &nbsp; </td>
+        <td> <a href="http://www.ripe.net/perl/whois?searchtext={$iplist.ip}" target=_blank title="Get more information about this ip">{$iplist.ip}</a> </td>
+        <td align="center"> {$iplist.times} </td>
+        <td align="center"> {$iplist.expire} </td>
+        <td align="center"> <a href="{$PHP_SELF}?mod=ipban&action=remove&remove_ip={$iplist.ip}">[unblock]</a></td>
     </tr>
+    {/foreach}
+
 </table>

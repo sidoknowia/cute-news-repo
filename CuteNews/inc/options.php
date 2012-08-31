@@ -5,6 +5,18 @@ if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and ($action != 'personal' and $a
 
 $do_template = preg_replace('~[^a-z0-9_]~i', '', $do_template);
 
+// Init Templates
+$Template_Form = array
+(
+    array('name' => 'template_active', 'title' => 'Active News'),
+    array('name' => 'template_full', 'title' => 'Full Story'),
+    array('name' => 'template_comment', 'title' => 'Comment'),
+    array('name' => 'template_form', 'title' => 'Add comment form'),
+    array('name' => 'template_prev_next', 'title' => 'News Pagination'),
+    array('name' => 'template_comments_prev_next', 'title' => 'Comments Pagination'),
+);
+$Template_Form = hook('template_forms', $Template_Form);
+
 // ********************************************************************************
 // Options Menu
 // ********************************************************************************
@@ -22,83 +34,77 @@ if ($action == "options" or $action == '')
         array(
                'name'               => lang("Personal Options"),
                'url'                => "$PHP_SELF?mod=options&action=personal",
-               'access'             => "4",
+               'access'             => ACL_LEVEL_COMMENTER,
         ),
         array(
                'name'               => lang("Block IP's from posting comments"),
                'url'                => "$PHP_SELF?mod=ipban",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("System Configurations"),
                'url'                => "$PHP_SELF?mod=options&action=syscon&rand=".time(),
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Integration and Migration Wizards"),
                'url'                => "$PHP_SELF?mod=wizards",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Edit Templates"),
                'url'                => "$PHP_SELF?mod=options&action=templates",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Add/Edit Users"),
                'url'                => "$PHP_SELF?mod=editusers&action=list",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Archives Manager"),
                'url'                => "$PHP_SELF?mod=tools&action=archive",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Manage Uploaded Images"),
                'url'                => "$PHP_SELF?mod=images",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Backup Tool"),
                'url'                => "$PHP_SELF?mod=tools&action=backup",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Edit Categories"),
                'url'                => "$PHP_SELF?mod=categories",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
-        /*
-        array(
-               'name'               => lang("Report bug/error"),
-               'url'                => "$PHP_SELF?mod=tools&action=report",
-               'access'             => "1",
-        ), */
         array(
                'name'               => lang("User logs"),
                'url'                => "$PHP_SELF?mod=tools&action=userlog",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Word replacement"),
                'url'                => "$PHP_SELF?mod=tools&action=replaces",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang("Additional fields"),
                'url'                => "$PHP_SELF?mod=tools&action=xfields",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
                'name'               => lang('Update Cutenews', 'options'),
                'url'                => "$PHP_SELF?mod=update&action=update",
-               'access'             => "1",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-                'name'               => lang('Plugin manager', 'options'),
-                'url'                => "$PHP_SELF?mod=tools&action=plugins",
-                'access'             => "1",
+               'name'               => lang('Plugin manager', 'options'),
+               'url'                => "$PHP_SELF?mod=tools&action=plugins",
+               'access'             => ACL_LEVEL_ADMIN,
         ),
     );
 
@@ -108,22 +114,19 @@ if ($action == "options" or $action == '')
     // Cut the options for wich we don't have access
     //------------------------------------------------
     $count_options = count($options);
-    for($i=0; $i<$count_options; $i++)
+    for ($i = 0; $i<$count_options; $i++)
     {
-        if($member_db[1] > $options[$i]['access']) unset($options[$i]);
+        if ($member_db[UDB_ACL] > $options[$i]['access'])
+            unset($options[$i]);
     }
 
-    echo '<table border="0" width="100%"><tr>';
-    
     $i = 0;
+    echo '<div style="margin: 0 0 0 64px">';
     foreach ($options as $option)
     {
-        if ($i%2 == 0) echo "</tr>\n<tr>\n<td width='47%'>&nbsp;&nbsp;&nbsp;<a href='".$option['url']."'><b>".$option['name']."</b></a></td>\n";
-        else echo"\n<td width='53%'><a href='".$option['url']."'><b>".$option['name']."</b></a></td>\n"; 
-        $i++;
+        echo "<div style='float: left; padding: 2px; width: 280px;'><a href='".$option['url']."'><b>".$option['name']."</b></a></div>";
     }
-
-    echo'</tr></table>';
+    echo '</div>';
     echofooter();
 }
 // ********************************************************************************
@@ -132,7 +135,10 @@ if ($action == "options" or $action == '')
 elseif ($action == "personal")
 {
     $CSRF = CSRFMake();
-    echoheader("user", "Personal Options");
+
+    if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
+         echoheader("user", "Personal Options");
+    else echoheader("user", "Personal Options", make_breadcrumbs('main/options=options/Personal Options'));
 
     foreach($member_db as $key => $value)
         $member_db[$key]  = stripslashes(preg_replace(array("'\"'", "'\''"), array("&quot;", "&#039;"), $member_db[$key]));
@@ -152,7 +158,6 @@ elseif ($action == "personal")
                       'access_level' => $access_level[ $member_db[UDB_ACL] ],
                       'registrationdate' => date("D, d F Y", $member_db[0]), // registration date
                       'bg'           => $member_db[UDB_ACL] < ACL_LEVEL_COMMENTER? "bgcolor=#F7F6F4" : false,
-                      'CSRF'         => $CSRF,
                   ),
                   array('NOTCOMMENTER' => $member_db[UDB_ACL] < ACL_LEVEL_COMMENTER)
     );
@@ -162,7 +167,7 @@ elseif ($action == "personal")
 // ********************************************************************************
 // Save Personal Options
 // ********************************************************************************
-elseif($action == "dosavepersonal")
+elseif ($action == "dosavepersonal")
 {
     CSRFCheck();
 
@@ -173,7 +178,7 @@ elseif($action == "dosavepersonal")
     $change_avatar      = replace_comment("add", $change_avatar);
 
     if ($editpassword and !preg_match("/^[\.A-z0-9_\-]{1,31}$/i", $editpassword))
-        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"));
+        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"), '#GOBACK');
 
     $edithidemail = $edithidemail? 1 : 0;
     $avatars = preg_replace(array("'\|'","'\n'","' '"), array("","","_"), $avatars);
@@ -188,7 +193,7 @@ elseif($action == "dosavepersonal")
             $pack[UDB_PASS] = $hashs[ count($hashs) - 1 ];
             $_SESS['pwd']   = $editpassword;
         }
-        else msg('error', LANG_ERROR_TITLE, lang('Confirm password not match'), "$PHP_SELF?mod=options&action=personal");
+        else msg('error', LANG_ERROR_TITLE, lang('Confirm password not match'), "#GOBACK");
     }
 
     $pack[UDB_NICK]         = $editnickname;
@@ -197,15 +202,17 @@ elseif($action == "dosavepersonal")
     $pack[UDB_AVATAR]       = $change_avatar;
     edit_key($username, $pack, DB_USERS);
 
-    msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "$PHP_SELF?mod=options&action=personal");
+    msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "#GOBACK");
     
 }
 // ********************************************************************************
 // Edit Templates
 // ********************************************************************************
-elseif($action == "templates")
+elseif ($action == "templates")
 {
-    if($member_db[1] != 1){ msg("error", lang("Access Denied"), lang("You don't have permissions for this type of action")); }
+    if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
+        msg("error", lang("Access Denied"), lang("You don't have permissions for this type of action"), '#GOBACK');
+
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Detect all template packs we have
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -213,9 +220,10 @@ elseif($action == "templates")
     if (!$handle = opendir(SERVDIR."/cdata")) die("Can not open directory ".SERVDIR."/cdata ");
     while (false !== ($file = readdir($handle)))
     {
-        if(preg_replace('/^.*\.(.*?)$/', '\\1', $file) == 'tpl'){
-        $file_arr                 = explode(".", $file);
-        $templates_list[]= $file_arr[0];
+        if(preg_replace('/^.*\.(.*?)$/', '\\1', $file) == 'tpl')
+        {
+            $file_arr           = explode(".", $file);
+            $templates_list[]   = $file_arr[0];
         }
     }
     closedir($handle);
@@ -225,17 +233,8 @@ elseif($action == "templates")
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     if ($subaction == "new")
     {
-        echoheader("options", "New Template");
-        echo "<form method=post action=\"$PHP_SELF\"><table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr><td>Create new template based on: <select name=base_template>";
-        foreach($templates_list as $single_template)
-        {
-            echo "<option value=\"$single_template\">$single_template</option>";
-        }
-        echo '</select> with name <input type=text name=template_name> &nbsp;<input type=submit value="'.lang('Create Template').'">
-        <input type=hidden name=mod value=options>
-        <input type=hidden name=action value=templates>
-        <input type=hidden name=subaction value=donew>
-        </td></tr></table></form>';
+        echoheader("options", "New Template", make_breadcrumbs('main/options=options/options:templates=templates/New'));
+        echo proc_tpl('options/make_template');
         echofooter();
         die();
     }
@@ -245,25 +244,19 @@ elseif($action == "templates")
     if ($subaction == "donew")
     {
         if (!preg_match('/^[a-z0-9_-]+$/i', $template_name))
-        {
-            msg("error", LANG_ERROR_TITLE, lang("The name of the template must be only with letters and numbers"), "$PHP_SELF?mod=options&subaction=new&action=templates");
-        }
+            msg("error", LANG_ERROR_TITLE, lang("The name of the template must be only with letters and numbers"), '#GOBACK');
 
-        if(file_exists(SERVDIR."/cdata/$template_name.tpl"))
-            msg("error", LANG_ERROR_TITLE, lang("Template with this name already exists"), "$PHP_SELF?mod=options&subaction=new&action=templates");
+        if (file_exists(SERVDIR."/cdata/$template_name.tpl"))
+            msg("error", LANG_ERROR_TITLE, lang("Template with this name already exists"), '#GOBACK');
 
-        if ( $base_template )
-             $base_file = SERVDIR."/cdata/$base_template.tpl";
-        else $base_file = SERVDIR."/cdata/Default.tpl";
-
-        if (!copy($base_file, SERVDIR."/cdata/$template_name.tpl"))
-        {
-            msg("error", LANG_ERROR_TITLE, str_replace('%1', $base_file, lang("Can not copy file %1 to ./cdata/ folder with name "))."$template_name.tpl");
-        }
+        // Make file
+        if ( !file_exists(SERVDIR."/cdata/$base_template.tpl")) $base_template = 'Default';
+        if ( !copy(SERVDIR."/cdata/$base_template.tpl", SERVDIR."/cdata/$template_name.tpl") )
+             msg("error", LANG_ERROR_TITLE, str_replace('%1', $base_template, lang("Can not copy file %1 to ./cdata/ folder with name "))."$template_name.tpl", '#GOBACK');
 
         chmod(SERVDIR."/cdata/$template_name.tpl", 0666);
 
-        msg("info", lang("Template Created"), lang("A new template was created with name")." <b>$template_name</b><br>", "$PHP_SELF?mod=options&action=templates");
+        msg("info", lang("Template Created"), lang("A new template was created with name")." <b>$template_name</b>", '#GOBACK');
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Deleting template, preparation
@@ -271,20 +264,12 @@ elseif($action == "templates")
     if ($subaction == "delete")
     {
         if (strtolower($do_template) == "default")
-            msg("Error",  LANG_ERROR_TITLE, lang("You can not delete the default template"), "$PHP_SELF?mod=options&action=templates");
+            msg("Error",  LANG_ERROR_TITLE, lang("You can not delete the default template"), '#GOBACK');
 
         if (strtolower($do_template) == "rss")
-            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the RSS template, it is not even supposed you to edit it"), "$PHP_SELF?mod=options&action=templates");
+            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
 
-        $msg = "<form method=post action=\"$PHP_SELF\">".lang('Are you sure you want to delete the template')." <b>$do_template</b> ?<br><br>
-        <input type=submit value=\" ".lang('Yes, Delete This Template')."\"> &nbsp;
-        <input onclick=\"document.location='$PHP_SELF?mod=options&action=templates';\" type=button value=\"".lang('Cancel')."\">
-        <input type=hidden name=mod value=options>
-        <input type=hidden name=action value=templates>
-        <input type=hidden name=subaction value=dodelete>
-        <input type=hidden name=do_template value=\"$do_template\">
-        </form>";
-
+        $msg = proc_tpl('options/sure_delete');
         msg("info", lang("Deleting Template"), $msg);
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,66 +278,43 @@ elseif($action == "templates")
     if ($subaction == "dodelete")
     {
         if(strtolower($do_template) == "default")
-            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the default template"), "$PHP_SELF?mod=options&action=templates");
+            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the default template"), '#GOBACK');
 
         $unlink = unlink(SERVDIR."/cdata/$do_template.tpl");
         if ( !$unlink )
-             msg("error", LANG_ERROR_TITLE, "Can not delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server");
-        else msg("info",  lang("Template Deleted"), str_replace('%1', $do_template, lang("The template <b>%1</b> was deleted.")), "$PHP_SELF?mod=options&action=templates");
+             msg("error", LANG_ERROR_TITLE, "Can not delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
+        else msg("info",  lang("Template Deleted"), str_replace('%1', $do_template, lang("The template <b>%1</b> was deleted.")));
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Show The Template Manager
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+    $show_delete_link = false;
     if ($do_template == '' or !$do_template)
     {
         $do_template = 'Default';
-        $show_delete_link = '';
     }
     elseif ( !in_array(strtolower($do_template), array('default','rss','headlines')) )
     {
         $show_delete_link = "<a href=\"$PHP_SELF?action=templates&mod=options&subaction=delete&do_template=$do_template\">[".lang('delete this template')."]</a>";
     }
-    
+
+    // Load template variables ---------------------
     require(SERVDIR."/cdata/$do_template.tpl");
+    foreach ($Template_Form as $id => $template) $Template_Form[$id]['part'] = htmlspecialchars( $$template['name'] );
 
-    if (strpos($HTTP_USER_AGENT, 'opera') !== false)
-         $tr_hidden = "";
-    else $tr_hidden = " style='display:none'";
-
-    $templates_names = array("template_active", "template_comment", "template_form", "template_full",
-                             "template_prev_next", "template_comments_prev_next");
-
-    foreach ($templates_names as $template)
-    {
-        $$template = preg_replace("/</","&lt;",$$template);
-        $$template = preg_replace("/>/","&gt;",$$template);
-    }
-
-    echoheader("options", "Templates");
+    echoheader("options", "Templates", make_breadcrumbs('main/options=options/Templates'));
 
     $SELECT_template = false;
-    foreach($templates_list as $single_template)
+    foreach ($templates_list as $single_template)
     {
         if ($single_template == $do_template)
              $SELECT_template .= "<option selected value='$single_template'>$single_template</option>";
         else $SELECT_template .= "<option value='$single_template'>$single_template</option>";
     }
 
-    echo proc_tpl('options/templates', array
-    (
-        'SELECT_template' => $SELECT_template,
-        'template_active' => $template_active,
-        'template_full' => $template_full,
-        'template_comment' => $template_comment,
-        'template_form' => $template_form,
-        'template_prev_next' => $template_prev_next,
-        'template_comments_prev_next' => $template_comments_prev_next,
-        'show_delete_link' => $show_delete_link,
-        'do_template' => $do_template,
-        'tr_hidden' => $tr_hidden,
-    ));
-
+    $save = ($save == 'success')? '- Success saved!' : '';
+    echo proc_tpl('options/templates');
     echofooter();
 }
 // ********************************************************************************
@@ -361,27 +323,25 @@ elseif($action == "templates")
 elseif($action == "dosavetemplates")
 {
     if ($member_db[UDB_ACL] != 1)
-        msg("error", lang("Access Denied"), lang("You don't have permissions for this type of action"));
+        msg("error", lang("Access Denied"), lang("You don't have permissions for this type of action", '#GOBACK'));
 
-    $templates_names = array("edit_active", "edit_comment", "edit_form", "edit_full", "edit_prev_next", "edit_comments_prev_next","edit_search");
-    foreach($templates_names as $template) $$template = stripslashes($$template);
+    if ($do_template == "" or !$do_template)
+        $do_template = "Default";
 
-    if($do_template == "" or !$do_template){ $do_template = "Default"; }
     $template_file = SERVDIR."/cdata/$do_template.tpl";
 
-    if($do_template == "rss") $edit_active = str_replace("&", "&amp;", $edit_active);
-
-    $handle = fopen("$template_file","w");
+    $handle = fopen($template_file, "w");
     fwrite($handle, '<'.'?php'."\n///////////////////// TEMPLATE $do_template /////////////////////\n");
-    fwrite($handle, "\$template_active = <<<HTML\n$edit_active\nHTML;\n\n\n");
-    fwrite($handle, "\$template_full = <<<HTML\n$edit_full\nHTML;\n\n\n");
-    fwrite($handle, "\$template_comment = <<<HTML\n$edit_comment\nHTML;\n\n\n");
-    fwrite($handle, "\$template_form = <<<HTML\n$edit_form\nHTML;\n\n\n");
-    fwrite($handle, "\$template_prev_next = <<<HTML\n$edit_prev_next\nHTML;\n");
-    fwrite($handle, "\$template_comments_prev_next = <<<HTML\n$edit_comments_prev_next\nHTML;\n");
-    fwrite($handle, "?>\n");
+    foreach ($Template_Form as $parts)
+    {
+        $name  = $parts['name'];
+        $value = $_REQUEST['edit_'.$name];
+        fwrite($handle, "\${$name} = <<<HTML\n{$value}\nHTML;\n\n\n");
+    }
+    fwrite($handle, "?>");
+    fclose($handle);
 
-   msg("info", lang("Changes Saved"), "The changes to template <b>$do_template</b> were successfully saved.","$PHP_SELF?mod=options&action=templates&do_template=$do_template");
+    relocation($PHP_SELF.'?action=templates&mod=options&do_template='.$do_template.'&save=success');
 }
 
 // ********************************************************************************
@@ -390,11 +350,10 @@ elseif($action == "dosavetemplates")
 elseif ($action == "syscon")
 {
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-        msg("error", lang("Access Denied"), lang("You don't have permissions to access this section"));
+        msg("error", lang("Access Denied"), lang("You don't have permissions to access this section"), '#GOBACK');
 
     $bc = 'main/options/options:syscon=config';
     if (isset($_REQUEST['message'])) $bc .= '/='.lang('Your Configuration Saved');
-
 
     function showRow($title="", $description="", $field="")
     {
@@ -452,17 +411,17 @@ elseif ($action == "syscon")
     showRow(lang("Full URL to CuteNews Directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
     showRow(lang("CuteNews Skin"),                  lang("you can download more from our website"),                     makeDropDown($sys_con_skins_arr, "save_con[skin]", $config_skin));
-    showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"), $ckeditorEnabled);
+    showRow(lang("Use UTF-8"),                      lang("with this option, admin panel uses utf-8 charset"),           makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[useutf8]", $config_useutf8));
+    showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
     showRow(lang("Time Adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
     showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
     showRow(lang("Auto-Archive every Month"),       lang("if yes, evrery month the active news will be archived"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", "$config_auto_archive"));
     showRow(lang("Allow Self-Registration"),        lang("allow users to auto-register"),                               makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", "$config_allow_registration"));
+
     showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", "$config_registration_level"));
-    showRow(lang("Use captcha"),                    lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
-    showRow(lang("Use rating"),                     lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
-    showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[ipauth]", $config_ipauth));
+    showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));
     showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
-    // showRow(lang("MOD_Rewrite"),                    lang("(experimental) allows you to make the path to the news more readable"),      makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_modrewrite]", $config_use_modrewrite));
+    showRow(lang("Enable user logs"),               lang("store user logs"),                                            makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[userlogs]", $config_userlogs));
 
     if ($config_use_rater)
     {
@@ -479,7 +438,9 @@ elseif ($action == "syscon")
     showRow(lang("Settings for Full Story PopUp"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
     showRow(lang("Show Comments When Showing Full Story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
     showRow(lang("Time Format For News"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
-    showRow(lang("Make backup news"),                       lang("when you save a backup of news is done"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
+    showRow(lang("Make backup news"),                       lang("when you save a backup of news is done"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
+    showRow(lang("Use captcha"),                            lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
+    showRow(lang("Use rating"),                             lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
     hook('field_options_news');
     echo"</table></td></tr>";
 
@@ -509,24 +470,24 @@ elseif ($action == "syscon")
     showRow(lang("Notify of Activated Postponed Articles"), lang("when postponed article is activated"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_postponed]", "$config_notify_postponed"));
     showRow(lang("Email(s)"),                               lang("Where the notification will be send, separate multyple emails by comma"), "<input type=text style=\"text-align: center;\"  name='save_con[notify_email]' value=\"$config_notify_email\" size=40>");
     hook('field_options_notifications');
-    echo"</table></td></tr>";
+    echo "</table></td></tr>";
 
     // Facebook preferences
     $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
 
     echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_fbcomments]", $config_use_fbcomments));
+    showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("no"=>"No","yes"=>"Yes"), "save_con[use_fbcomments]", $config_use_fbcomments));
     showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);
     showRow(lang("Box width"),                      lang("In pixels"),                                  "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_box_width]\" value=\"$config_fb_box_width\" size=8>", "save_con[fb_box_width]", $config_fb_box_width);
     showRow(lang("Facebook appID"),                 lang("Get your AppId <a href='https://developers.facebook.com/apps'>there</a>"), "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_appid]\" value=\"$config_fb_appid\" size=40>", "save_con[fb_appid]", $config_fb_appid);
     hook('field_options_facebook');
-    echo"</table></td></tr>";
+    echo "</table></td></tr>";
 
     hook('field_options_additional');
 
-    echo"
+    echo "
     <input type=hidden id=currentid name=current value=general>
     <input type=hidden name=mod value=options>
     <input type=hidden name=action value=dosavesyscon>".
@@ -546,14 +507,14 @@ HTML;
 // ********************************************************************************
 // Save System Configuration
 // ********************************************************************************
-elseif($action == "dosavesyscon")
+elseif ($action == "dosavesyscon")
 {
     // Sanitize skin var
     $save_con["skin"] = preg_replace('~[^a-z0-9_.]~i', '', $save_con["skin"]);
     if (!file_exists(SERVDIR."/skins/".$save_con["skin"].".skin.php")) $save_con['skin'] = 'default';
 
     if ($member_db[UDB_ACL] != 1)
-        msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
+        msg("error", lang("Access Denied"), lang("You don't have permission for this section"), '#GOBACK');
 
     $handler = fopen(SERVDIR."/cdata/config.php", "w");
     fwrite ($handler, "<?php \n\n//System Configurations (Auto Generated file)\n");

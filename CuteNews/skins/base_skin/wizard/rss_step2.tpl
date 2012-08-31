@@ -1,11 +1,15 @@
-<table border=0 height=1 width=617 cellspacing="0" cellpadding="0">
-    <form method=POST action="index.php">
-        <td height="21" width=400 bgcolor=#F7F6F4>&nbsp;
+<form method=POST action="index.php">
+    <input type=hidden name=mod value=wizards>
+    <input type=hidden name=action value=dosaverss>
+    <table border=0 width=100% cellspacing="0" cellpadding="3">
+        <tr>
+        <td height="21" width=100% bgcolor=#F7F6F4>&nbsp;
             <b>URL of the page where you include your news</b>
             <br>&nbsp;
             <i>example: http://mysite.com/news.php</i>
             <br>&nbsp;
             <i>or: {$config_http_script_dir}/example2.php</i>
+        </td>
         <td height="21" bgcolor=#F7F6F4
             colspan=2>
             <input name="rss_news_include_url" value="{$rss_news_include_url}" type=text
@@ -42,7 +46,7 @@
                     <input style="font-size:90%;" onClick="document.location='{$PHP_SELF}?mod=wizards&action=customizerss';"
                            type=button value='Skip to Customization >>'>
             </tr>
-            <input type=hidden name=mod value=wizards>
-            <input type=hidden name=action value=dosaverss>
-    </form>
-</table>
+        </td>
+        </tr>
+    </table>
+</form>

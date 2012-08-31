@@ -33,13 +33,13 @@
     <br />
     <form method="post" name="editnews">
         <input type=hidden name="csrf_code" value="{$CSRF}" />
-        <table border=0 cellpadding=0 cellspacing=0 width=100%>
+        <table border=0 cellpadding=2 cellspacing=0 width=100%>
             <tr>
                 <td align="center" width="32">Ord</td>
-                <td>Title</td>
-                <td width="50" align="center">Comments</td>
+                <td>Title{$title_ord}</td>
+                <td width="85" align="center">Comments</td>
                 <td width="70" align="center">Category</td>
-                <td width="80" align="center">Date</td>
+                <td width="85" align="center">Date{$date_ord}</td>
                 <td width="100">Author</td>
                 <td width="32" align="center"><input style="border: 0; background: transparent;" type=checkbox name=master_box title="Check All" onclick="javascript:ckeck_uncheck_all();"> </td>
             </tr>

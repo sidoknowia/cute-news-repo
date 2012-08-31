@@ -9,7 +9,7 @@ if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
 if ($action == "list")
 {
     $CSRF = CSRFMake();
-    echoheader ("users", lang("Manage Users"));
+    echoheader ("users", lang("Manage Users"), make_breadcrumbs('main/options=options/Manage Users'));
 
     $i = 0;
     $userlist  = array();
@@ -61,7 +61,7 @@ elseif ($action == "adduser")
             if ($member_db[UDB_NAME] != $uid)
                 delete_key($uid, DB_USERS);
         }
-        msg('info', lang('Deleted'), lang('The user(s) was successfully deleted'), "#GOBACK");
+        msg('info', lang('User(s) deleted'), lang('The user(s) was successfully deleted'), "#GOBACK");
     }
 
     if (!$regusername)

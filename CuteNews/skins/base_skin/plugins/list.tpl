@@ -1,6 +1,6 @@
 <div style="font: 15px/2em; color: red;">{$error}</div>
 <br/>
-<table cellpadding="3" cellspacing="0" width="600">
+<table cellpadding="3" cellspacing="0" width="100%">
 
 <tr bgcolor="#c0e0f0">
     <td><b>{{Plugin name}}</b></td>

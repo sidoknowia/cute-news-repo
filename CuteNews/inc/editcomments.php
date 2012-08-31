@@ -32,7 +32,6 @@ if ($action == "editcomment")
     $comdate       = date("D, d F Y h:i:s", $single_arr[0]);
 
     $CSRF = CSRFMake();
-    header('Content-Type: text/html; charset=UTF-8');
     echo proc_tpl('editcomments', array(
         'newsid'        => htmlspecialchars($newsid),
         'comid'         => htmlspecialchars($comid),
@@ -49,15 +48,16 @@ if ($action == "editcomment")
 // ********************************************************************************
 // Do Save Comment
 // ********************************************************************************
-elseif($action == "doeditcomment")
+elseif ($action == "doeditcomment")
 {
-    CSRFCheck();
-
     if (empty($poster) and empty($deletecomment))
     {
         echo lang("The poster can not be blank");
         die();
     }
+
+    // CSRF check only for saving comments
+    if (empty($deletecomment)) CSRFCheck();
 
     if (empty($mail))   $mail   = lang("none");
     if (empty($poster)) $poster = lang("Anonymous");
@@ -104,10 +104,10 @@ elseif($action == "doeditcomment")
      }
 
      if (isset($deletecomment) and $delcomid['all'] == 1)
-         msg("info", lang("Comments Deleted"), lang("All comments were deleted"), "$PHP_SELF?mod=editnews&action=editnews&id=$newsid&source=$source");
+         msg("info", lang("Comments Deleted"), lang("All comments were deleted"), "#GOBACK");
 
      elseif (isset($deletecomment) and isset($delcomid))
-         msg("info", lang("Comment Deleted"), lang("The selected comment(s) has been deleted"), "$PHP_SELF?mod=editnews&action=editnews&id=$newsid&source=$source");
+         msg("info", lang("Comment Deleted"), lang("The selected comment(s) has been deleted"), "#GOBACK");
 
      else echo "<b>".lang('Comment is saved!')."</b>";
 }

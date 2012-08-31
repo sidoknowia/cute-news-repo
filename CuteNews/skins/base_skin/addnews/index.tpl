@@ -1,33 +1,33 @@
 <form method=post name=addnews action="{$PHP_SELF}">
 
-    <input type=hidden name=mod value=addnews>
-    <input type=hidden name=action value=doaddnews>
+    <input type=hidden name="mod" value="addnews">
+    <input type=hidden name="action" value="doaddnews">
     <input type=hidden name="csrf_code" value="{$CSRF}" />
 
-    <table border=0 cellpadding=0 cellspacing=0 width="654" >
+    <table border=0 cellpadding=0 cellspacing=0 width="750" >
 
     <tr>
-        <td width="75">Title</td>
-        <td width="575" colspan="2"><input type=text size="55" name="title" tabindex=1></td>
+        <td width="75" align="right">Title&nbsp;</td>
+        <td colspan="2"><input type="text" style="width: 565px;" name="title" tabindex=1></td>
     </tr>
 
     {foreach from=xfields}
         <tr>
-            <td width="75">{$xfields.1}</td>
-            <td width="575" colspan="2"><input tabindex=2 type=text size="42" value="" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
+            <td width="75" align="right">{$xfields.1}&nbsp;</td>
+            <td colspan="2"><input tabindex=2 type=text size="42" value="" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
         </tr>
     {/foreach}
 
     {USE_AVATAR}
     <tr>
-        <td width="75">Avatar URL</td>
+        <td width="75" align="right">Avatar URL&nbsp;</td>
         <td width="575" colspan="2"><input tabindex=2 type=text size="42" value="{$member_db8}" name="manual_avatar" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span></td>
     </tr>
     {/USE_AVATAR}
 
     <tr id='singlecat'>
-        <td width="75">Category</td>
-        <td width="575" colspan="2">
+        <td width="75" align="right">Category&nbsp;</td>
+        <td colspan="2">
         {CATEGORY}
             <select id='selecsinglecat' name=category tabindex=3> <option value=""> --- </option> {$cat_html} </select>
             <a href="javascript:ShowOrHide('multicat','singlecat');" onClick="javascript:document.getElementById('selecsinglecat').name='';">(multiple categories)</a>
@@ -37,35 +37,37 @@
     </tr>
 
     <tr style="display:none;" id='multicat'>
-        <td width="75"> Category </td>
+        <td width="75" align="right">Category&nbsp;</td>
         <td>
             <table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$multi_cat_html} </table>
         </td>
         <td>&nbsp;</td>
     </tr>
+
+    <!-- Short story -->
     <tr>
-        <td width="75" valign="top"><br />Short Story</td>
+        <td width="75" valign="top" align="right"><br/>Short Story&nbsp;</td>
         <td>
-            <textarea style="width: 464px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=4></textarea>
+            <textarea style="width: 565px" rows="12" cols="74" id="short_story" name="short_story" tabindex=4></textarea>
         </td>
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$short_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
             <p>{$insertsmiles}</p>
         </td>
     </tr>
-    <tr><td colspan="3">&nbsp;</td></tr>
-    <tr id='full-story' style='display:none; z-index:1;'>
 
-        <td width="75" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
-        <td>
-            <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;"></textarea>
-        </td>
+    <!-- Full story -->
+    <tr id='full-story' style="display:none;">
+
+        <td width="75" valign="top" align="right"><br />Full Story&nbsp;<br /><span style="font-size:7pt">(optional)</span>&nbsp;</td>
+
+        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:565px;"></textarea> </td>
+
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$full_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
             <p>{$insertsmiles_full}</p>
         </td>
     </tr>
-
     <tr>
         <td>&nbsp;</td>
         <td>
@@ -76,36 +78,35 @@
              </tr>
             </table>
         </td>
+        <td>&nbsp;</td>
     </tr>
 
-    <tr id='options' style='display:none;'>
-        <td width="75"><br>Options</td>
-        <td width="575" colspan="4">
-            <br>
-
-            <label for='convert'>
-            <input id='convert' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_convert_new_lines" checked > Convert new lines to &lt;br /&gt;</label>
-            <br/>
+    <tr id='options' style="display:none;">
+        <td align="center" valign="top" style="padding: 18px 0 0 0">Options</td>
+        <td colspan="2" style="padding: 15px 0 0 0">
 
             <label for='html'>
-            <input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html" checked> Use HTML in this article</label>
-            <br/>
+            <input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html"> Use HTML in this article</label>
+            <br/><br/>
 
-            <label for='active'><input checked id='active' style="border:0; background-color:transparent" type=radio value="active" name="postpone_draft">
+            <label for='active'><input checked id='active' style="border:0; background-color: transparent" type=radio value="active" name="postpone_draft">
             <b>Normal</b>, add article as active</label>
             <br />
 
-             <label for='draft'><input id='draft' style="border:0; background-color:transparent" type=radio value="draft" name="postpone_draft">
+            <label for='draft'><input id='draft' style="border:0; background-color: transparent" type=radio value="draft" name="postpone_draft">
             <b>Draft</b>, add article as unapproved</label>
             <br />
 
-            <label for='postpone'><input id='postpone' style="border:0; background-color:transparent" type=radio value="postpone" name="postpone_draft">
-            <b>Postpone</b>, make article active at</label>
+            <label for='postponed'><input id='postponed' style="border:0; background-color: transparent" type=radio value="postpone" name="postpone_draft">
+                <b>Postponed</b>, add article as unapproved
+                <select name="from_date_day">{$dated}</select>
+                <select name="from_date_month">{$datem}</select>
+                <select name="from_date_year">{$datey}</select>
+                @ <input value='{$dateh}' style="text-align: center;" name="from_date_hour" size=3 type=text title='24 Hour format [hh]'  /> :
+                  <input value="{$datei}" style="text-align: center;" name="from_date_minutes" size=3 type=text title='Minutes [mm]' />
 
-            <select name=from_date_day>{$dated}</select>
-            <select name=from_date_month>{$datem}</select>
-            <select name=from_date_year>{$datey}</select>
-            @ <input value='{$date_hour}' title='24 Hour format [hh]' name=from_date_hour size=2 type=text /> : <input value='{$date_minutes}' title='Minutes [mm]' name=from_date_minutes size=2 type=text />
+            </label>
+
         </td>
 
     </tr>

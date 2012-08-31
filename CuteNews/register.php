@@ -28,12 +28,12 @@ extract(filter_request('captcha,confirm,regusername,regpassword,regemail,regnick
 if ($action == "doregister")
 {
 
-    if ($config_allow_registration != "yes")     msg("error", LANG_ERROR_TITLE, "User registration is Disabled");
-    if (!$regusername)                           msg("error", LANG_ERROR_TITLE, "Username can not be blank");
-    if (!$regpassword)                           msg("error", LANG_ERROR_TITLE, "Password can not be blank");
-    if (!$regemail)                              msg("error", LANG_ERROR_TITLE, "Email can not be blank");
-    if ($confirm != $regpassword)               msg("error", LANG_ERROR_TITLE, "Confirm password don't match");
-    if (!$captcha || $captcha != $_SESS['CSW']) msg("error", LANG_ERROR_TITLE, "Captcha code not valid");
+    if ($config_allow_registration != "yes")     msg("error", LANG_ERROR_TITLE, "User registration is Disabled", '#GOBACK');
+    if (!$regusername)                           msg("error", LANG_ERROR_TITLE, "Username can not be blank", '#GOBACK');
+    if (!$regpassword)                           msg("error", LANG_ERROR_TITLE, "Password can not be blank", '#GOBACK');
+    if (!$regemail)                              msg("error", LANG_ERROR_TITLE, "Email can not be blank", '#GOBACK');
+    if ($confirm != $regpassword)                msg("error", LANG_ERROR_TITLE, "Confirm password don't match", '#GOBACK');
+    if (!$captcha || $captcha != $_SESS['CSW'])  msg("error", LANG_ERROR_TITLE, "Captcha code not valid", '#GOBACK');
 
     $_SESS['CSW'] = mt_rand().mt_rand();
 
@@ -43,20 +43,20 @@ if ($action == "doregister")
     $regpassword    = preg_replace( '/[\|<>\s]/', '', $regpassword);
 
     if(!preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regusername))
-        msg("error", LANG_ERROR_TITLE, $regusername." ".lang("Your username must only contain valid characters, numbers and the symbol '_'"));
+        msg("error", LANG_ERROR_TITLE, $regusername." ".lang("Your username must only contain valid characters, numbers and the symbol '_'"), '#GOBACK');
 
-    elseif(!preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regnickname))
-        msg("error", LANG_ERROR_TITLE, lang("Your nickname must only contain valid characters, numbers and the symbol '_'"));
+    elseif($regnickname && !preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regnickname))
+        msg("error", LANG_ERROR_TITLE, lang("Your nickname must only contain valid characters, numbers and the symbol '_'"), '#GOBACK');
 
     elseif(!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
-        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"));
+        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"), '#GOBACK');
 
     elseif(!preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regpassword))
-        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"));
+        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"), '#GOBACK');
 
     // ----------------------------------------
     if ( bsearch_key($regusername, DB_USERS) )
-        msg("error", LANG_ERROR_TITLE, lang("This username is already taken"));
+        msg("error", LANG_ERROR_TITLE, lang("This username is already taken"), '#GOBACK');
         
     $add_time = time() + $config_date_adjust*60;
 
@@ -89,7 +89,7 @@ elseif($action == "lostpass")
 elseif ($action == "validate")
 {
     if (!$user || !$email)
-        msg("error", LANG_ERROR_TITLE, lang("All the fields are required"));
+        msg("error", LANG_ERROR_TITLE, lang("All the fields are required"), '#GOBACK');
 
     // Check user and correct email
     $user_arr = bsearch_key($user, DB_USERS);
@@ -99,20 +99,20 @@ elseif ($action == "validate")
         $confirm_url = $config_http_script_dir."/register.php?a=dsp&s=".urlencode($sstring);
         $message = lang("Hi,\n Someone requested your password to be changed, if this is the desired action and you want to change your password please follow this link").": $confirm_url .";
         send_mail($email, lang("Confirmation ( New Password for CuteNews )"), $message);
-        msg('info', lang('Confirmation Email'), lang("A confirmation email was sent, please check your inbox for further details."));
+        msg('info', lang('Confirmation Email'), lang("A confirmation email was sent, please check your inbox for further details."), '#GOBACK');
     }
     else
     {
-        msg("error", LANG_ERROR_TITLE, lang("The username/email you enter did not match in our users database"));
+        msg("error", LANG_ERROR_TITLE, lang("The username/email you enter did not match in our users database"), '#GOBACK');
     }
 }
 elseif ($a == "dsp")
 {
-    if( $s == false ) msg("error", LANG_ERROR_TITLE, "All fields are required");
+    if( $s == false ) msg("error", LANG_ERROR_TITLE, "All fields are required", '#GOBACK');
     list($user) = explode('@', xxtea_decrypt( base64_decode($s), CRYPT_SALT ));
     if (!$user)
     {
-        msg("error", LANG_ERROR_TITLE, lang("invalid string"));
+        msg("error", LANG_ERROR_TITLE, lang("invalid string"), '#GOBACK');
     }
     else
     {
@@ -130,13 +130,13 @@ elseif ($a == "dsp")
         send_mail($user_arr[5], lang("Your New Password for CuteNews"), $message);
 
         add_to_log ($user, lang('New password received'));
-        msg("info", lang("Password Sent"), str_replace('%1', $user, lang("The new password for <b>%1</b> was sent to the email.")));
+        msg("info", lang("Password Sent"), str_replace('%1', $user, lang("The new password for <b>%1</b> was sent to the email.")), '#GOBACK');
     }
 }
 else
 {
     if ($config_allow_registration != "yes")
-        msg("error", LANG_ERROR_TITLE, lang("User registration is Disabled"));
+        msg("error", LANG_ERROR_TITLE, lang("User registration is Disabled"), '#GOBACK');
 
     echoheader("user", lang("User Registration"));
     echo proc_tpl('register/reg', array('result' => $result));

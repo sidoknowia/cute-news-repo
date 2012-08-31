@@ -12,13 +12,13 @@
                 <input type=hidden name="csrf_code" value="{$CSRF}" />
                 <table width="100%" cellspacing="0" cellpadding="0">
                     <tr>
-                        <td height="1" style="border-top: 1px dashed silver" width="100%" align="right" colspan="3">
+                        <td style="border-top: 1px dashed silver" width="100%" align="right" colspan="3">
                         <p align="center">&nbsp;
                         </td>
                     </tr>
                     <tr>
-                        <td height="1" width="286" align="right">Source&nbsp;</td>
-                        <td height="1" width="180">
+                        <td width="286" align="right">Source&nbsp;</td>
+                        <td width="180">
                             <select name="source" size="1">
                                 <option value="">- Active News -</option>
                                 <option {$postponed_selected} value="postponed">- Postponed News -</option>
@@ -26,11 +26,11 @@
                                 {$opt_source}
                             </select>
                         </td>
-                        <td height="1" width="182">&nbsp;</td>
+                        <td width="182">&nbsp;</td>
                     </tr>
                     <tr>
-                        <td height="1" width="284" align="right" > Category&nbsp; </td>
-                        <td height="1" width="178" >
+                        <td width="284" align="right" > Category&nbsp; </td>
+                        <td width="178" >
                             <select name="category"><option selected value="">- All -</option>
                                 {$opt_catlist}
                             </select>
@@ -39,8 +39,8 @@
                     </tr>
                     {OPT_AUTHOR}
                     <tr>
-                        <td height="1" width="284" align="right">Author&nbsp;</td>
-                        <td height="1" width="178" >
+                        <td width="284" align="right">Author&nbsp;</td>
+                        <td width="178" >
                             <select name=author size="1">
                                 <option value="">- Any -</option>
                                 {$opt_author}
@@ -50,14 +50,9 @@
                     </tr>
                     {/OPT_AUTHOR}
                     <tr>
-                        <td height="1" width="284" align="right" > News per page&nbsp; </td>
-                        <td height="1" width="178"> <input style="text-align: Center" name="news_per_page" value="{$news_per_page}" type=text size=3> </td>
-                        <td height="1" width="180" >&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td height="1" width="284" align="right">&nbsp;</td>
-                        <td height="1" width="178"> <br><input type=submit value="Show"></td>
-                        <td height="1" width="180">&nbsp;</td>
+                        <td width="284" align="right" > News per page&nbsp; </td>
+                        <td width="178"> <input style="text-align: center" name="news_per_page" value="{$news_per_page}" type=text size=3> <input type=submit value="{{Show}}"> </td>
+                        <td width="180" >&nbsp;</td>
                     </tr>
                 </table>
             </form>

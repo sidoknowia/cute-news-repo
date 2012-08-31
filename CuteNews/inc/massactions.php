@@ -5,7 +5,7 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 list($allowed_cats, $cat_lines) = get_allowed_cats($member_db);
-$source         = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
+$source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 
 if ($action == "mass_delete")
 {
@@ -39,10 +39,11 @@ if ($action == "mass_delete")
     <input type=hidden name=mod value=\"massactions\">
     <input type=hidden name=source value=\"$source\">
     <input type=hidden name=csrf_code value=\"$CSRF\">";
-    foreach ($selected_news as $newsid)
-    {
-        echo "<input type=hidden name=selected_news[] value=\"$newsid\">\n";
-    }
+
+    if (is_array($selected_news))
+        foreach ($selected_news as $newsid)
+            echo "<input type=hidden name=selected_news[] value=\"$newsid\">\n";
+
     echo "</td></tr></table></form>";
     echofooter();
 }
@@ -55,28 +56,8 @@ elseif($action == "do_mass_delete")
     if(!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles to be deleted"), "#GOBACK");
 
-    if ($source == "")
-    {
-        $news_file = "cdata/news.txt";
-        $comm_file = "cdata/comments.txt";
-    }
-    elseif($source == "postponed")
-    {
-        $news_file = "cdata/postponed_news.txt";
-        $comm_file = "cdata/comments.txt";
-    }
-    elseif($source == "unapproved")
-    {
-        $news_file = "cdata/unapproved_news.txt";
-        $comm_file = "cdata/comments.txt";
-    }
-    else
-    {
-        $news_file = SERVDIR."/cdata/archives/$source.news.arch";
-        $comm_file = SERVDIR."/cdata/archives/$source.comments.arch";
-    }
-
     $deleted_articles = 0;
+    list ($news_file, $comm_file) = detect_source($source);
 
     // Delete News
     $old_db = file($news_file);
@@ -122,8 +103,8 @@ elseif($action == "do_mass_delete")
     fclose($new_db);
 
     if ( count($selected_news) == $deleted_articles)
-         msg("info",  lang("Deleted News"), str_replace('%1', $deleted_articles, lang("All articles that you selected (<b>%1</b>) were deleted")), "#GOBACK");
-    else msg("error", lang("Deleted News (some errors occured)"), str_replace(array('%1','%2'), array($deleted_articles, count($selected_news)), lang("%1 of %2 articles that you selected were deleted")), "#GOBACK");
+         msg("info",  lang("Deleted News"), str_replace('%1', $deleted_articles, lang("All articles that you selected (<b>%1</b>) were deleted")));
+    else msg("error", lang("Deleted News (some errors occured)"), str_replace(array('%1','%2'), array($deleted_articles, count($selected_news)), lang("%1 of %2 articles that you selected were deleted")));
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    Mass Approve
@@ -146,7 +127,7 @@ elseif ($action == "mass_approve")
     $new_db = fopen( $news_file, 'w');
     flock($new_db, LOCK_EX);
 
-    foreach($old_db as $old_db_line)
+    foreach ($old_db as $old_db_line)
     {
         $old_db_arr = explode("|", $old_db_line);
         if (!in_array($old_db_arr[0], (array)$selected_news))
@@ -171,8 +152,8 @@ elseif ($action == "mass_approve")
     fclose($new_db);
 
     if ( count($selected_news) == $approved_articles)
-         msg("info",  lang("News Approved"), str_replace('%1', $approved_articles, "All articles that you selected (%1) were approved and are now active"), "#GOBACK");
-    else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")), "#GOBACK");
+         msg("info",  lang("News Approved"), str_replace('%1', $approved_articles, "All articles that you selected (%1) were approved and are now active"));
+    else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")));
 
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -240,18 +221,10 @@ elseif ($action == "do_mass_move_to_cat")
     if (!$selected_news)
         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
 
-    if ($source == "")
-        $news_file = SERVDIR."/cdata/news.txt";
-
-    elseif ($source == "postponed")
-        $news_file = SERVDIR."/cdata/postponed_news.txt";
-
-    elseif ($source == "unapproved")
-        $news_file = SERVDIR."/cdata/unapproved_news.txt";
-
-    else $news_file = SERVDIR."/cdata/archives/$source.news.arch";
-
+    // Source detect
     $moved_articles = 0;
+    list ($news_file, $comm_file) = detect_source($source);
+
     $old_db = file($news_file);
     $new_db = fopen($news_file, 'w');
     flock($new_db, LOCK_EX);
@@ -283,8 +256,8 @@ elseif ($action == "do_mass_move_to_cat")
     fclose($new_db);
 
     if ( count($selected_news) == $moved_articles)
-         msg("info",  lang("News Moved"), str_replace('%1', $moved_articles, lang("All articles that you selected (%1) were moved to the specified category")), "#GOBACK");
-    else msg("error", lang("News Moved (with errors)"), str_replace(array('%1','%2'), array($moved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were moved to the specified category")), "#GOBACK");
+         msg("info",  lang("News Moved"), str_replace('%1', $moved_articles, lang("All articles that you selected (%1) were moved to the specified category")));
+    else msg("error", lang("News Moved (with errors)"), str_replace(array('%1','%2'), array($moved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were moved to the specified category")));
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Mass Archive
@@ -423,11 +396,90 @@ elseif ($action == "do_mass_archive")
     msg("info", lang("News Archived"), str_replace('%1', $archived_news, lang("All articles that you selected (%1) are now archived under"))." ./cdata/archives/<b>$arch_name</b>.news.arch", "#GOBACK");
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Change PubDate
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+elseif ($action == 'mass_change_pubdate')
+{
+    if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
+         msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
+
+    if ( !$selected_news )
+         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+
+    // --------
+    $the_selected_news = array();
+    list ($news_file) = detect_source($source);
+
+    $news = file($news_file);
+    if ( preg_match_all("~^(".join('|', $selected_news).")\|.*$~m", join('', $news), $this, PREG_SET_ORDER ))
+    {
+        foreach ($this as $the)
+        {
+            $item = explode('|', $the[0]);
+            $the_selected_news[] = array
+            (
+                'id'    => $item[NEW_ID],
+                'date'  => date('d-m-Y H:i:s', $item[NEW_ID]),
+                'title' => htmlspecialchars($item[NEW_TITLE])
+            );
+        }
+    }
+
+    $CSRF = CSRFMake();
+    $msg = proc_tpl('mass/chdate');
+    msg('info', lang('Change Date'), $msg);
+}
+elseif ($action == 'dochangedate')
+{
+    CSRFCheck();
+
+    list ($news_file, $comm_file) = detect_source($source);
+
+    $db_news_file = file($news_file);
+    $db_comm_file = file($comm_file);
+
+    // Sort by ascending
+    foreach ($dates as $id => $date) $dates[$id] = strtotime($date);
+    asort($dates);
+
+    foreach ($dates as $id => $date)
+    {
+        if ($date <= time())
+        {
+            // Don't touch this news: only change date
+            $db_news_file = preg_replace("~^".intval($id)."\|~m", $date.'|', $db_news_file);
+        }
+        else
+        {
+            // Match the new
+            if ( preg_match("~^".intval($id)."\|(.*)$~m", join('', $db_news_file), $match ) )
+            {
+                // If line is match, remove line and go top
+                if ( false !== ($idx = array_search($match[0]."\n", $db_news_file)) )
+                {
+                    unset($db_news_file[$idx]);
+                    array_unshift($db_news_file, $date.'|'.$match[1]."\n"); // Shift Up
+                }
+                else msg('error', LANG_ERROR_TITLE, lang("Can't find ID in news to change").' '.$id);
+            }
+        }
+
+        // Change comment db anywhere
+        $db_comm_file = preg_replace("~^".intval($id)."\|~m", $date.'|', $db_comm_file);
+    }
+
+    // Save changes
+    $w = fopen($news_file, 'w'); fwrite($w, join('', $db_news_file)); fclose($w);
+    $w = fopen($comm_file, 'w'); fwrite($w, join('', $db_comm_file)); fclose($w);
+
+    msg('info', lang('Sucess'), lang('Changes was saved'));
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   If No Action Is Choosed
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 else
 {
-    msg("info", lang("Choose Action"), lang("Please choose action from the drop-down menu"), "#GOBACK");
+    msg("info", lang("Choose Action"), lang("Please choose action from the drop-down menu"));
 }
 
 ?>

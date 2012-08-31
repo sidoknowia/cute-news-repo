@@ -29,7 +29,7 @@
     <input type="hidden" id="csrf_code" name="csrf_code" value="{$CSRF}" />
     <script src="{$PHP_SELF}?csrfmake=csrfmake"></script>
 
-    <table border=0 cellpadding=3 cellspacing=0 width=654>
+    <table border=0 cellpadding=3 cellspacing=0 width=100%>
         <tr>
             <td width=654 colspan="6">
                 <!-- Start add edit users table + info + help -->

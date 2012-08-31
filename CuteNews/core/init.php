@@ -60,6 +60,7 @@
     define('NEW_CAT',                 6);
     define('NEW_RATE',                7); // rating function
     define('NEW_MF',                  8); // more fields
+    define('NEW_OPT',                 9); // optins
 
     // define cats
     define('CAT_ID',                  0);
@@ -67,14 +68,14 @@
     define('CAT_ICON',                2);
     define('CAT_PERM',                3);
 
-    // -----------------------------------------------------------------------------------------------------------------
+    // define comments
+    define('COM_ID',                  0);
+    define('COM_USER',                1);
+    define('COM_MAIL',                2);
+    define('COM_IP',                  3);
+    define('COM_TEXT',                4);
 
-    // embedded code no send codes
-    if (empty($NotHeaders))
-    {
-        header('Content-Type: text/html; charset=UTF-8', true);
-        header('Accept-Charset: UTF-8', true);
-    }
+    // -----------------------------------------------------------------------------------------------------------------
 
     // include necessary libs
     include_once (SERVDIR.'/core/core.php');
@@ -89,6 +90,13 @@
     if (function_exists('date_default_timezone_set'))
         date_default_timezone_set( empty($config_timezone)?  'Europe/London' : $config_timezone );
 
+    // embedded code no send codes
+    if (empty($NotHeaders) && $config_useutf8 == '1')
+    {
+        header('Content-Type: text/html; charset=UTF-8', true);
+        header('Accept-Charset: UTF-8', true);
+    }
+
     // loading plugins
     $_HOOKS = array();
     if (is_dir(SERVDIR.'/cdata/plugins'))
@@ -96,8 +104,9 @@
         if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
     // load config
-    $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
-    $cfg['captcha_types'] = 1;
+    if (file_exists(SERVDIR . CACHE.'/conf.php'))
+         $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
+    else $cfg = array();
 
     // language initialize
     include_once (SERVDIR.'/skins/language.php');
@@ -111,11 +120,14 @@
         $config_skin = 'default';
     }
 
-    // Detect My IP
+    // Detect My IP and check it
     if (isset($HTTP_X_FORWARDED_FOR)) $ip = $HTTP_X_FORWARDED_FOR;
     elseif (isset($HTTP_CLIENT_IP))   $ip = $HTTP_CLIENT_IP;
     if (empty($ip))                   $ip = $_SERVER['REMOTE_ADDR'];
     if (empty($ip))                   $ip = false;
+
+    if ( !preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $ip) )
+         $ip = false;
 
     // use default, hooked or cfg skin
     if ( $SKIN = hook('change_skin') )

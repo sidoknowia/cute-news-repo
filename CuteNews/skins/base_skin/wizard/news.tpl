@@ -2,7 +2,7 @@
     <form method="post" action="{$PHP_SELF}">
         <tr>
             <td>
-                <table cellspacing="0" cellpadding="3" width="645" style="border: 0; border-collapse: collapse;">
+                <table cellspacing="0" cellpadding="3" width="100%" style="border: 0; border-collapse: collapse;">
                     <tr>
                         <td width="639" colspan="2">Welcome to the News Integration Wizard. This tool will help you to integrate
                             the news that you have published using CuteNews, into your existing Webpage.
@@ -10,8 +10,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td bgcolor="#F7F6F4" style="padding:3px; border-bottom:1px solid gray;"
-                            width="639" colspan="2">
+                        <td bgcolor="#F7F6F4" style="padding:3px; border-bottom:1px solid gray;" colspan="2">
                             <b>Quick Customization...</b>
                         </td>
                     </tr>

@@ -50,10 +50,12 @@ if ($banid)
 b64dck();
 if ($action == "logout")
 {
+    add_to_log( $_SESS['user'], 'logout');
+
     $_SESS['user'] = $_SESS['pwd'] = false;
     send_cookie(true);
-    add_to_log($username, 'logout');
-    msg("info", lang("Logout"), lang("You are now logged out").", <a href=\"$PHP_SELF\">".lang('login')."</a><br /><br>");
+
+    msg("info", lang("Logout"), lang("You are now logged out").", <a href=\"$PHP_SELF\">".lang('login')."</a>");
 }
 
 // sanitize
@@ -63,11 +65,12 @@ extract(filter_request('mod'), EXTR_OVERWRITE);
 if ($csrfmake == 'csrfmake')
 {
     $CSRF = CSRFMake();
-    header("Content-Type: text/javascript; charset=UTF-8");
 
     if (empty($cs)) $cs = false; else $cs = intval($cs);
-    echo "document.getElementById('csrf_code{$cs}').value = '{$CSRF}';";
+    header("Content-Type: text/javascript");
     send_cookie();
+
+    echo "document.getElementById('csrf_code{$cs}').value = '{$CSRF}';";
     die();
 }
 
@@ -141,12 +144,8 @@ if (empty($is_loged_in))
     $CSRF = CSRFMake();
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
-                  array('lastusername'  => htmlspecialchars($username),
-                        'result'        => $result,
-                        'CSRF'          => $CSRF),
-
-                  array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 )
-    );
+                  array('lastusername'  => htmlspecialchars($username) ),
+                  array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 ) );
 
     echofooter();
 }
@@ -172,7 +171,7 @@ elseif ($is_loged_in)
                             'help'          => 'user',
                             'debug'         => 'admin',
                             'wizards'       => 'admin',
-                            'update'        => 'admin',
+                            'update'        => 'user',
                             'rating'        => 'user',
                             );
 
@@ -185,20 +184,24 @@ elseif ($is_loged_in)
         elseif( $system_modules[$mod] )
         {
             if ($mod == 'rating')
+            {
                 require (SERVDIR."/inc/ratings.php");
-
-            elseif ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and $mod != 'options')
-                msg('error', 'Error!', lang('Access Denied for your user-level (commenter)'));
-
+            }
+            elseif ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and $mod != 'options' and $mod != 'update')
+            {
+                relocation($config_http_script_dir."/index.php?mod=options&action=personal");
+            }
             elseif( $system_modules[$mod] == "user")
+            {
                 require (SERVDIR."/inc/".$mod.".php");
-
+            }
             elseif( $system_modules[$mod] == "admin" and $member_db[UDB_ACL] == ACL_LEVEL_ADMIN)
+            {
                 require (SERVDIR."/inc/".$mod.".php");
-
+            }
             elseif( $system_modules[$mod] == "admin" and $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
             {
-                msg("error", "Access denied", "Only admin can access this module");
+                msg("error", lang("Access denied"), "Only admin can access this module");
             }
             else
             {

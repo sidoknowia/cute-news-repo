@@ -45,10 +45,13 @@ if ($action == "archive")
             }
         }
         closedir($handle);
-    } // end Un-Archive function
+    }
 
+    // ***************************
+    // Show Archives
+    // ***************************
     $CSRF = CSRFMake();
-    echoheader("archives", lang("Archives"));
+    echoheader("archives", lang("Archives"), make_breadcrumbs('main/options=options/Archives'));
 
     if(!$handle = opendir(SERVDIR."/cdata/archives"))
         die_stat(false, lang("Can not open directory")." ".SERVDIR."/cdata/archives ");
@@ -68,18 +71,22 @@ if ($action == "archive")
             $first_timestamp    = $first_news_arr[0];
             $last_timestamp     = $last_news_arr[0];
 
-            $duration = (date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) );
-            $inc .= "<tr><td ></td> <td >$creation_date</td> <td >$duration</td> <td >$count</td>";
-            $inc .= "<td><a title='Edit the news in this archive' href=\"$PHP_SELF?mod=editnews&action=list&source=$id\">[edit]</a>
-                         <a title='restore news from this archive to active news' href=\"$PHP_SELF?mod=tools&action=archive&subaction=unarchive&aid=$id\">[unarchive]</a>
-                         <a title='Delete this archive' onclick=\"javascript:confirmdelete('$id', '$count');\" href=\"#\">[delete]</a></td> </tr>";
+            if ($creation_date)
+            {
+                $duration = (date("d M Y", intval($first_timestamp)) ." - ". date("d M Y", intval($last_timestamp)) );
+                $inc .= "<tr><td>&nbsp;</td> <td>$creation_date</td> <td>$duration</td> <td align='center'>$count</td>";
+                $inc .= "<td align='center'>
+                             <a title='Edit the news in this archive' href=\"$PHP_SELF?mod=editnews&action=list&source=$id\">[edit]</a>
+                             <a title='restore news from this archive to active news' href=\"$PHP_SELF?mod=tools&action=archive&subaction=unarchive&aid=$id\">[unarchive]</a>
+                             <a title='Delete this archive' onclick=\"javascript:confirmdelete('$id', '$count');\" href=\"#\">[delete]</a></td> </tr>";
+            }
         }
     }
     closedir($handle);
 
     if ($count == 0) $inc .= "<tr><td align=center colspan=6><br>".lang('There are no archives')."</td></tr>";
 
-    echo proc_tpl('tools/archives', array('inclusion' => $inc, 'CSRF' => $CSRF));
+    echo proc_tpl('tools/archives/index', array('inclusion' => $inc, 'CSRF' => $CSRF));
     echofooter();
 
 }
@@ -90,15 +97,15 @@ elseif ($action == "doarchive")
 {
     CSRFCheck();
 
-    if(filesize(SERVDIR."/cdata/news.txt") == 0)     msg("error", LANG_ERROR_TITLE, lang("Sorry but there are no news to be archived"), "$PHP_SELF?mod=tools&action=archive");
-    if(filesize(SERVDIR."/cdata/comments.txt") == 0) msg("error", LANG_ERROR_TITLE, lang("The comments file is empty and can not be archived"), "$PHP_SELF?mod=tools&action=archive");
+    // Check archives
+    if (filesize(SERVDIR."/cdata/news.txt") == 0)     msg("error", LANG_ERROR_TITLE, lang("Sorry but there are no news to be archived"), "#GOBACK");
 
     $arch_name = time() + ($config_date_adjust*60);
     if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))
-        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.news.arch", "$PHP_SELF?mod=tools&action=archive");
+        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.news.arch", "#GOBACK");
 
     if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))
-        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.comments.arch", "$PHP_SELF?mod=tools&action=archive");
+        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.comments.arch", "#GOBACK");
 
     $handle = fopen(SERVDIR."/cdata/news.txt","w");
     fclose($handle);
@@ -106,7 +113,7 @@ elseif ($action == "doarchive")
     $handle = fopen(SERVDIR."/cdata/comments.txt","w");
     fclose($handle);
 
-    msg("archives", "Archive Saved", "&nbsp&nbsp; ".lang('All active news were successfully added to archives file with name')." <b>$arch_name.news.arch</b>", "$PHP_SELF?mod=tools&action=archive");
+    msg("archives", lang("Archive Saved"), "&nbsp&nbsp; ".lang('All active news were successfully added to archives file with name')." <b>$arch_name.news.arch</b>", "#GOBACK");
 }
 // ********************************************************************************
 // Do Delete Archive
@@ -129,14 +136,14 @@ elseif ($action == "dodeletearchive")
     }
     closedir($handle);
 
-    if ($success == 3)
-        msg("info", lang("Arhcive Deleted"), lang("The archive was successfully deleted"), "$PHP_SELF?mod=tools&action=archive");
+    if ($success > 1)
+        msg("info", lang("Archive Deleted"), lang("The archive was successfully deleted"), "#GOBACK");
 
     elseif ($success > 0)
-        msg("error", LANG_ERROR_TITLE, lang("Either the comments part, or the news part, or the count part of the archive was not deleted"), "$PHP_SELF?mod=tools&action=archive");
+        msg("error", LANG_ERROR_TITLE, lang("Either the comments part, or the news part, or the count part of the archive was not deleted"), "#GOBACK");
 
     else
-        msg("error", LANG_ERROR_TITLE, lang("The archive you specified was not deleted, it is not on the server or you don't have permissions to delete it"), "$PHP_SELF?mod=tools&action=archive");
+        msg("error", LANG_ERROR_TITLE, lang("The archive you specified was not deleted, it is not on the server or you don't have permissions to delete it"), "#GOBACK");
 
 }
 // ********************************************************************************
@@ -146,7 +153,7 @@ elseif ($action == "backup")
 {
     $count = 0;
     $CSRF = CSRFMake();
-    echoheader("options", "Backup");
+    echoheader("options", "Backup", make_breadcrumbs('main/options=options/Backup'));
 
     if (!is_dir(SERVDIR."/cdata/backup"))
         die_stat(false, lang("Can not open directory")." ".SERVDIR."/cdata/backup ");
@@ -166,7 +173,7 @@ elseif ($action == "backup")
                 closedir($archives_handle);
 
                 $news_count = count(file(SERVDIR."/cdata/backup/$file/news.txt"));
-                $inc .= "<tr> <td></td> <td>$file</td> <td>&nbsp;$news_count</td> <td>&nbsp;$archives_count</td>";
+                $inc .= "<tr> <td>&nbsp;</td> <td>$file</td> <td align='center'>&nbsp;$news_count</td> <td align='center'>&nbsp;$archives_count</td>";
                 $inc .= "<td>
                             <a onclick=\"confirmdelete('$file'); return(false)\" href=\"$PHP_SELF?mod=tools&action=dodeletebackup&backup=$file&csrf_code=$CSRF\">[delete]</a>
                             <a onclick=\"confirmrestore('$file'); return(false)\" href=\"$PHP_SELF?mod=tools&action=dorestorebackup&backup=$file&csrf_code=$CSRF\">[restore]</a></td> </tr>";
@@ -178,7 +185,7 @@ elseif ($action == "backup")
     closedir($handle);
 
     if ($count == 0) $inc .= "<tr><td colspan=5><p align=center><br>".lang("There are no backups")."</p></td></tr>";
-    echo proc_tpl('backup', array('inclusion' => $inc, 'CSRF' => $CSRF));
+    echo proc_tpl('tools/backup/backup', array('inclusion' => $inc, 'CSRF' => $CSRF));
 
     echofooter();
 }
@@ -214,8 +221,7 @@ elseif ($action == "dodeletebackup")
     
     listdir(SERVDIR."/cdata/backup/$backup");
 
-    msg("info", lang("Backup Deleted"), lang("The backup was successfully deleted"), "$PHP_SELF?mod=tools&action=backup");
-
+    msg("info", lang("Backup Deleted"), lang("The backup was successfully deleted"), "#GOBACK");
 }
 // ********************************************************************************
 // Do restore backup
@@ -224,8 +230,9 @@ elseif($action == "dorestorebackup")
 {
     CSRFCheck();
 
-    if (!copy(SERVDIR."/cdata/backup/$backup/news.txt",     SERVDIR."/cdata/news.txt"))     msg("error", LANG_ERROR_TITLE, "./cdata/backup/$backup/news.txt", "$PHP_SELF?mod=tools&action=backup");
-    if (!copy(SERVDIR."/cdata/backup/$backup/comments.txt", SERVDIR."/cdata/comments.txt")) msg("error", LANG_ERROR_TITLE, "./cdata/backup/$backup/comments.txt", "$PHP_SELF?mod=tools&action=backup");
+    // Check files
+    if (!copy(SERVDIR."/cdata/backup/$backup/news.txt", SERVDIR."/cdata/news.txt"))
+        msg("error", LANG_ERROR_TITLE, "./cdata/backup/$backup/news.txt", "#GOBACK");
 
     $dirp = opendir(SERVDIR."/cdata/backup/$backup/archives");
     if ($dirp)
@@ -235,12 +242,12 @@ elseif($action == "dorestorebackup")
             if (!is_dir(SERVDIR."/cdata/backup/$backup/archives/$entryname") and $entryname!="." and $entryname!="..")
             {
                if(!copy(SERVDIR."/cdata/backup/$backup/archives/$entryname", SERVDIR."/cdata/archives/$entryname"))
-                   msg("error", LANG_ERROR_TITLE, lang("Can not copy")." ./cdata/backup/$backup/archives/$entryname");
+                   msg("error", LANG_ERROR_TITLE, lang("Can not copy")." ./cdata/backup/$backup/archives/$entryname", "#GOBACK");
             }
         }
     }
 
-    msg("info", lang("Backup Restored"), lang("The backup was successfully restored"), "$PHP_SELF?mod=tools&action=backup");
+    msg("info", lang("Backup Restored"), lang("The backup was successfully restored"), "#GOBACK");
 }
 // ********************************************************************************
 // Make The BackUp
@@ -250,17 +257,18 @@ elseif($action == "dobackup")
     CSRFCheck();
     $back_name = str_replace(' ', '-', trim($back_name));
 
-    if(filesize(SERVDIR."/cdata/news.txt") == 0)        msg("error", LANG_ERROR_TITLE, lang("The news file is empty and can not be backed-up"), "$PHP_SELF?mod=tools&action=backup");
-    if(filesize(SERVDIR."/cdata/comments.txt") == 0)    msg("error", LANG_ERROR_TITLE, lang("The comments file is empty and can not be backed-up"), "$PHP_SELF?mod=tools&action=backup");
+    // Check files
+    if (filesize(SERVDIR."/cdata/news.txt") == 0)
+        msg("error", LANG_ERROR_TITLE, lang("The news file is empty and can not be backed-up"), "#GOBACK");
 
     if (is_readable(SERVDIR."/cdata/backup/$back_name"))
-        msg("error", LANG_ERROR_TITLE, lang("A backup with this name already exist"), "$PHP_SELF?mod=tools&action=backup");
+        msg("error", LANG_ERROR_TITLE, lang("A backup with this name already exist"), "#GOBACK");
 
     if (!is_readable(SERVDIR."/cdata/backup"))
         mkdir(SERVDIR."/backup", 0777);
 
     if (!is_writable(SERVDIR."/cdata/backup"))
-        msg("error", LANG_ERROR_TITLE, lang("The directory ./cdata/backup is not writable, please chmod it"));
+        msg("error", LANG_ERROR_TITLE, lang("The directory ./cdata/backup is not writable, please chmod it"), "#GOBACK");
 
     mkdir(SERVDIR."/cdata/backup/$back_name", 0777);
     mkdir(SERVDIR."/cdata/backup/$back_name/archives", 0777);
@@ -284,51 +292,7 @@ elseif($action == "dobackup")
     }
     closedir($handle);
 
-    msg("info", lang("Backup"), lang("All news and archives were successfully backed up under directory")." './cdata/backup/$back_name'", "$PHP_SELF?mod=tools&action=backup");
-}
-elseif ($action == 'report')
-{
-    extract(filter_request('do,title,desc,key'));
-    $df = SERVDIR.CACHE.'/bug_dump'.$key.'.db';
-    $dc = $df.'.tar';
-
-    // defininitions
-    define('BULK_ENCODE', 8192);
-
-    if ($do == 'report')
-    {
-        $files = read_dir(SERVDIR);
-        if ( $_FILES['scrshot']['tmp_name'] )
-             $up_file = $_FILES['scrshot']['name'].'#'.base64_encode( implode('', file($_FILES['scrshot']['tmp_name'])) );
-        else $up_file = false;
-
-        // save metadata
-        $ds = fopen($dc, 'w');
-        fwrite($ds, 'TI '.base64_encode($title)."\n");
-        fwrite($ds, 'DS '.base64_encode($desc)."\n");
-        fwrite($ds, 'UF '.$up_file."\n");
-        fwrite($ds, 'KY '.base64_encode(xxtea_encrypt(mt_rand().mt_rand().mt_rand().'@'.$title.'@'.$desc, $key))."\n"); // key code (registration check)
-        fclose($ds);
-
-        relocation($config_http_script_dir.'/index.php?mod=tools&action=report&do=complete&key='.$key);
-        die();
-    }
-    elseif ($do == 'complete')
-    {
-        header('Content-type: plain/text');
-        header('Content-Disposition: attachment; filename="dump-'.date('d-m-Y-H-i-s').'.txt"');
-        $dump = fopen($dc, 'r'); fpassthru($dump); fclose($dump);
-        if (file_exists($dc)) unlink($dc);
-        die();
-    }
-    else
-    {
-        echoheader("options", "Report bug or error", make_breadcrumbs('main/options/=Bug report dump'));
-        $key = str_replace(array('+','=','/'), '', base64_encode(xxtea_encrypt(mt_rand().time(), CRYPT_SALT)));
-        echo proc_tpl('report_msg', array('key' => $key, 'time' => date('r')));
-        echofooter();
-    }
-   
+    msg("info", lang("Backup"), lang("All news and archives were successfully backed up under directory")." './cdata/backup/$back_name'", "#GOBACK");
 }
 elseif ($action == 'userlog')
 {
@@ -368,17 +332,20 @@ elseif ($action == 'userlog')
                 list ($time, $sarr) = explode('|', fgets($lg), 2);
                 if ($from_time <= $time && $time <= $to_time)
                 {
-                    $in_page = ($cr*$per <= $count && $count < ($cr+1)*$per)? 1 : 0;
                     $pack = unserialize($sarr);
                     $pack['time'] = format_date($pack['time'], 'since');
                     $pack['bg'] = $count%2? '#FFFFFF' : '#F0F4FF';
-                    if ($in_page) $logs[] = $pack;
+                    $logs[ $time ] = $pack;
                     $count++;
                 }
             }
             fclose($lg);
         }
     }
+
+    // Paginate (array slice)
+    krsort($logs);
+    $logs = array_slice($logs, $cr*$per, $per);
 
     // retrieve pagination
     $pages = pagination($count, $per, $cr);
@@ -460,7 +427,7 @@ elseif ($action == 'xfields')
         if ($add_name && $add_vis) $cfg['more_fields'][$add_name] = $add_vis;
 
         fv_serialize('conf', $cfg);
-        msg('info', 'Saved', 'Config successfully saved', false, make_breadcrumbs('main/options/tools:xfields=More fields', true));
+        msg('info', lang('Saved'), lang('Config successfully saved'), false, make_breadcrumbs('main/options/tools:xfields=More fields', true));
     }
 
     $CSRF = CSRFMake();
@@ -475,9 +442,7 @@ elseif ($action == 'xfields')
     }
 
     echo proc_tpl('tools/xfields/index', array('xfields' => $xfields, 'CSRF' => $CSRF));
- 
     echofooter();
-
 }
 elseif ($action == 'language')
 {

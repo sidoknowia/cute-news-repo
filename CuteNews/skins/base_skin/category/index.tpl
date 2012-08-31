@@ -1,6 +1,6 @@
 <form method=post action="{$PHP_SELF}">
     <input type=hidden name="csrf_code" value={$CSRF}>
-    <table border=0 cellpadding=0 cellspacing=0 width="645" >
+    <table border=0 cellpadding=0 cellspacing=0 width="100%" >
     <tr>
         <td width=321 height="33">
             <h3>Add Category</h3>
@@ -41,23 +41,14 @@
     </table>
 </form>
 
-<table border=0 cellpadding=3 cellspacing=0 width="645" >
-    <tr>
-        <td width=654 colspan=2 height=14>
-            <b>Categories</b>
+<div><b>Categories</b></div>
+<table width=100% cellspacing=0 cellpadding=2>
+    <tr bgcolor="#F7F6F4">
+        <td width=6%>&nbsp;<b>ID</b></td>
+        <td width=30%><b>name</b></td>
+        <td width=14% align="center"><b>icon</b></td>
+        <td width=20% align="center"><b>restriction</b></td>
+        <td width=20% align="center"><b>action</b></td>
     </tr>
-    <tr>
-        <td width=654 colspan=2 height=1>
-            <table width=100%% cellspacing=0 cellpadding=2>
-                <tr>
-                    <td width=6% bgcolor=#F7F6F4>&nbsp;<b>ID</b></td>
-                    <td width=30% bgcolor=#F7F6F4><b>name</b></td>
-                    <td width=14% bgcolor=#F7F6F4><b>icon</b></td>
-                    <td width=20% bgcolor=#F7F6F4><b>restriction</b></td>
-                    <td width=20% bgcolor=#F7F6F4><b>action</b></td>
-                </tr>
-                {$result}
-            </table>
-        </td>
-    </tr>
+    {$result}
 </table>

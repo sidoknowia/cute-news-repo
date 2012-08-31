@@ -37,7 +37,7 @@
 </form>
 
 <p>Total found <b>{$count}</b> items</p>
-<table width="600" cellpadding="4" cellspacing="0">
+<table width="100%" cellpadding="4" cellspacing="0">
     <tr><td><b>User</b></td> <td><b>Action</b></td> <td width="150"><b>Date / Time</b></td>  <td><b>IP</b></td> </tr>
     {IFLOG} {foreach from=logs}<tr bgcolor="{$logs.bg}"><td>{$logs.user}</td> <td>{$logs.action}</td> <td>{$logs.time}</td> <td>{$logs.ip}</td></tr>{/foreach} {/IFLOG}
     {-IFLOG} <tr><td colspan="4">No entries for this date range</td></tr> {/-IFLOG}

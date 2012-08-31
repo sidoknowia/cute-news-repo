@@ -5,9 +5,8 @@ if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
 
 if ($action == "" or !$action)
 {
-
-    echoheader("wizard", lang("Choose Wizard"));
-    echo proc_tpl('wizard/menu', array('config_http_script_dir' => $config_http_script_dir));
+    echoheader("wizard", lang("Choose Wizard"), make_breadcrumbs('main/options=options/Choose Wizard'));
+    echo proc_tpl('wizard/menu');
     echofooter();
 }
 // ********************************************************************************
@@ -56,7 +55,7 @@ elseif ($action == "news")
     else $cat_html = "You have no categories";
 
 
-    echoheader("wizard", "News Integration Wizard");
+    echoheader("wizard", "News Integration Wizard", make_breadcrumbs('main/options=options/wizards=Choose Wizards/Integration'));
     echo proc_tpl('wizard/news', array('templates_html' => $templates_html, 'cat_html' => $cat_html));
     echofooter();
 }
@@ -65,7 +64,7 @@ elseif ($action == "news")
 // ********************************************************************************
 elseif ($action == "news_step2")
 {
-    echoheader("wizard", lang("News Integration"));
+    echoheader("wizard", lang("News Integration"), make_breadcrumbs('main/options=options/wizards=Choose Wizards/wizards:news=Integration/Complete'));
 
     // Try to determine include path
     $the_code = '&lt;?php'."\n";
@@ -114,7 +113,7 @@ elseif ($action == "news_step2")
 // ********************************************************************************
 elseif ($action == "rss")
 {
-    echoheader("wizard", lang("RSS Set-Up Wizard"));
+    echoheader("wizard", lang("RSS Set-Up Wizard"), make_breadcrumbs('main/options=options/wizards=Choose Wizards/Rss Setup'));
 
     echo "Rich Site Summary (sometimes referred to as Really Simple Syndication);<br>
     RSS allows a web developer to share the content on his/her site. RSS repackages the web content <br>
@@ -134,7 +133,7 @@ elseif ($action == "rss_step2")
     if ($rss_language == '' or !$rss_language) $rss_language = 'en-us';
     if ($rss_encoding == '' or !$rss_encoding) $rss_encoding = 'UTF-8';
 
-    echoheader("wizard", lang("RSS Configuration"));
+    echoheader("wizard", lang("RSS Configuration"), make_breadcrumbs('main/options=options/wizards=Choose Wizards/wizards:rss=Rss Setup/Configuration'));
 
     echo proc_tpl('wizard/rss_step2', array
     (
@@ -174,7 +173,7 @@ elseif ($action == "dosaverss")
 // ********************************************************************************
 elseif ($action == "customizerss")
 {
-    echoheader("wizard", lang("RSS Customization"));
+    echoheader("wizard", lang("RSS Customization"), make_breadcrumbs('main/options=options/wizards=Choose Wizards/wizards:rss=Rss Setup/wizards:rss_step2=Configuration/Complete'));
 
     // Detect the categories (if any)
     $cat_lines = file(SERVDIR."/cdata/category.db.php");

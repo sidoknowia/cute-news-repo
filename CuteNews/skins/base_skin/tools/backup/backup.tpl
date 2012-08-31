@@ -24,20 +24,14 @@
     </table>
 </form>
 
-<table border=0 cellspacing=0 cellpadding="0" width="390" >
-<tr>
-    <td width=654>
-        <p><b>Available BackUps</b></p>
-        <table width=641 cellspacing=0 cellpadding=4>
-        <tr>
-            <td width=2% bgcolor=#F7F6F4>&nbsp;</td>
-            <td width=40% bgcolor=#F7F6F4>name</td>
-            <td width=22% bgcolor=#F7F6F4>active news</td>
-            <td width=16% bgcolor=#F7F6F4>archives</td>
-            <td width=20% bgcolor=#F7F6F4>action</td>
-        </tr>
-        {$inclusion}
-        </table>
-    </td>
+<div><b>Available BackUps</b></div>
+<table width=100% cellspacing=0 cellpadding=4>
+<tr bgcolor=#F7F6F4>
+    <td width=2%>&nbsp;</td>
+    <td width=40%>name</td>
+    <td width=19% align="center">active news</td>
+    <td width=19% align='center'>archives</td>
+    <td width=20%>action</td>
 </tr>
+{$inclusion}
 </table>

@@ -34,7 +34,7 @@ elseif ($action != "doimagedelete")
     }
     else
     {
-        echoheader("images", "Manage Images");
+        echoheader("images", "Manage Images", make_breadcrumbs('main/options=options/Manage Images'));
     }
 
     // ********************************************************************************
@@ -166,12 +166,12 @@ elseif ($action == "doimagedelete")
     CSRFCheck();
 
     if(!isset($images))
-        msg("info", lang("No Images selected"), lang("You must select images to be deleted"), $PHP_SELF."?mod=images");
+        msg("info", lang("No Images selected"), lang("You must select images to be deleted"), '#GOBACK');
 
     foreach ($images as $image)
         unlink(SERVDIR."/uploads/".$image) or print(lang("Could not delete image")." <b>$file</b>");
 
-    msg("info", lang("Image(s) Deleted"), lang("The image was successfully deleted"), $PHP_SELF."?mod=images");
+    msg("info", lang("Image(s) Deleted"), lang("The image was successfully deleted"), '#GOBACK');
 
 }
 ?>

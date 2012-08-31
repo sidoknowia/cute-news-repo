@@ -1,6 +1,6 @@
 function Help(section)
 {
-    q=window.open('index.php?mod=help&section='+section, 'Help', 'scrollbars=1,resizable=1,width=450,height=400');
+    q=window.open('index.php?mod=help&section=' + section, 'Help', 'scrollbars=1,resizable=1,width=550,height=500,left=100,top=100');
 }
 
 function ShowOrHide(d1, d2)
@@ -11,25 +11,31 @@ function ShowOrHide(d1, d2)
 
 function DoDiv(id)
 {
-    var item = null;
-    if (document.getElementById) {
-        item = document.getElementById(id);
-    } else if (document.all){
-        item = document.all[id];
-    } else if (document.layers){
-        item = document.layers[id];
-    }
+    var item = getId(id);
 
     if (!item) {
     }
     else if (item.style)
     {
-        if (item.style.display == "none") item.style.display = "";
-        else item.style.display = "none";
+        if (arguments.length == 2)
+        {
+            if (arguments[1] == true)  item.style.display = "";
+            else item.style.display = "none";
+        }
+        else
+        {
+            if (item.style.display == "none") item.style.display = "";
+            else item.style.display = "none";
+        }
     }
     else item.visibility = "show";
 }
 
+function Show_Only(id)
+{
+    for (var i = 1; i < arguments.length; i++) DoDiv(arguments[i], 0);
+    DoDiv(id, 1);
+}
 
 // Get ID in misc browser
 function getId(id)

@@ -1,30 +1,5 @@
-<script type="text/javascript">
-    function checks()
-    {
-        var site = document.getElementById('site').value;
-        var user = document.getElementById('user').value;
-        var password = document.getElementById('password').value;
-        var retype = document.getElementById('retype').value;
-        var email = document.getElementById('email').value;
-
-        if (site == false || user == false || password == false || retype == false || email == false)
-        {
-            alert('You must fill all required fields!');
-            return false;
-        }
-
-        if (password != retype)
-        {
-            alert("Password confirmation don't match!");
-            return false;
-        }
-
-        return true;
-    }
-</script>
-
 <h2>Configure your site</h2>
-<form action="{$PHP_SELF}" method="POST" onsubmit="return(checks())">
+<form action="{$PHP_SELF}" method="POST">
 
     <input type="hidden" name="action" value="finish">
 
@@ -48,7 +23,7 @@
             <td><input type="password" style="width: 100px;" id="retype" name="retype" /></td>
         </tr>
         <tr>
-            <td width="150" align="right">Admininstrator email: </td>
+            <td width="150" align="right">Administrator email: </td>
             <td><input type="text" style="width: 200px;" id="email" name="email" /></td>
         </tr>
     </table>

@@ -1,5 +1,24 @@
 <?php
 
+// Update check not for commenter
+if ($action == 'check' && $member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
+{
+    $r = fopen('http://cutephp.com/latest/.export.log', 'r');
+    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
+    if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
+    {
+        $my_current_rev = 0;
+        if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
+            include (SERVDIR.'/cdata/log/revision.php');
+
+        if  ($my_current_rev < $rev[1] && $my_current_rev)
+            echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
+        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest. Check updates in Options > Update Cutenews').'</span>");';
+        die();
+    }
+}
+
+// Only admin there
 if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 
@@ -20,7 +39,7 @@ if ($action == 'update' )
 
         $uselast = ($my_current_rev == $rev[1])? 1 : 0;
 
-        echoheader('info', lang("Update Status"));
+        echoheader('info', lang("Update Status"), make_breadcrumbs('main/options=options/Update Status'));
         echo proc_tpl('update',
             array('rev' => $rev[1]),
             array('ALREADYLAST' => $uselast,
@@ -111,22 +130,6 @@ elseif ($action == 'do_update' )
                 <head><meta http-equiv="refresh" content="1; URL='.$config_http_script_dir.'?mod=update&action=do_update&proc='.$proc.'"></head>
                 <body><script type="text/javascript">parent.document.getElementById("progress").style.width = "'.$percent.'%";</script></body>
                 </html><head></head>');
-        die();
-    }
-}
-elseif ($action == 'check')
-{
-    $r = fopen('http://cutephp.com/latest/.export.log', 'r');
-    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
-    if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
-    {
-        $my_current_rev = 0;
-        if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
-             include (SERVDIR.'/cdata/log/revision.php');
-
-        if  ($my_current_rev < $rev[1] && $my_current_rev)
-             echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
-        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest. Check updates in Options > Update Cutenews').'</span>");';
         die();
     }
 }

@@ -3,7 +3,7 @@
 // Cache-functions
 function fv_serialize($file, $data)
 {
-    $fn = SERVDIR.CACHE.'/'.$file.'.php';
+    $fn = SERVDIR.'/cdata/cache/'.$file.'.php';
     $fx = fopen($fn, 'w');
     fwrite($fx, "<?php die(); ?>\n" . serialize( (array)$data) );
     fclose($fx);
@@ -264,6 +264,7 @@ function die_stat($No, $Reason = false)
 
 function quicksort($array, $by = 0)
 {
+    $bysort = $by;
     list ($by, $ord) = explode('/', $by);
     if (count($array) < 2) return $array;
 
@@ -277,12 +278,12 @@ function quicksort($array, $by = 0)
     foreach ($array as $k => $v)
     {
         $vx = explode('|', $v);
-        if ($ord == 'A')
+        if ($ord == 'A' || $ord == 'asc')
              { if ($vx[$by] < $pivox[$by]) $left[$k] = $v; else $right[$k] = $v; }
         else { if ($vx[$by] > $pivox[$by]) $left[$k] = $v; else $right[$k] = $v; }
     }
 
-    return array_merge(quicksort($left), array($pivot_key => $pivot), quicksort($right));
+    return array_merge(quicksort($left, $bysort), array($pivot_key => $pivot), quicksort($right, $bysort));
 }
 
 // SKINS functions -----------------------------------------------------------------------------------------------------
@@ -297,7 +298,12 @@ function read_tpl($tpl = 'index')
         return $_CACHE['tpl_'.$tpl];
 
     $open = SERVDIR.SKIN.'/'.($tpl?$tpl:'default').'.tpl';
-    $r = fopen($open, 'r') or die_stat(404, 'Template in &lt;'.$open.'&gt; not found');
+
+    // Try open
+    $not_open = false;
+    $r = fopen($open, 'r') or $not_open = true;
+    if ($not_open) return false;
+
     ob_start();
     fpassthru($r);
     $ob = ob_get_clean();
@@ -353,12 +359,21 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
         foreach ($rep as $v)
         {
             $rpl = false;
-            foreach ((array)$args[ $v[1] ] as $x)
+            if (is_array($args[ $v[1] ]))
             {
-                $bulk = $v[2];
-                foreach ($x as $ik => $iv) $bulk = str_replace('{$'.$v[1].".$ik}", $iv, $bulk);
-                $rpl .= $bulk;
+                foreach ($args[ $v[1] ] as $x)
+                {
+                    $bulk = $v[2];
+
+                    // String simply replaces {$FromValue.}, Array -> {$FromValue.Precise}
+                    if  (is_array($x))
+                         foreach ($x as $ik => $iv) $bulk = str_replace('{$'.$v[1].".$ik}", $iv, $bulk);
+                    else $bulk = str_replace('{$'.$v[1].".}", $x, $bulk);
+
+                    $rpl .= $bulk;
+                }
             }
+
             $d = str_replace($v[0], $rpl, $d);
         }
     }
@@ -372,6 +387,9 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
 
     // override process template (filter)
     list($d) = hook('func_proc_tpl', array($d, $tpl, $args, $ifs));
+
+    // truncate unused
+    $d = preg_replace('~{\$[^}]+}+~s', '', $d);
 
     // replace all
     return ( $d );
@@ -404,6 +422,11 @@ function utf8_strtolower($utf8)
 // @url http://www.php.net/manual/de/function.utf8-decode.php#100478
 function UTF8ToEntities ($string)
 {
+    global $config_useutf8;
+
+    // Don't convert anything if $config_useutf8 = 0
+    if ($config_useutf8 == '0') return $string;
+
     /* note: apply htmlspecialchars if desired /before/ applying this function
     /* Only do the slow convert if there are 8-bit characters */
     /* avoid using 0xA0 (\240) in ereg ranges. RH73 does not like that */
@@ -615,8 +638,6 @@ function send_cookie()
 // hash type MD5 and SHA256
 function hash_generate($password)
 {
-    global $cfg;
-
     $try = array
     (
         0 => md5($password),
@@ -774,7 +795,7 @@ function template_replacer_news($news_arr, $output)
     $output      = more_fields($news_arr[NEW_MF], $output);
 
     // Date Formatting [year, month, day, hour, minute, date=$config_timestamp_active]
-    $output      = embedateformat($news_arr[0], $output);
+    $output      = embedateformat($news_arr[NEW_ID], $output);
     $output      = hook('template_replacer_news_before', $output);
 
     // Replace news content
@@ -866,6 +887,7 @@ function template_replacer_news($news_arr, $output)
     }
 
     // Admin edit for news
+    $DREdit = false;
     if (!empty($_SESS['user']))
     {
         $member_db = bsearch_key($_SESS['user'], DB_USERS);
@@ -875,12 +897,13 @@ function template_replacer_news($news_arr, $output)
             $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
             $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = str_ireplace('[/edit]', '</a>', $output);
+            $DREdit = true;
         }
     }
-    else
-    {
-        $output = preg_replace('~\[edit\].*?\[/edit\]~i', '', $output);
-    }
+
+    // If not used, replace [edit]..[/edit]
+    if ($DREdit == false)
+        $output = preg_replace('~\[edit\].*?\[/edit\]~si', '', $output);
 
     // Star Rating
     if ( empty($archive) )
@@ -924,6 +947,11 @@ function more_fields($mf, $output)
  */
 function add_to_log($username, $action, $try = 3)
 {
+    global $config_userlogs;
+
+    // User logs is disabled
+    if ($config_userlogs == '0') return false;
+
     // authorization stat
     $locked = false;
     $flog = SERVDIR.'/cdata/log/log_'.date('Y_m').'.php';
@@ -975,7 +1003,7 @@ function format_date($time, $type = false)
         );
 
         $rd = false;
-        $dist = time() - $time;
+        $mids = $dist = time() - $time;
 
         foreach ($dists as $i => $v)
         {
@@ -987,7 +1015,7 @@ function format_date($time, $type = false)
             }
         }
 
-        $rd .= ($rd? '' : '0 m' ).' ago'. (($type == 'since') ? ' at '.date('Y-m-d H:i') : '');
+        $rd .= ($rd? '' : '0 m' ).' ago'. (($type == 'since' && $mids > 24*3600) ? ' at '.date('Y-m-d H:i') : '');
         return $rd;
     }
 
@@ -1097,7 +1125,6 @@ function add_ip_to_ban($add_ip, $expire = 0)
 {
     if (preg_match('~^([0-9\*]+)\.([0-9\*]+)\.([0-9\*]+)\.([0-9\*]+)$~', $add_ip, $ip))
     {
-
         // unique first tail
         $uniq = array();
         for ($i = 1; $i < 5; $i++)
@@ -1647,28 +1674,6 @@ function replace_comment($way, $sourse)
     return $sourse;
 }
 
-// safe data for the RTE
-function rteSafe($strText)
-{
-    //returns safe code for preloading in the RTE
-    $tmpString = $strText;
-
-    //convert all types of single quotes
-    $tmpString = str_replace(chr(145), chr(39), $tmpString);
-    $tmpString = str_replace(chr(146), chr(39), $tmpString);
-    $tmpString = str_replace("'", "&#39;", $tmpString);
-
-    //convert all types of double quotes
-    $tmpString = str_replace(chr(147), chr(34), $tmpString);
-    $tmpString = str_replace(chr(148), chr(34), $tmpString);
-
-    //replace carriage returns & line feeds
-    $tmpString = str_replace(chr(10), " ", $tmpString);
-    $tmpString = str_replace(chr(13), " ", $tmpString);
-
-    return $tmpString;
-}
-
 // Hello skin!
 function get_skin($skin)
 {
@@ -1700,34 +1705,8 @@ function get_skin($skin)
     return $$msn;
 }
 
-/* === HELPERS === */
-// Helper for truncation any text
-function clbTruncate($match)
-{
-    if (strlen($match[2]) > $match[1])
-         return substr($match[2], 0, $match[1] - 3) . '...';
-    else return $match[2];
-}
-
-function linkedcat($catids)
-{
-    $cat_url        = array();
-    $art_cat_arr    = explode(",", $catids);
-    if (count($art_cat_arr) == 1)
-    {
-        return "<a href='".PHP_SELF."?cid=".$catids."'>".catid2name($catids)."</a>";
-    }
-    else
-    {
-        foreach($art_cat_arr as $thiscat)
-            $cat_url[] = "<a href='".PHP_SELF."?cid=".$thiscat."'>".catid2name($thiscat)."</a>&nbsp;";
-
-        return implode(", ", $cat_url);
-    }
-}
-
 // Replaces news charactars
-function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
+function replace_news($way, $sourse, $use_html = true)
 {
     global $HTML_SPECIAL_CHARS, $config_allow_html_in_news, $config_allow_html_in_comments, $config_http_script_dir, $config_smilies, $config_use_wysiwyg;
 
@@ -1789,54 +1768,40 @@ function replace_news($way, $sourse, $replce_n_to_br=TRUE, $use_html=TRUE)
         foreach ($replaces as $v)
         {
             list ($f, $t) = explode('=', $v, 2);
-            $find[] = '~'.str_replace('~','\x7E', $f).'~is';
+            $find[] = '~'.str_replace('~', '\x7E', $f).'~is';
             $replace[] = $t;
         }
-
     }
     elseif ($way == "add")
     {
-
         $find       = array("~\|~", "~\r~", );
         $replace    = array("&#124;", "", );
 
-        if ($use_html != TRUE)
-        {
-            $find[]    = "'<'";
-            $find[]    = "'>'";
-            $replace[] = "&lt;";
-            $replace[] = "&gt;";
-        }
+        // With using HTML don't convert
+        if ($use_html != true)
+            $sourse = str_replace( array('<','>'), array('&lt;', '&gt;'), $sourse);
 
-        // if wysywig in ckeditor, replace to <BR> not allowed
-        if ($config_use_wysiwyg == 'ckeditor') $replce_n_to_br = false;
-
-        $find[]     = "~\n~";
-        $replace[]  = ($replce_n_to_br == true)? "<br />" : "{nl}";
-
-
+        // if wysywig is ckeditor, replace to <BR> not allowed
+        if  ($config_use_wysiwyg == 'no')
+             $sourse = str_replace("\n", "<br />", $sourse);
+        else $sourse = str_replace("\n", "{nl}", $sourse);
     }
     elseif ($way == "admin")
     {
+        $find = array("'{nl}'", "'<'", "'>'");
+        $replace = array("\n", "&lt;", "&gt;");
 
-        $find = array("''", "'{nl}'", "'<'", "'>'");
-        $replace = array("", "\n", "&lt;", "&gt;");
-
-        //this is for 'edit news' section when we use WYSIWYG
-        if($replce_n_to_br == false)
-        {
-            $find[] = "~<br />~";
-            $replace[] = "\n";
-        }
+        // replace <BR> to EOL for admin
+        if ($config_use_wysiwyg == 'no')
+            $sourse = str_replace('<br />', "\n", $sourse);
     }
 
     // Replace all
     $sourse  = preg_replace($find, $replace, $sourse);
-    foreach ( $HTML_SPECIAL_CHARS as $key => $value) $sourse = str_replace($key,$value,$sourse);
+    foreach ( $HTML_SPECIAL_CHARS as $key => $value) $sourse = str_replace($key, $value, $sourse);
 
     // Truncate text
     $sourse = preg_replace_callback('~\[truncate=(.*?)\](.*?)\[/truncate\]~i', 'clbTruncate', $sourse);
-
     return $sourse;
 }
 
@@ -1943,6 +1908,75 @@ function get_allowed_cats($member_db)
     return array($allowed_cats, $cat_lines, $cat);
 }
 
+// Make HTML code for postponed date
+function make_postponed_date($gstamp = 0)
+{
+    $_dateD = $_dateM = $_dateY = false;
+
+    // Use current timestamp if no present
+    if ($gstamp == 0) $gstamp = time();
+
+    $day    = date('j', $gstamp);
+    $month  = date('n', $gstamp);
+    $year   = date('Y', $gstamp);
+
+    for ($i = 1; $i < 32; $i++)
+    {
+        if ($day == $i) $_dateD .= "<option selected value=$i>$i</option>";
+        else            $_dateD .= "<option value=$i>$i</option>";
+    }
+
+    for ($i = 1; $i < 13; $i++)
+    {
+        $timestamp = mktime(0, 0, 0, $i, 1, 2003);
+        if ($month == $i) $_dateM .= "<option selected value=$i>". date("M", $timestamp) ."</option>";
+        else              $_dateM .= "<option value=$i>". date("M", $timestamp) ."</option>";
+    }
+
+    for ($i = date('Y'); $i < (date('Y') + 7); $i++)
+    {
+        if ($year == $i) $_dateY .= "<option selected value=$i>$i</option>";
+        else             $_dateY .= "<option value=$i>$i</option>";
+    }
+
+    return array($_dateD, $_dateM, $_dateY, date('H', $gstamp), date('i', $gstamp));
+}
+
+// By $source get path for news/comments
+function detect_source($source)
+{
+    if ($source == "")
+    {
+        $news_file = SERVDIR."/cdata/news.txt";
+        $comm_file = SERVDIR."/cdata/comments.txt";
+    }
+    elseif($source == "postponed")
+    {
+        $news_file = SERVDIR."/cdata/postponed_news.txt";
+        $comm_file = SERVDIR."/cdata/comments.txt";
+    }
+    elseif($source == "unapproved")
+    {
+        $news_file = SERVDIR."/cdata/unapproved_news.txt";
+        $comm_file = SERVDIR."/cdata/comments.txt";
+    }
+    else
+    {
+        $source = intval($source);
+        $news_file = SERVDIR."/cdata/archives/$source.news.arch";
+        $comm_file = SERVDIR."/cdata/archives/$source.comments.arch";
+
+        // If archive not detected
+        if (!file_exists($news_file))
+        {
+            $news_file = SERVDIR."/cdata/news.txt";
+            $comm_file = SERVDIR."/cdata/comments.txt";
+        }
+    }
+
+    return array($news_file, $comm_file );
+}
+
 // Force relocation
 function relocation($url)
 {
@@ -1951,24 +1985,107 @@ function relocation($url)
     die();
 }
 
+// Extract all options
+function options_extract($data)
+{
+    $options = array();
+    $data = explode(';', trim($data));
+    if (is_array($data) && !empty($data))
+        foreach ($data as $_opt)
+        {
+            list ($a, $b) = explode('=', $_opt, 2);
+            if ($a && $b) $options[ sunpack($a) ] = sunpack($b);
+        }
+
+    return $options;
+}
+
+// Do edit option
+function edit_option($data, $name, $value)
+{
+    $options = options_extract($data);
+
+    // Modify option
+    if ($value !== false)                    $options[ spack($name) ] = spack($value);
+    elseif (isset($options[ spack($name) ])) unset($options[ spack($name) ]);
+
+    $data = array();
+    foreach ($options as $i => $v)
+    {
+        $i = trim($i);
+        $v = trim($v);
+        if ($i && $v) $data[] = "$i=$v";
+    }
+
+    return join(';', $data);
+}
+
+function getpart($name, $data = array())
+{
+    $parts = str_replace('{$PHP_SELF}', PHP_SELF, read_tpl('sg_cutes'));
+    if ( preg_match('~^'.$name.'\|(.*)$~m', $parts, $match) )
+    {
+        foreach ($data as $i => $v) $match[1] = str_replace('%'.($i+1), $v, $match[1]);
+        return $match[1];
+    }
+
+    return false;
+}
+
+function make_order($by, $params, $data)
+{
+    $params .= ','.$by;
+    $ordby   = isset($_REQUEST[$by]) && $_REQUEST[$by] ? $_REQUEST[$by] : 'asc';
+    $ordby   = ($ordby == 'asc') ? 'desc' : 'asc';
+    $data[]  = $ordby;
+
+    if (isset($_REQUEST[$by])) $colorize = 'style="color: red;"' ; else $colorize = false;
+    return ' <a '.$colorize.' href="'.PHP_SELF.build_uri($params, $data).'">'.(($ordby == 'desc')? '&#x25B4;' : '&#x25BE;').'</a>';
+}
+
+
+/* === HELPERS === */
+function linkedcat($catids)
+{
+    $cat_url        = array();
+    $art_cat_arr    = explode(",", $catids);
+    if (count($art_cat_arr) == 1)
+    {
+        return "<a href='".PHP_SELF."?cid=".$catids."'>".catid2name($catids)."</a>";
+    }
+    else
+    {
+        foreach($art_cat_arr as $thiscat)
+            $cat_url[] = "<a href='".PHP_SELF."?cid=".$thiscat."'>".catid2name($thiscat)."</a>&nbsp;";
+
+        return implode(", ", $cat_url);
+    }
+}
+
 // duck flying
 function bd_config($str) { return base64_decode($str); }
+
 function spack($s)   { return str_replace(array('{','|',';','=',"\n"), array("{I}","{kv}","{eq}","{eol}"), $s); }
 function sunpack($s) { return str_replace(array("{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $s); }
 
+function clbTruncate($match) { return word_truncate($match[2], $match[1]);  }
+function word_truncate($data, $length = 75) { return preg_replace('~^(.{'.$length.',}?)\s.*$~', '\\1\\2...', $data); }
+
+function check_email($email) { return (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/", $email)); }
+
 // ------------- CSRF value -------------
-function CSRFMake() /* Make CSRF in Cookies */
+function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
 {
     global $_SESS;
-    $_SESS['U:CSRF'] = md5(mt_rand() . mt_rand());
+    $_SESS[ $Name ] = md5(mt_rand() . mt_rand());
     send_cookie();
-    return $_SESS['U:CSRF'];
+    return $_SESS[ $Name ];
 }
 
-function CSRFCheck($token = 'csrf_code') /* Check CSRF code  */
+function CSRFCheck($Name = 'U:CSRF', $token = 'csrf_code') /* Check CSRF code  */
 {
     global $_SESS;
-    if ($_SESS['U:CSRF'] != $_REQUEST[$token])
+    if ($_SESS[ $Name ] != $_REQUEST[$token])
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
         msg("error", LANG_ERROR_TITLE, "<script type='text/javascript'> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");

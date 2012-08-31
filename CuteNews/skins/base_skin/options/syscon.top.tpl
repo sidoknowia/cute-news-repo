@@ -27,7 +27,7 @@
 </script>
 
 <form action="{$PHP_SELF}" method=post>
-<table border=0 cellpadding=0 cellspacing=0 width=654>
+<table border=0 cellpadding=0 cellspacing=0 width=100%>
 <tr style="position:relative" valign=top>
     <td style="padding-bottom:30px;" colspan="3"  >
         <table style="text-align:center;  padding:0; margin:0;" width="100%" cellpadding="0" cellspacing="0">

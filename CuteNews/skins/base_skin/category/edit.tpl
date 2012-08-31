@@ -12,7 +12,6 @@
             <td><input value="{$cat_arr[2]}" type=text name=cat_icon></td>
         </tr>
 
-
         <tr>
             <td>Category Access</td>
             <td>

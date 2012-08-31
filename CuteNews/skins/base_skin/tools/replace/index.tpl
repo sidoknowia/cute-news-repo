@@ -11,7 +11,7 @@
     <input type="hidden" name="do" value="replace">
     <p>
         <label for="replaces"><b>Replacement (from=to)</b></label>
-        <div><textarea id="replaces" name="replaces" style="width: 650px; height:500px;">{$replaces}</textarea></div>
+        <div><textarea id="replaces" name="replaces" style="width: 730px; height:500px;">{$replaces}</textarea></div>
     </p>
     <div><input type="submit" value="Save replacements" /></div>
 </form>

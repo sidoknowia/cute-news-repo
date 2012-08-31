@@ -9,7 +9,7 @@
 
 <form action="{$PHP_SELF}" method="post">
     <input type=hidden name="csrf_code" value="{$CSRF}" />
-    <table border=0 cellpadding=0 cellspacing=0 width="645" >
+    <table border=0 cellpadding=0 cellspacing=0 width="100%" >
         <tr>
             <td width=450 height="33">
                 <h3>Send news to archive</h3>
@@ -27,22 +27,14 @@
     </table>
 </form>
 
-<table border=0 cellpadding=0 cellspacing=1 width="645">
-    <tr>
-        <td width=654 colspan=2><p><b>Available archives</b></p></td>
+<div><b>Available archives</b></div>
+<table width=100% cellspacing=0 cellpadding=4>
+    <tr bgcolor=#F7F6F4>
+        <td width=8>&nbsp;</td>
+        <td width=160>archivation date</td>
+        <td>duration</td>
+        <td width=81 align="center" >news</td>
+        <td width=110><!--action--></td>
     </tr>
-    <tr>
-        <td width=654 colspan=2 height=1>
-            <table width=641 height=100% cellspacing=0 cellpadding=4>
-                <tr>
-                    <td width=8 bgcolor=#F7F6F4>&nbsp;</td>
-                    <td width=160 bgcolor=#F7F6F4>archivation date</td>
-                    <td width=222 bgcolor=#F7F6F4>duration</td>
-                    <td width=81 bgcolor=#F7F6F4>news</td>
-                    <td width=110 bgcolor=#F7F6F4><!--action--></td>
-                </tr>
-                {$inclusion}
-            </table>
-        </td>
-    </tr>
+    {$inclusion}
 </table>

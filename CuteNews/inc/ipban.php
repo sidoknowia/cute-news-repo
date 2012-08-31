@@ -31,7 +31,7 @@ if ($action == "add" or $action == "quickadd")
 elseif($action == "remove")
 {
     if (!$remove_ip)
-        msg("error", LANG_ERROR_TITLE, lang("The IP or nick can not be blank"), $PHP_SELF."?mod=ipban");
+        msg("error", LANG_ERROR_TITLE, lang("The IP or nick can not be blank"), '#GOBACK');
     
     // remove nick or IP
     if (bsearch_key('>'.$remove_ip, DB_BAN))
@@ -51,7 +51,7 @@ elseif($action == "remove")
 // ********************************************************************************
 // List all IP
 // ********************************************************************************
-echoheader("options", lang("Blocking IP / Nickname"));
+echoheader("options", lang("Blocking IP / Nickname"), make_breadcrumbs('main/options=options/Block IP or nickname'));
 
 $ips = fopen(DB_BAN, 'r');
 

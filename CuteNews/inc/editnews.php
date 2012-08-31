@@ -3,10 +3,12 @@
 if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST)
     msg("error", "Access Denied", "You don't have permission to edit news");
 
-
 // only show allowed categories
 $source = preg_replace('~[^a-z0-9_\.]~i', '', $source);
-list($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
+list ($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
+
+$use_wysiwyg = 0;
+if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor')) $use_wysiwyg = 1;
 
 // ********************************************************************************
 // List all news available for editing
@@ -17,31 +19,15 @@ if ($action == "list")
     echoheader("editnews", lang("Edit News"));
 
     // How Many News to show on one page
+    $all_db_tmp = array();
+    $authors    = array();
     if ($news_per_page == false) $news_per_page = 21;
 
-    $all_db = array();
-    if ($source == false)
-    {
-        $all_db = file(SERVDIR."/cdata/news.txt");
-    }
-    elseif ($source == "postponed")
-    {
-        $all_db = file(SERVDIR."/cdata/postponed_news.txt");
-        ResynchronizePostponed();
-    }
-    elseif ($source == "unapproved")
-    {
-        $all_db = file(SERVDIR."/cdata/unapproved_news.txt");
-    }
-    else
-    {
-        $db = SERVDIR."/cdata/archives/".$source.".news.arch";
-        $all_db = file_exists($db) ? file($db) : file(SERVDIR."/cdata/news.txt");
-    }
-
     // Choose only needed news items
-    $all_db_tmp = array();
-    $authors = array();
+    list($decide) = detect_source($source);
+    if ($source == "postponed") ResynchronizePostponed();
+    $all_db = file($decide);
+
     foreach ($all_db as $raw_line)
     {
         $raw_arr = explode("|", $raw_line);
@@ -75,6 +61,10 @@ if ($action == "list")
     $flag = 1;
     $entries_showed = 0;
 
+    // Sort news by...
+    if (isset($_REQUEST['ord_title'])) $all_db = quicksort($all_db, NEW_TITLE.'/'.$_REQUEST['ord_title']);
+    if (isset($_REQUEST['ord_date']))  $all_db = quicksort($all_db, NEW_ID.'/'.$_REQUEST['ord_date']);
+
     if (!empty($all_db))
     {
         $the_entry  = array();
@@ -93,17 +83,31 @@ if ($action == "list")
             // Sanitize
             $title = $item_db[NEW_TITLE];
             $title = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $title) );
-            $title = preg_replace("/<[^>]*>/", "", $title) ;
 
-            // If news title over 74 chars, truncate it
-            if (strlen($title) > 74) $title = substr($title, 0, 74)." ...";
+            // If news title over 75 chars, truncate it
+            $title = word_truncate($title, 75);
+
+            // It's prospect article
+            $prosrev = false;
+            if ($item_db[NEW_ID] > time() && $source != 'postponed') $prosrev = getpart('post_rev');
+
+            // Enable Up/Down without sorting
+            if ( !isset($_REQUEST['ord_title']) and !isset($_REQUEST['ord_date']) )
+            {
+                $up    = $PHP_SELF . build_uri('mod,action,direct,id,source,start_from,news_per_page,category,author',array('editnews','move','up',$item_db[0],$source,$start_from,$news_per_page,$category,$author));
+                $down  = $PHP_SELF . build_uri('mod,action,direct,id,source,start_from,news_per_page,category,author',array('editnews','move','down',$item_db[0],$source,$start_from,$news_per_page,$category,$author));
+                $ORDER = getpart('editnews_order', array($up, $down));
+            }
+            else $ORDER = '-';
 
             $the_oneln = array
             (
-                'id'        => $item_db[0],
-                'title'     => $title,
+                'id'        => $item_db[NEW_ID],
+                'title'     => str_replace(array('<','>'), array('&lt;', '&gt;'), $title),
                 'bg'        => $bg,
-                'source'    => $source
+                'source'    => $source,
+                'pros'      => $prosrev,
+                'order'     => $ORDER,
             );
 
             $count_comments = countComments($item_db[NEW_ID], $source);
@@ -128,7 +132,7 @@ if ($action == "list")
             }
             else
             {
-                $the_oneln['category'] = $cat[ $item_db[NEW_CAT] ];
+                $the_oneln['category'] = getpart('edn_link4cat', array( build_uri('mod,action,category,source', array('editnews','list',$item_db[NEW_CAT], $source)), $cat[ $item_db[NEW_CAT] ] ));
             }
 
             $the_oneln['itemdate'] = $itemdate;
@@ -139,30 +143,35 @@ if ($action == "list")
             if ($entries_showed >= $news_per_page) break;
         }
 
-        $entries = proc_tpl('editnews/list/line');
+        // Make comments
+        $dts         = 'mod,action,start_from,category,author,source,news_per_page';
+        $title_ord   = make_order('ord_title', $dts, array('editnews', 'list', $start_from, $category, $author, $source, $news_per_page));
+        $date_ord    = make_order('ord_date',  $dts, array('editnews', 'list', $start_from, $category, $author, $source, $news_per_page));
+        $entries     = proc_tpl('editnews/list/line');
     }
 
     $all_count_news = count($all_db);
     $unapproved_selected = $postponed_selected = false;
 
     // Messages in top of editnews options bar
-    if ($category != "") $cat_msg = lang("Category", 'editnews').": <b>".htmlspecialchars($cat[$category])."</b>;";
+    if (isset($category) && $category)
+        $cat_msg = lang("Category", 'editnews').": <b>".htmlspecialchars($cat[$category])."</b>;";
 
     if ($source == "postponed")
     {
-        $source_msg = "<span style='background-color: yellow;'>".lang("Postponed News").", <a title='".lang('Refresh the postponed news file')."' href=\"$PHP_SELF?mod=editnews&action=list&source=postponed\">[".lang('Resynchronize')."]</a></span>";
+        $source_msg = getpart('postponed_refresh');
         $postponed_selected = " selected ";
     }
     elseif ($source == "unapproved")
     {
-        $source_msg = "<span style='background-color: yellow;'>".lang('Unapproved News')."</span>";
+        $source_msg = getpart("unapproved_title");
         $unapproved_selected = " selected ";
     }
     elseif ($source != "" )
     {
         $news_lines         = file(SERVDIR."/cdata/archives/$source.news.arch");
         $count              = count($news_lines);
-        $last               = $count-1;
+        $last               = $count - 1;
         $first_news_arr     = explode("|", $news_lines[$last]);
         $last_news_arr      = explode("|", $news_lines[0]);
         $first_timestamp    = $first_news_arr[0];
@@ -248,7 +257,7 @@ if ($action == "list")
         $previous = $start_from - $news_per_page;
         if ($previous < 0) $previous = 0;
 
-        $uri = build_uri('mod,action,start_from,category,author,source,news_per_page', array('editnews','list',$previous,$category,$author,$source,$news_per_page));
+        $uri = build_uri('mod,action,start_from,category,author,source,news_per_page,ord_title,ord_date', array('editnews','list',$previous,$category,$author,$source,$news_per_page,$ord_title,$ord_date));
         $npp_nav .= '<a href="'.$PHP_SELF.$uri.'">&lt;&lt; '.lang('Previous').'</a>';
         $tmp = true;
     }
@@ -260,7 +269,7 @@ if ($action == "list")
         $how_next = count($all_db) - $ipos;
 
         if ($how_next > $news_per_page) $how_next = $news_per_page;
-        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page', array('editnews','list', $ipos+1, $category, $author, $source, $news_per_page));
+        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page,ord_title,ord_date', array('editnews','list', $ipos+1, $category, $author, $source, $news_per_page,$ord_title,$ord_date));
         $npp_nav .= '<a href="'.$PHP_SELF.$URL.'">'.lang('Next').' '.$how_next.' &gt;&gt;</a>';
     }
 
@@ -275,7 +284,10 @@ if ($action == "list")
             $do_action .= '<option '.(( $source == "unapproved" )?  'selected' : '').' title="'.lang('approve selected news').'" value="mass_approve">'.lang('Approve News').'</option>';
 
         if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN)
-            $do_action .= '<option title="'.lang('move all selected news to one category').'" value="mass_move_to_cat">'.lang('Change Category').'</option>';
+        {
+            $do_action .= '<option title="'.lang('Move all selected news to one category').'" value="mass_move_to_cat">'.lang('Change Category').'</option>';
+            $do_action .= '<option title="'.lang('Change date published').'" value="mass_change_pubdate">'.lang('Change Date').'</option>';
+        }
     }
 
     echo proc_tpl('editnews/list/entries',
@@ -302,11 +314,11 @@ elseif ($action == "editnews")
     {
         $all_db = file(SERVDIR."/cdata/news.txt");
     }
-    elseif($source == "postponed")
+    elseif ($source == "postponed")
     {
         $all_db = file(SERVDIR."/cdata/postponed_news.txt");
     }
-    elseif($source == "unapproved")
+    elseif ($source == "unapproved")
     {
         $all_db = file(SERVDIR."/cdata/unapproved_news.txt");
     }
@@ -331,7 +343,7 @@ elseif ($action == "editnews")
     }
 
     if (!$found)
-        msg("error", LANG_ERROR_TITLE, "The selected news item can <b>not</b> be found.");
+        msg("error", LANG_ERROR_TITLE, lang("The selected news item can not be found"), '#GOBACK');
 
     // Check permission to edit news
     $have_perm = 0;
@@ -354,20 +366,20 @@ elseif ($action == "editnews")
         foreach ($all_these_cats as $all_this_cat)
         {
             if ( !in_array($all_this_cat, $allowed_cats) )
-                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."));
+                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."), '#GOBACK');
         }
     }
-
-    $newstime   = date("D, d F Y h:i:s", $item_db[0]);
-    $item_db[2] = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $item_db[2]) );
 
     $short_story_id = 'short_story';
     $full_story_id = 'full_story';
 
+    $newstime = date("D, d F Y h:i:s", $item_db[0]);
+    $item_db[NEW_TITLE] = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $item_db[NEW_TITLE]) );
+
     // Are we using the WYSIWYG ?
-    $use_wysiwyg = ($config_use_wysiwyg == "yes") ? 1 : 0;
-    $item_db[3] = replace_news("admin", $item_db[3], $use_wysiwyg);
-    $item_db[4] = replace_news("admin", $item_db[4], $use_wysiwyg);
+    $use_wysiwyg = ($config_use_wysiwyg == "no") ? 0 : 1;
+    $item_db[NEW_SHORT] = replace_news("admin", $item_db[NEW_SHORT], $use_wysiwyg);
+    $item_db[NEW_FULL]  = replace_news("admin", $item_db[NEW_FULL], $use_wysiwyg);
 
     $CSRF = CSRFMake();
     echoheader("editnews", lang("Edit News"));
@@ -381,7 +393,8 @@ elseif ($action == "editnews")
             $cat_arr = explode("|", $single_line);
 
             $lines_html .= "<td style='font-size:10px;' valign=top><label for='cat{$cat_arr[0]}'>";
-            if ( in_array($cat_arr[0], explode(',',$item_db[6])) )
+
+            if ( in_array($cat_arr[NEW_ID], explode(',', $item_db[NEW_CAT])) )
                  $lines_html .= "<input checked style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
             else $lines_html .= "<input style='background-color:transparent; border:0px;' type='checkbox' name='category[]' id='cat{$cat_arr[0]}' value='{$cat_arr[0]}'>$cat_arr[1]</label>";
 
@@ -403,7 +416,7 @@ elseif ($action == "editnews")
     {
         $comment_line = trim($comment_line);
         $comments_arr = explode("|>|",$comment_line);
-        if($comments_arr[0] == $id)
+        if ($comments_arr[0] == $id)
         {
             //if these are comments for our story
             $found_newsid = TRUE;
@@ -427,17 +440,11 @@ elseif ($action == "editnews")
                     $comment_arr            = explode("|", $individual_comment);
                     $comtime                = date("d/m/y h:i:s", (int)$comment_arr[0]);
                     $comm_value             = stripslashes(strip_tags($comment_arr[4]));
-                    $comm_excerpt_lenght    = 43 - strlen($comment_arr[1]);
-
-                    // except comment if length over length
-                    if ( $comm_excerpt_lenght < strlen($comm_value))
-                         $comm_excerpt = substr($comm_value, 0, $comm_excerpt_lenght) . '...';
-                    else $comm_excerpt = $comm_value;
+                    $comm_excerpt           = word_truncate($comm_value, 75);
 
                     if ($comment_arr[1])
                     {
-                        if (strlen($comment_arr[1]) > 25) $comment_arr[1] = substr($comment_arr[1], 0, 22) . "...";
-
+                        $comment_arr[1] = word_truncate($comment_arr[1], 25);
                         $Comments_HTML .= proc_tpl('editnews/editnews/comment_line',
                             array
                             (
@@ -467,7 +474,7 @@ elseif ($action == "editnews")
                 $found_newsid  = false;
             }
 
-        } //if these are comments for our story
+        } // if these are comments for our story
 
     }
 
@@ -475,47 +482,54 @@ elseif ($action == "editnews")
         $Comments_HTML = proc_tpl('editnews/editnews/nocomments');
 
     // init x-fields
-    $article = array();
-    $pack = explode(';', $item_db[8]);
-    foreach ($pack as $i => $v)
-    {
-        list ($a, $b) = explode('=', $v);
-        $a = str_replace(array('{~',"{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $a);
-        $b = str_replace(array('{~',"{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $b);
-        $article[$a] = $b;
-    }
+    $options = array();
+    $xfields = array();
+    $postpone_date = false;
 
+    $article = options_extract($item_db[NEW_MF]);
     foreach ($cfg['more_fields'] as $i => $v)
     {
         $af = isset($article[$i]) ? $article[$i] : false;
-        if ( substr($v, 0, 1) == '&' )
+        if ( $v[0] == '&' )
              $xfields[] = array( $i, substr($v,1), '(optional)', $af );
-        else $xfields[] = array( $i, $v, '', $af );
+        else $xfields[] = array( $i, $v, '<span style="color: red;">*</span> '. lang('required','news'), $af );
     }
 
-    // show template -------------------------------------------------------------------
-    if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor')) $tpl = 'index_cke'; else $tpl = 'index';
+    $options = options_extract($item_db[NEW_OPT]);
+    if ($source == 'postponed') $postpone_date = $id;
 
-    echo proc_tpl(
+    // show template -------------------------------------------------------------------
+    if ( $use_wysiwyg ) $tpl = 'index_cke'; else $tpl = 'index';
+    list($_dateD, $_dateM, $_dateY, $_dateH, $_dateI) = make_postponed_date($postpone_date);
+
+    // Add hooks for modify ckeditor
+    $CKEDITOR_Settings = hook('CKEDITOR_Settings', false);
+    $CKEDITOR_SetsName = hook('CKEDITOR_SetsName', 'settings');
+
+    echo proc_tpl
+    (
         'editnews/editnews/'.$tpl,
         array
         (
-            'id'                    => $id,
+            'id'                    => intval($id),
             'source'                => $source,
             'newstime'              => $newstime,
-            'item_db1'              => $item_db[1],
-            'item_db2'              => my_strip_tags( $item_db[2] ),
-            'item_db3'              => $item_db[3],
-            'item_db4'              => $item_db[4],
-            'item_db5'              => $item_db[5],
+            'item_db1'              => $item_db[NEW_USER],
+            'item_db2'              => $item_db[NEW_TITLE],
+            'item_db3'              => $item_db[NEW_SHORT],
+            'item_db4'              => $item_db[NEW_FULL],
+            'item_db5'              => $item_db[NEW_AVATAR],
             'lines_html'            => $lines_html,
-            'rtes'                  => rteSafe($item_db[3]),
-            'rtes2'                 => rteSafe($item_db[4]),
             'short_story_id'        => $short_story_id,
             'short_story_smiles'    => insertSmilies($short_story_id, 4, true, $use_wysiwyg),
             'full_story_id'         => $full_story_id,
             'full_story_smiles'     => insertSmilies($full_story_id, 4, true, $use_wysiwyg),
             'use_wysiwyg'           => $use_wysiwyg,
+            'dated'                 => $_dateD,
+            'datem'                 => $_dateM,
+            'datey'                 => $_dateY,
+            'dateh'                 => $_dateH,
+            'datei'                 => $_dateI,
             'Comments_HTML'         => $Comments_HTML,
             'xfields'               => $xfields,
             'CSRF'                  => $CSRF
@@ -528,6 +542,8 @@ elseif ($action == "editnews")
             'WYSIWYG'               => $use_wysiwyg,
             'UNAPPROVED'            => ($source == 'unapproved')? 1 : 0,
             'HASCOMMENTS'           => $found_newsid? 1 : 0,
+            'ALLOWPOSTPONED'        => $postpone_date ? 1 : 0,
+            'USING_HTML'            => $options['use_html']
         )
     );
 
@@ -541,13 +557,12 @@ elseif ($action == "doeditnews")
     // Format our categories variable
     if (is_array($category))
     {
-        //User has selected multiple categories
+        // User has selected multiple categories
         $ccount = 0;
         $nice_category = '';
-
         foreach ($category as $ckey => $cvalue)
         {
-            if ( !in_array($cvalue, $allowed_cats) ) die(lang('Not allowed category'));
+            if ( !in_array($cvalue, $allowed_cats) ) msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
             if ( $ccount == 0 ) $nice_category = $cvalue;
             else $nice_category = $nice_category.','.$cvalue;
             $ccount++;
@@ -560,22 +575,20 @@ elseif ($action == "doeditnews")
     }
 
     // Check optional fields
-    $more = $optfields = array();
-    foreach ($cfg['more_fields'] as $i => $v)
+    if ($ifdelete != 'yes')
     {
-        if ($v[0] != '&' && $_REQUEST[$i] == false)
+        $optfields = array();
+        $more = false;
+        foreach ($cfg['more_fields'] as $i => $v)
         {
-            $optfields[] = $v;
-        }
-        else
-        {
-            if (!empty($_REQUEST[$i]))
-                $more[] = spack($i).'='.spack($_REQUEST[$i]);
+            if ($v[0] != '&' && $_REQUEST[$i] == false)
+                 $optfields[] = $v;
+            else $more = edit_option($more, $i, $_REQUEST[$i]);
         }
     }
 
     if (count($optfields))
-        msg('error', LANG_ERROR_TITLE, lang('Some fields can not be blank').': '.implode(', ', $optfields));
+        msg('error', LANG_ERROR_TITLE, lang('Some fields can not be blank').': '.implode(', ', $optfields), "#GOBACK");
 
     if (trim($title) == "" and $ifdelete != "yes")
         msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "#GOBACK");
@@ -583,12 +596,11 @@ elseif ($action == "doeditnews")
     if ($short_story == "" and $ifdelete != "yes")
         msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "#GOBACK");
 
-    $n_to_br        = ($if_convert_new_lines == "yes")? 1 : 0;
-    $use_html       = ($if_use_html == "yes")? 1 : 0;
+    // Some replaces
+    $use_html       = ($if_use_html == "yes" || $use_wysiwyg)? 1 : 0;
 
-    $short_story    = replace_news("add", $short_story, $n_to_br, $use_html);
-    $full_story     = replace_news("add", $full_story,  $n_to_br, $use_html);
-
+    $short_story    = replace_news("add", $short_story, $use_html);
+    $full_story     = replace_news("add", $full_story,  $use_html);
     $title          = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $title) );
     $avatar         = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $avatar) );
 
@@ -597,7 +609,7 @@ elseif ($action == "doeditnews")
     {
         $editavatar = check_avatar($editavatar);
         if ($editavatar == false)
-            msg('error', LANG_ERROR_TITLE, lang('Avatar not uploaded'));
+            msg('error', LANG_ERROR_TITLE, lang('Avatar not uploaded'), '#GOBACK');
     }
 
     // select news and comment files
@@ -644,24 +656,38 @@ elseif ($action == "doeditnews")
             {
                 if ($ifdelete != "yes")
                 {
+                    // If save as postponed news
+                    $id = ($source == "postponed") ? mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60 : $old_db_arr[NEW_ID];
+                    $old_db_arr[NEW_ID] = $id;
+
+                    // Only for editor without wysiwyg
+                    if  ($config_use_wysiwyg == 'no')
+                         $old_db_arr[NEW_OPT] = edit_option($old_db_arr[NEW_OPT], 'use_html', ($if_use_html == 'yes') ? 1 : 0);
+                    else $old_db_arr[NEW_OPT] = str_replace("\n", "", $old_db_arr[NEW_OPT]);
+
+                    fwrite ($new_db, "$old_db_arr[0]|$old_db_arr[1]|$title|$short_story|$full_story|$editavatar|$nice_category|$old_db_arr[7]|$more|$old_db_arr[9]|\n");
                     $okchanges = true;
-                    $more_fields = join(';', $more);
-                    fwrite ($new_db, "$old_db_arr[0]|$old_db_arr[1]|$title|$short_story|$full_story|$editavatar|$nice_category|$old_db_arr[7]|$more_fields\n");
                 }
                 else
                 {
                     $okdeleted  = true;
-                    $all_file   = file($com_file);
-                    $new_com    = fopen($com_file,"w");
 
-                    foreach ($all_file as $line)
+                    // For postponed don't delete comment: it not exists
+                    if ( $source != 'postponed' )
                     {
-                        $line_arr = explode("|>|", $line);
-                        if ( $line_arr[0] == $id)
-                             $okdelcom = true;
-                        else fwrite($new_com, $line);
+                        $all_file   = file($com_file);
+                        $new_com    = fopen($com_file,"w");
+
+                        foreach ($all_file as $line)
+                        {
+                            $line_arr = explode("|>|", $line);
+                            if ( $line_arr[0] == $id )
+                                 $okdelcom = true;
+                            else fwrite($new_com, $line);
+                        }
+                        fclose($new_com);
                     }
-                    fclose($new_com);
+                    else $okdelcom = true;
                 }
             }
             else
@@ -675,7 +701,7 @@ elseif ($action == "doeditnews")
 
     // Show messages
     if ($no_permission)
-        msg("error", lang("No Access"), lang("You don't have access for this action"), "$PHP_SELF?mod=editnews&action=list");
+        msg("error", lang("No Access"), lang("You don't have access for this action"), '#GOBACK');
 
     if ($okdeleted)
     {
@@ -698,8 +724,7 @@ elseif ($action == "doeditnews")
 
         relocation("$PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
     }
-
-    else msg("error", LANG_ERROR_TITLE, lang("The news item can not be found or there is an error with the news database file."));
+    else msg("error", LANG_ERROR_TITLE, lang("The news item can not be found or there is an error with the news database file."), '#GOBACK');
 }
 elseif ($action == 'move')
 {
@@ -742,5 +767,6 @@ elseif ($action == 'move')
     fclose($w);
 
     // Redirect after move
-    relocation( PHP_SELF.build_uri('mod,action,source', array('editnews','list',$source), false) );
+    $URL = build_uri('mod,action,id,source,start_from,news_per_page,category,author,ord_title,ord_date', array('editnews','list',$item_db[0],$source,$start_from,$news_per_page,$category,$author,$ord_title,$ord_date), false);
+    relocation( PHP_SELF.$URL, false );
 }
