@@ -6,9 +6,9 @@ this variable CuteNews won't display any result on the place where you use $stat
 Here is the correct code of the above example with the headlines and news:
 <div class="code">&lt;?PHP<br>
     <u>Our Latest 5 Headlines</u>:<br>
-    \$static = TRUE;<br>
-    \$number = "5";<br>
-    \$template = "Headlines";<br>
+    $static = TRUE;<br>
+    $number = "5";<br>
+    $template = "Headlines";<br>
     include("path/to/show_news.php");<br>
     <br>
     <u>The News</u><br>
@@ -16,5 +16,5 @@ Here is the correct code of the above example with the headlines and news:
     ?&gt;</div>
 Now When you click on a headline it will be displayed on the place of the other news and the
 list with the latest 5 headlines will still be showed.<br><br>
-Make some test with <b>\$static = TRUE;</b> yourself to understand how it works exactly and how powerful
+Make some test with <b>$static = TRUE;</b> yourself to understand how it works exactly and how powerful
 it can be.

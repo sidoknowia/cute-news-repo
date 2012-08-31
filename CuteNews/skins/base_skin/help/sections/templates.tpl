@@ -11,6 +11,6 @@ text area. One very common and easy tag is <b>{title}</b>, wherever you put this
 You can have more than one template, this is useful if you want to include the news on different pages of your site with different look of the news.<br>
 After creating more templates you must use specific code when including news to indicate whit which template the news to be shown.<br>
 example code:<div class="code">&lt;?PHP<br>
-    \$template = "my_test_template";<br>include("path/to/show_news.php");<br>
+    $template = "my_test_template";<br>include("path/to/show_news.php");<br>
     ?&gt;</div>With the above code, all news will be showed using the my_test_template that you have created yourself.
 if you don't specify what template to use, all news will use Default template which can not be deleted.

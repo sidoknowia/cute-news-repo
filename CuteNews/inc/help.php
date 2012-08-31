@@ -13,6 +13,7 @@ else
 {
 
     echoheader("question", "Help Documentation");
+
     echo "<style type=\"text/css\">
         <!--
         .code {
@@ -22,12 +23,9 @@ else
                 padding:4px;
                 background:#FBFFFF;
         }
-    h1 {
+        h1 {
                 background-color : #EAF0F4;
-                border-bottom : #000000 1px solid;
-                border-top : #000000 1px solid;
-                border-left : #000000 1px solid;
-
+                border : #000000 1px solid;
                 color : #000000;
                 font-family : Tahoma, Verdana, Arial, Helvetica, sans-serif;
                 font-size : 15px;
@@ -38,12 +36,18 @@ else
                 padding-top : 5px;
                 text-decoration : none;
         }
+        td.r { font-weight: bold; text-align: right; }
         -->
         </style>";
-    foreach ($help_sections as $help_section){
-            echo"$help_section<BR><br>";
+
+    $help_section = false;
+    $sections = read_dir(SERVDIR.SKIN.'/help/sections');
+    foreach ($sections as $v)
+    {
+        $help_section .= proc_tpl( str_replace('.tpl', '', str_replace(SKIN.'/', '', $v)) );
     }
 
-        echofooter();
+    echo $help_section;
+    echofooter();
 }
 ?>

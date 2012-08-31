@@ -290,45 +290,16 @@ if ($action == "list")
         }
     }
 
-    echo proc_tpl('editnews/list/entries',
-                  array('entries_showed'    => $entries_showed,
-                        'entries'           => $entries,
-                        'npp_nav'           => $npp_nav,
-                        'source'            => $source,
-                        'do_action'         => $do_action,
-                        'CSRF'              => $CSRF
-                  ),
-                  array('ENTRIES_SHOWED' => $entries_showed)
-                  );
-    
+    echo proc_tpl('editnews/list/entries', array(), array('ENTRIES_SHOWED' => $entries_showed));
     echofooter();
-    
 }
 // *********************************************************************************************************************
 // Edit News Article
 // *********************************************************************************************************************
 elseif ($action == "editnews")
 {
-    // Show The Article for Editing
-    if ($source == "")
-    {
-        $all_db = file(SERVDIR."/cdata/news.txt");
-    }
-    elseif ($source == "postponed")
-    {
-        $all_db = file(SERVDIR."/cdata/postponed_news.txt");
-    }
-    elseif ($source == "unapproved")
-    {
-        $all_db = file(SERVDIR."/cdata/unapproved_news.txt");
-    }
-    else
-    {
-        $db = SERVDIR."/cdata/archives/".$source.".news.arch";
-        if ( file_exists($db) )
-             $all_db = file($db);
-        else $all_db = file(SERVDIR."/cdata/news.txt");
-    }
+    list ($news_file, $com_file) = detect_source($source);
+    $all_db = file($news_file);
 
     // Check for exists news ID
     $found = FALSE;
@@ -388,7 +359,7 @@ elseif ($action == "editnews")
     if ( count($cat_lines) > 0)
     {
         $lines_html = false;
-        foreach($cat_lines as $single_line)
+        foreach ($cat_lines as $single_line)
         {
             $cat_arr = explode("|", $single_line);
 
@@ -412,7 +383,7 @@ elseif ($action == "editnews")
     else $all_comments_db = file(SERVDIR."/cdata/archives/{$source}.comments.arch");
 
     $found_newsid = false;
-    foreach($all_comments_db as $comment_line)
+    foreach ($all_comments_db as $comment_line)
     {
         $comment_line = trim($comment_line);
         $comments_arr = explode("|>|",$comment_line);

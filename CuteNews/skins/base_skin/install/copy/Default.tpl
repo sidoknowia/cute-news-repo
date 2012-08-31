@@ -57,8 +57,7 @@ $template_form = <<<HTML
       <td colspan="2">
       <textarea cols="40" rows="6" id=commentsbox name="comments"></textarea><br />
       <input type="submit" name="submit" value="Add My Comment">
-      <input type=checkbox name=CNremember  id=CNremember value=1><label for=CNremember> Remember Me</label> |
-  <a href="javascript:CNforget();">Forget Me</a>
+      {remember_me}
       </td>
     </tr>
   </table>

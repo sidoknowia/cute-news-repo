@@ -168,7 +168,7 @@
     // Remember and Forget for unregistered only
     $remember_form = getpart('remember_me');
     if ($member_db) $remember_form = getpart('logged_as_member');
-    if ($_COOKIE['CNname']) $remember_form = getpart('forget_me');
+    elseif ($_COOKIE['CNname']) $remember_form = getpart('forget_me');
 
     $gduse         = function_exists('imagecreatetruecolor')? 0 : 1;
     $captcha_form  = $config_use_captcha && $captcha_enabled ? ( proc_tpl('captcha_comments', array('cutepath' => $config_http_script_dir ), array('TEXTCAPTCHA' => $gduse) ) ) : false;
