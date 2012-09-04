@@ -48,8 +48,7 @@ if ($action == "add")
 // ********************************************************************************
 elseif ($action == "remove")
 {
-    CSRFCheck();
-    if(!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
+    if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");
@@ -147,7 +146,7 @@ foreach($all_cats as $cat_line)
 
     $result .= "</td> <td $bg align=center>
                     <a href=\"$PHP_SELF?mod=categories&action=edit&amp;catid=$cat_arr[0]\">[".lang('edit')."]</a>
-                    <a href=\"$PHP_SELF?mod=categories&action=remove&amp;catid=$cat_arr[0]&amp;csrf_code=$CSRF\">[".lang('delete')."]</a></td> </tr>";
+                    <a href=\"$PHP_SELF?mod=categories&action=remove&amp;catid=$cat_arr[0]\">[".lang('delete')."]</a></td> </tr>";
 
     $count_categories ++;
 }

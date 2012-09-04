@@ -781,6 +781,22 @@ function hesc($html)
     return $html;
 }
 
+// Make category icons
+function caticon( $cats, $cat_icon, $cat )
+{
+    $cats = trim($cats);
+    if (empty($cats)) return false;
+
+    $result = false;
+    foreach ( explode(',', $cats) as $cid )
+    {
+        if ($cat_icon[$cid])
+            $result .= getpart( 'category_icon', array( $cat[ $cid ], $cat_icon[$cid] ) );
+    }
+
+    return $result;
+}
+
 // Short Story or fullstory replacer -----------------------------------------------------------------------------------
 function template_replacer_news($news_arr, $output)
 {
@@ -808,12 +824,9 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{short-story}",     hesc($news_arr[NEW_SHORT]), $output);
     $output      = str_replace("{full-story}",      hesc($news_arr[NEW_FULL]), $output);
 
-    // Article parameters
-    $caticon     = $cat[ $news_arr[NEW_CAT] ];
-
     // @TODO Page Views parameter
     $output      = str_replace("{page-views}",      false, $output);
-    $output      = str_replace("{php-self}",        $PHP_SELF, $output);
+    $output      = str_replace("{phpself}",         $PHP_SELF, $output);
     $output      = str_replace("{index-link}",      '<a href="'.$PHP_SELF.'">'.lang('Go back').'</a>', $output);
     $output      = str_replace("{back-previous}",   '<a href="javascript:history.go(-1)">Go back</a>', $output);
     $output      = str_replace("{cute-http-path}",  $config_http_script_dir, $output);
@@ -821,7 +834,7 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{category-id}",     $news_arr[NEW_CAT], $output);
     $output      = str_replace("{comments-num}",    countComments($news_arr[NEW_ID], $archive), $output);
     $output      = str_replace("{archive-id}",      $archive, $output);
-    $output      = str_replace("{category-icon}",   $cat_icon[ $news_arr[NEW_CAT] ] ? '<img style="border: none;" alt="'.$caticon.' icon" src="'.$cat_icon[ $news_arr[NEW_CAT] ].'" />' : '', $output);
+    $output      = str_replace("{category-icon}",   caticon( $news_arr[NEW_CAT], $cat_icon, $cat ), $output);
     $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;" />' : '', $output);
 
     // Mail Exist in mailist

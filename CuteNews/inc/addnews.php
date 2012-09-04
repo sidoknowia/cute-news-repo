@@ -15,11 +15,203 @@ if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor') ) $us
 // ---------------------------------------------------------------------------------------------------------------------
 if ($action == "addnews")
 {
+
+    $error_messages = false;
+
+    // ********************************************************************************
+    // Do add News to news.txt
+    // ********************************************************************************
+    if ($subaction == 'doaddnews')
+    {
+        // Definition
+        $pack = $options = false;
+
+        // Format our categories variable
+        if ( is_array($category) )
+        {
+            // User has selected multiple categories
+            $nice_category = array();
+            $ccount = 0;
+
+            foreach ($category as $ckey => $cvalue)
+            {
+                if ( !in_array($cvalue, $allowed_cats) and isset($cat[$cvalue]) )
+                     msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+
+                $nice_category[] = $cvalue;
+            }
+            $nice_category = implode(',', $nice_category);
+        }
+        else
+        {
+            // Single or Not category
+            // don't format $nice_cats because we have not selected any.
+            if ( $category && !in_array($category, $allowed_cats) and isset($cat[$category]) )
+                 msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+
+            $nice_category = $category;
+        }
+
+        // --------------------------------------------------------------
+        if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST or $postpone_draft == "draft")
+        {
+            // if the user is Journalist, add the article as unapproved
+            $decide_news_file       = SERVDIR."/cdata/unapproved_news.txt";
+            $added_time             = time() + $config_date_adjust*60;
+            $postpone               = false;
+            $unapproved_status_msg  = lang("The article was marked as Unapproved!");
+        }
+        elseif ($postpone_draft == "postpone")
+        {
+            if ( !preg_match("~^[0-9]{1,}$~", $from_date_hour) or !preg_match("~^[0-9]{1,}$~", $from_date_minutes) )
+                $error_messages .= getpart('addnews_err', array( lang("You want to add a postponed article, but the hour format is invalid.") ));
+
+            $postpone          = true;
+            $added_time        = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60;
+            $decide_news_file  = SERVDIR."/cdata/postponed_news.txt";
+        }
+        else
+        {
+            $postpone          = false;
+            $added_time        = time() + $config_date_adjust*60;
+            $decide_news_file  = SERVDIR."/cdata/news.txt";
+        }
+
+        // HTML saved if force or use wysiwig
+        if ($if_use_html == "yes" || $use_wysiwyg)
+        {
+            $use_html = true;
+            $options = edit_option($options, 'use_html', true);
+        }
+
+        $full_story  = replace_news("add", $full_story, $use_html);
+        $short_story = replace_news("add", $short_story, $use_html);
+        $title       = replace_news("add", $title, false); // HTML in title is not allowed
+
+        // Check optional fields
+        $optfields = array();
+        foreach ($cfg['more_fields'] as $i => $v)
+        {
+            if ($v[0] == '&' && $_REQUEST[$i] == false)
+                $optfields[] = substr($v, 1);
+        }
+
+        // Replace code ----------------------------------------------------------------------------------------------------
+        if (count($optfields))
+            $error_messages .= getpart('addnews_err', array( lang('Some fields can not be blank').': '.implode(', ', $optfields) ));
+
+        if (trim($title) == false)
+            $error_messages .= getpart('addnews_err', array( lang("The title can not be blank") ));
+
+        if (trim($short_story) == false)
+            $error_messages .= getpart('addnews_err', array( lang("The story can not be blank") ));
+
+        if ( $member_db[UDB_CBYEMAIL] == 1)
+            $added_by_email = $member_db[UDB_EMAIL];
+        else $added_by_email = "none";
+
+        // avatar check
+        if ($manual_avatar)
+        {
+            $manual_avatar = check_avatar($manual_avatar);
+            if ($manual_avatar == false)
+                $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!') ));
+        }
+
+        // Only without errors -----------------------------------------------------------------------------------------
+        if ($error_messages == false)
+        {
+            // Make unique time, just for draft/normal: not postponed
+            if ($postpone == false)
+            {
+                $added_time = time();
+                if ( file_exists (SERVDIR.'/cdata/newsid.txt') )
+                    $added_time = join('', file(SERVDIR.'/cdata/newsid.txt'));
+
+                if (time() <= $added_time) $added_time++;
+                else $added_time = time();
+
+                $w = fopen(SERVDIR.'/cdata/newsid.txt', 'w');
+                fwrite($w, $added_time);
+                fclose($w);
+            }
+
+            // Additional fields ---
+            foreach ($cfg['more_fields'] as $i => $v) $pack = edit_option($pack, $i, $_REQUEST[$i]);
+
+            // Save The News Article In Active_News_File
+            $all_db         = file($decide_news_file);
+            $news_file      = fopen($decide_news_file, "w");
+            flock($news_file, LOCK_EX);
+
+            $has_added = false;
+            $add_line  = "$added_time|$member_db[2]|$title|$short_story|$full_story|$manual_avatar|$nice_category||$pack|$options|\n";
+            foreach ($all_db as $line)
+            {
+                list ($ID) = explode("|", $line);
+
+                // Add one
+                if ($ID <= time() && $has_added == false)
+                {
+                    fwrite($news_file, $add_line);
+                    $has_added = true;
+                }
+                fwrite($news_file, $line);
+            }
+
+            // In any case add this news
+            if ($has_added == false) fwrite($news_file, $add_line);
+
+            flock($news_file, LOCK_UN);
+            fclose($news_file);
+
+            // Add Blank Comment In The Active_Comments_File --- only for active/draft news
+            if ($postpone_draft != "postpone")
+            {
+                $old_com_db = file(SERVDIR."/cdata/comments.txt");
+                $new_com_db = fopen(SERVDIR."/cdata/comments.txt", "w");
+                flock($new_com_db, LOCK_EX);
+                fwrite($new_com_db, "$added_time|>|\n");
+                foreach ($old_com_db as $line) fwrite($new_com_db, $line);
+                flock($new_com_db, LOCK_UN);
+                fclose($new_com_db);
+            }
+
+            // Increase By 1 The Number of Written News for Current User
+            $member_db[UDB_COUNT]++;
+            edit_key($username, $member_db, DB_USERS);
+
+            // Do backup news (x2 disk space)
+            if ($config_backup_news == 'yes')
+                copy($decide_news_file, $decide_news_file.'.bak');
+
+            // Notifications
+            if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST)
+            {
+                //user is journalist and the article needs to be approved, Notify !!!
+                if ($config_notify_unapproved == "yes" and $config_notify_status == "active")
+                {
+                    send_mail
+                    (
+                        $config_notify_email,
+                        lang("CuteNews - Unapproved article was Added"),
+                        str_replace( array('%1','%2'), array($member_db[UDB_NAME], $title), 'The user %1 (journalist) posted article %2 which needs first to be Approved')
+                    );
+                }
+            }
+
+            if  ($postpone)
+                 msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" Y-m-d H:i:s", $added_time), '#GOBACK');
+            else msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
+        }
+    }
+
+    // --------------- show add news form -------------------
     $CSRF = CSRFMake();
     echoheader("addnews", lang("Add News"));
     
     $short_story_id = 'short_story';
-    $full_story_id = 'full_story';
+    $full_story_id  = 'full_story';
 
     $_cat_html = false;
     $_multi_cat_html = false;
@@ -37,9 +229,10 @@ if ($action == "addnews")
 
     foreach ($cfg['more_fields'] as $i => $v)
     {
+        $af = isset($_POST[$i]) ? $_POST[$i] : false;
         if ( $v[0] == '&' )
-             $xfields[] = array( $i, substr($v,1), '(optional)' );
-        else $xfields[] = array( $i, $v, '<span style="color: red;">*</span> '. lang('required','news') );
+             $xfields[] = array( $i, substr($v,1), '<span style="color: red;">*</span> '. lang('required','news'), $af );
+        else $xfields[] = array( $i, $v, '' ,$af );
     }
 
     if (count($cat_lines) > 0)
@@ -72,15 +265,17 @@ if ($action == "addnews")
     $CKEDITOR_Settings = hook('CKEDITOR_Settings', false);
     $CKEDITOR_SetsName = hook('CKEDITOR_SetsName', 'settings');
 
+    // Edit news not replace fields
+    $title       = htmlspecialchars( $_POST['title'] );
+    $short_story = htmlspecialchars( $_POST['short_story'] );
+    $full_story  = htmlspecialchars( $_POST['full_story'] );
+
     echo proc_tpl
     (
             'addnews/'.$tpl,
             array
             (
                 'member_db8'             => $member_db[UDB_AVATAR],
-                'use_wysiwyg'            => $use_wysiwyg,
-                'short_story_id'         => $short_story_id,
-                'full_story_id'          => $full_story_id,
                 'cat_html'               => $_cat_html,
                 'multi_cat_html'         => $_multi_cat_html,
                 'insertsmiles'           => insertSmilies($short_story_id, 4, true, $use_wysiwyg),
@@ -90,8 +285,6 @@ if ($action == "addnews")
                 'datey'                  => $_dateY,
                 'dateh'                  => $_dateH,
                 'datei'                  => $_dateI,
-                'xfields'                => $xfields,
-                'CSRF'                   => $CSRF
             ),
             array
             (
@@ -102,184 +295,4 @@ if ($action == "addnews")
     );
 
     echofooter();
-}
-// ********************************************************************************
-// Do add News to news.txt
-// ********************************************************************************
-elseif($action == "doaddnews")
-{
-    // Definition
-    $pack = $options = false;
-
-    // Format our categories variable
-    if ( is_array($category) )
-    {
-        // User has selected multiple categories
-        $nice_category = array();
-        $ccount = 0;
-
-        foreach ($category as $ckey => $cvalue)
-        {
-            if ( !in_array($cvalue, $allowed_cats) ) msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
-            $nice_category[] = $cvalue;
-        }
-        $nice_category = implode(',', $nice_category);
-    }
-    else
-    {
-        // Single or Not category
-        // don't format $nice_cats because we have not selected any.
-        if ( $category && !in_array($category, $allowed_cats) ) msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
-        $nice_category = $category;
-    }
-
-    // --------------------------------------------------------------
-    if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST or $postpone_draft == "draft")
-    {
-        // if the user is Journalist, add the article as unapproved
-        $decide_news_file       = SERVDIR."/cdata/unapproved_news.txt";
-        $added_time             = time() + $config_date_adjust*60;
-        $postpone               = false;
-        $unapproved_status_msg  = lang("The article was marked as Unapproved!");
-    }
-    elseif ($postpone_draft == "postpone")
-    {
-         if( !preg_match("~^[0-9]{1,}$~", $from_date_hour) or !preg_match("~^[0-9]{1,}$~", $from_date_minutes) )
-             msg("error", LANG_ERROR_TITLE, lang("You want to add a postponed article, but the hour format is invalid."), "#GOBACK");
-
-         $postpone          = true;
-         $added_time        = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60;
-         $decide_news_file  = SERVDIR."/cdata/postponed_news.txt";
-    }
-    else
-    {
-         $postpone          = false;
-         $added_time        = time() + $config_date_adjust*60;
-         $decide_news_file  = SERVDIR."/cdata/news.txt";
-    }
-
-    // HTML saved if force or use wysiwig
-    if ($if_use_html == "yes" || $use_wysiwyg)
-    {
-        $use_html = true;
-        $options = edit_option($options, 'use_html', true);
-    }
-
-    $full_story  = replace_news("add", $full_story, $use_html);
-    $short_story = replace_news("add", $short_story, $use_html);
-    $title       = replace_news("add", $title, false); // HTML in title is not allowed
-
-    // Check optional fields
-    $optfields = array();
-    foreach ($cfg['more_fields'] as $i => $v)
-    {
-        if ($v[0] != '&' && $_REQUEST[$i] == false)
-            $optfields[] = $v;
-    }
-
-    // Replace code ----------------------------------------------------------------------------------------------------
-    if (count($optfields))
-        msg('error', LANG_ERROR_TITLE, lang('Some fields can not be blank').': '.implode(', ', $optfields), "#GOBACK");
-
-    if (trim($title) == false)
-        msg("error", LANG_ERROR_TITLE, lang("The title can not be blank"), "#GOBACK");
-
-    if (trim($short_story) == false)
-        msg("error", LANG_ERROR_TITLE, lang("The story can not be blank"), "#GOBACK");
-
-    if ( $member_db[UDB_CBYEMAIL] == 1)
-         $added_by_email = $member_db[UDB_EMAIL];
-    else $added_by_email = "none";
-
-    // avatar check
-    if ($manual_avatar)
-    {
-        $manual_avatar = check_avatar($manual_avatar);
-        if ($manual_avatar == false)
-            msg('error', LANG_ERROR_TITLE, lang('Avatar not uploaded!'), '#GOBACK');
-    }
-
-    // Make unique time, just for draft/normal: not postponed
-    if ($postpone == false)
-    {
-        $added_time = time();
-        if ( file_exists (SERVDIR.'/cdata/newsid.txt') )
-             $added_time = join('', file(SERVDIR.'/cdata/newsid.txt'));
-
-        if (time() <= $added_time) $added_time++;
-        else $added_time = time();
-
-        $w = fopen(SERVDIR.'/cdata/newsid.txt', 'w');
-        fwrite($w, $added_time);
-        fclose($w);
-    }
-
-    // Additional fields ---
-    foreach ($cfg['more_fields'] as $i => $v) $pack = edit_option($pack, $i, $_REQUEST[$i]);
-
-    // Save The News Article In Active_News_File
-    $all_db         = file($decide_news_file);
-    $news_file      = fopen($decide_news_file, "w");
-    flock($news_file, LOCK_EX);
-
-    $has_added = false;
-    $add_line  = "$added_time|$member_db[2]|$title|$short_story|$full_story|$manual_avatar|$nice_category||$pack|$options|\n";
-    foreach ($all_db as $line)
-    {
-        list ($ID) = explode("|", $line);
-
-        // Add one
-        if ($ID <= time() && $has_added == false)
-        {
-            fwrite($news_file, $add_line);
-            $has_added = true;
-        }
-        fwrite($news_file, $line);
-    }
-
-    // In any case add this news
-    if ($has_added == false) fwrite($news_file, $add_line);
-
-    flock($news_file, LOCK_UN);
-    fclose($news_file);
-
-    // Add Blank Comment In The Active_Comments_File --- only for active/draft news
-    if ($postpone_draft != "postpone")
-    {
-        $old_com_db = file(SERVDIR."/cdata/comments.txt");
-        $new_com_db = fopen(SERVDIR."/cdata/comments.txt", "w");
-        flock($new_com_db, LOCK_EX);
-        fwrite($new_com_db, "$added_time|>|\n");
-        foreach ($old_com_db as $line) fwrite($new_com_db, $line);
-        flock($new_com_db, LOCK_UN);
-        fclose($new_com_db);
-    }
-
-    // Increase By 1 The Number of Written News for Current User
-    $member_db[UDB_COUNT]++;
-    edit_key($username, $member_db, DB_USERS);
-
-    // Do backup news (x2 disk space)
-    if ($config_backup_news == 'yes')
-        copy($decide_news_file, $decide_news_file.'.bak');
-
-    // Notifications
-    if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST)
-    {
-        //user is journalist and the article needs to be approved, Notify !!!
-        if ($config_notify_unapproved == "yes" and $config_notify_status == "active")
-        {
-            send_mail
-            (
-                $config_notify_email,
-                lang("CuteNews - Unapproved article was Added"),
-                str_replace( array('%1','%2'), array($member_db[UDB_NAME], $title), 'The user %1 (journalist) posted article %2 which needs first to be Approved')
-            );
-        }
-    }
-
-    if  ($postpone)
-         msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" Y-m-d H:i:s", $added_time), '#GOBACK');
-    else msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
-
 }

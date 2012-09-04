@@ -38,7 +38,7 @@ if ($action == "list")
         // Check access user for category
         if ( !empty($item_db[NEW_CAT]) )
              foreach (explode(',', $raw_arr[NEW_CAT]) as $all_this_cat)
-                if ( !in_array($all_this_cat, $allowed_cats) )
+                if ( !in_array($all_this_cat, $allowed_cats) and isset($cat[$all_this_cat]) )
                      continue;
 
         // If author is present, but author not match
@@ -336,7 +336,7 @@ elseif ($action == "editnews")
         $all_these_cats = explode(',', $item_db[NEW_CAT]);
         foreach ($all_these_cats as $all_this_cat)
         {
-            if ( !in_array($all_this_cat, $allowed_cats) )
+            if ( !in_array($all_this_cat, $allowed_cats) and isset($cat[$all_this_cat]) )
                  msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."), '#GOBACK');
         }
     }
@@ -462,8 +462,8 @@ elseif ($action == "editnews")
     {
         $af = isset($article[$i]) ? $article[$i] : false;
         if ( $v[0] == '&' )
-             $xfields[] = array( $i, substr($v,1), '(optional)', $af );
-        else $xfields[] = array( $i, $v, '<span style="color: red;">*</span> '. lang('required','news'), $af );
+             $xfields[] = array( $i, substr($v,1), '<span style="color: red;">*</span> '. lang('required','news'), $af );
+        else $xfields[] = array( $i, $v, '', $af );
     }
 
     $options = options_extract($item_db[NEW_OPT]);
@@ -533,7 +533,9 @@ elseif ($action == "doeditnews")
         $nice_category = '';
         foreach ($category as $ckey => $cvalue)
         {
-            if ( !in_array($cvalue, $allowed_cats) ) msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+            if ( !in_array($cvalue, $allowed_cats) and isset($cat[$cvalue]) )
+                 msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+
             if ( $ccount == 0 ) $nice_category = $cvalue;
             else $nice_category = $nice_category.','.$cvalue;
             $ccount++;
@@ -542,7 +544,8 @@ elseif ($action == "doeditnews")
     else
     {
         // Not in a category: don't format $nice_cats because we have not selected any.
-        if ( $category != "" and isset($category) and !in_array($category, $allowed_cats) ) die(lang('not allowed category'));
+        if ( !in_array($category, $allowed_cats) and isset($cat[$category]) )
+             msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
     }
 
     // Check optional fields
@@ -552,8 +555,8 @@ elseif ($action == "doeditnews")
         $more = false;
         foreach ($cfg['more_fields'] as $i => $v)
         {
-            if ($v[0] != '&' && $_REQUEST[$i] == false)
-                 $optfields[] = $v;
+            if ($v[0] == '&' && $_REQUEST[$i] == false)
+                 $optfields[] = substr($v, 1);
             else $more = edit_option($more, $i, $_REQUEST[$i]);
         }
     }

@@ -1,23 +1,25 @@
 <script src="core/ckeditor/ckeditor.js"></script>
 <script type="text/javascript"> function submitForm() { return true; } </script>
 
+{$error_messages}
 <form onSubmit="return submitForm();"  method=post name=addnews action="{$PHP_SELF}">
 
     <input type=hidden name=mod value=addnews>
-    <input type=hidden name=action value=doaddnews>
+    <input type=hidden name="action" value="addnews">
+    <input type=hidden name="subaction" value="doaddnews">
     <input type=hidden name="csrf_code" value="{$CSRF}" />
 
     <table border=0 cellpadding=2 cellspacing=0 width="100%" >
 
     <tr>
         <td align="right" width="75">Title</td>
-        <td><input type=text style="width: 675px;" name="title" tabindex=1></td>
+        <td><input type=text style="width: 675px;" name="title" value="{$title}" tabindex=1></td>
     </tr>
 
     {foreach from=xfields}
         <tr>
             <td align="right">{$xfields.1}</td>
-            <td><input tabindex=2 type=text size="42" value="" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
+            <td><input tabindex=2 type=text size="42" value="{$xfields.3}" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
         </tr>
     {/foreach}
 
@@ -50,14 +52,14 @@
     <!-- Short story -->
     <tr>
         <td align="right" valign="top"><br />Short Story</td>
-        <td> <textarea style="width: 680px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=4></textarea> </td>
+        <td> <textarea style="width: 680px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=4>{$short_story}</textarea> </td>
     </tr>
 
     <!-- Full story -->
     <tr id='full-story' style='display: none;'>
 
         <td align="right" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
-        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;"></textarea> </td>
+        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;">{$full_story}</textarea> </td>
     </tr>
 
     <tr>

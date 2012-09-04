@@ -1,20 +1,23 @@
+{$error_messages}
+
 <form method=post name=addnews action="{$PHP_SELF}">
 
     <input type=hidden name="mod" value="addnews">
-    <input type=hidden name="action" value="doaddnews">
+    <input type=hidden name="action" value="addnews">
+    <input type=hidden name="subaction" value="doaddnews">
     <input type=hidden name="csrf_code" value="{$CSRF}" />
 
     <table border=0 cellpadding=0 cellspacing=0 width="750" >
 
     <tr>
         <td width="75" align="right">Title&nbsp;</td>
-        <td colspan="2"><input type="text" style="width: 565px;" name="title" tabindex=1></td>
+        <td colspan="2"><input type="text" style="width: 565px;" value="{$title}" name="title" tabindex=1></td>
     </tr>
 
     {foreach from=xfields}
         <tr>
             <td width="75" align="right">{$xfields.1}&nbsp;</td>
-            <td colspan="2"><input tabindex=2 type=text size="42" value="" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
+            <td colspan="2"><input tabindex=2 type=text size="42" value="{$xfields.3}" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
         </tr>
     {/foreach}
 
@@ -48,7 +51,7 @@
     <tr>
         <td width="75" valign="top" align="right"><br/>Short Story&nbsp;</td>
         <td>
-            <textarea style="width: 565px" rows="12" cols="74" id="short_story" name="short_story" tabindex=4></textarea>
+            <textarea style="width: 565px" rows="12" cols="74" id="short_story" name="short_story" tabindex=4>{$short_story}</textarea>
         </td>
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$short_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
@@ -61,7 +64,7 @@
 
         <td width="75" valign="top" align="right"><br />Full Story&nbsp;<br /><span style="font-size:7pt">(optional)</span>&nbsp;</td>
 
-        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:565px;"></textarea> </td>
+        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:565px;">{$full_story}</textarea> </td>
 
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$full_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>

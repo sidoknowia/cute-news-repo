@@ -8,7 +8,7 @@
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
 
     <table width="100%"" cellspacing="0" cellpadding="4">
-        <tr bgcolor="#FFFFE0"><td width="48"  align="center">Remove</td> <td width="48"  align="center">Optional</td> <td>{name}</td> <td>Visible Name</td></tr>
+        <tr bgcolor="#FFFFE0"><td width="48"  align="center">Remove</td> <td width="48"  align="center">Required</td> <td>{name}</td> <td>Visible Name</td></tr>
         {foreach from=xfields}
             <tr>
                 <td align="center"><input type="checkbox" name="remove[{$xfields.0}]" value="Y"></td>

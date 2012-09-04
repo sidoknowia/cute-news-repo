@@ -84,6 +84,15 @@
     {
         $mc_start = microtime(true);
 
+        // Get search range
+        $date_from  = mktime(0, 0, 0, $from_date_month, $from_date_day, $from_date_year);
+        $date_to    = mktime(0, 0, 0, $to_date_month, $to_date_day, $to_date_year);
+
+        /* @TODO New search functional
+        $news = join('', file(SERVDIR.'/cdata/news.txt'));
+        preg_match_all('~^\d+\|.*?\|.*?\|.*'.$story.'.*$~im', $news, $c, PREG_SET_ORDER);
+        */
+
         $exstory = array();
         $optimas = array();
         $countdc = 0;
@@ -95,9 +104,6 @@
             $word = strtolower(preg_replace('~(ies|ing|y|s|es|er|ed)$~','', $v));
             $exstory[$word]++;
         }
-
-        $date_from  = mktime(0, 0, 0, $from_date_month, $from_date_day, $from_date_year);
-        $date_to    = mktime(0, 0, 0, $to_date_month, $to_date_day, $to_date_year);
 
         $story = trim($story);
         $files_arch = array();

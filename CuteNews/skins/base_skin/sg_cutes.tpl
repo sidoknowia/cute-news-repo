@@ -8,3 +8,5 @@ forget_me|<a href="javascript:CNforget();">Forget Me</a>
 logged_as_member|<span style="color: green;">You logged as member</span>
 align_center|<div style="text-align: center;">%1</div>
 forget_me_script|<script type="text/javascript">CNforget();</script>
+addnews_err|<div style="margin: 4px 0 4px 75px; color: red; ">&bull; %1</div>
+category_icon|<img style="border: none; vertical-align: middle; margin: 2px;" alt="%1 icon" src="%2" />
