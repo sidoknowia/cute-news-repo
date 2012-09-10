@@ -297,7 +297,10 @@ function read_tpl($tpl = 'index')
     if (isset($_CACHE['tpl_'.$tpl]))
         return $_CACHE['tpl_'.$tpl];
 
-    $open = SERVDIR.SKIN.'/'.($tpl?$tpl:'default').'.tpl';
+    // Get plugin patch
+    if  ($tpl[0] == '/')
+         $open = SERVDIR.'/cdata/plugins/'.$tpl.'.tpl';
+    else $open = SERVDIR.SKIN.'/'.($tpl?$tpl:'default').'.tpl';
 
     // Try open
     $not_open = false;
@@ -306,8 +309,8 @@ function read_tpl($tpl = 'index')
 
     ob_start();
     fpassthru($r);
-    $ob = ob_get_clean();
     fclose($r);
+    $ob = ob_get_clean();
 
     // cache file
     $_CACHE['tpl_'.$tpl] = $ob;
@@ -329,9 +332,6 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
 
         if (!isset($args[$gi])) $args[$gi] = $gv;
     }
-
-    // retrieve options
-    list ($tpl, $opts) = explode(':', $tpl, 2);
 
     // reading template 
     $d = read_tpl($tpl);
@@ -375,6 +375,23 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
             }
 
             $d = str_replace($v[0], $rpl, $d);
+        }
+    }
+
+    // Catch {if} constructions
+    if ( preg_match_all('~{if\s+(.*?)}(.*?){/if}~is', $d, $rep, PREG_SET_ORDER))
+    {
+        foreach ($rep as $vs)
+        {
+            $var = 0;
+            $vs[1] = trim($vs[1]);
+            if     ($vs[1][0] == '$') $var = $args[ substr($vs[1], 1) ];
+            elseif ($vs[1][1] == '$') $var = $args[ substr($vs[1], 2) ];
+
+            // If boolean logic OK, replace
+            if ($vs[1][0] == '$' && $var)      $d = str_replace($vs[0], $vs[2], $d);
+            elseif ($vs[1][0] == '!' && empty($var)) $d = str_replace($vs[0], $vs[2], $d);
+            else $d = str_replace($vs[0], false, $d);
         }
     }
 
@@ -576,7 +593,7 @@ function send_mail($to, $subject, $message, $hdr = false)
     if (!isset($to)) return false;
     if (!$to) return false;
 
-    $tos = explode(',', $to);
+    $tos = spsep($to);
     $from = 'CuteNews@' . $_SERVER['SERVER_NAME'];
 
     $headers = '';
@@ -599,23 +616,6 @@ function send_mail($to, $subject, $message, $hdr = false)
             mail($v, $subject, $message, $headers) or $mx = true;
             if ($mx) { $log = fopen($pt, 'a'); fwrite($log, $ms); fclose($log); }
         }
-}
-
-// Filtrate necessary data from REQUEST
-function filter_request($allow = '', $order = false)
-{
-    $extr = array();
-    foreach( explode(',', $allow) as $v)
-    {
-        $v = trim($v);
-        if ( empty($_REQUEST[$v]) )
-             $vx = false;
-        else $vx = get_magic_quotes_gpc()? stripslashes($_REQUEST[$v]) : $_REQUEST[$v];
-
-        if ($order) $extr[]   = $vx;
-               else $extr[$v] = $vx;
-    }
-    return $extr;
 }
 
 function exec_time()
@@ -680,17 +680,8 @@ function hook($hook, $args = null)
 {
     global $_HOOKS;
 
-    $id = 0;
-
-    // Direct hooks
-    while (function_exists('hook_'.$hook.'_'.$id))
-    {
-        $args = call_user_func('hook_'.$hook.'_'.$id++, $args);
-        $id++;
-    }
-
     // Plugin hooks
-    if (!empty($_HOOKS[$hook]))
+    if (!empty($_HOOKS[$hook]) && is_array($_HOOKS[$hook]))
         foreach($_HOOKS[$hook] as $hookfunc)
             $args = call_user_func($hookfunc, $args);
 
@@ -734,7 +725,7 @@ function catid2name($thecat)
     global $cat;
 
     $nice = array();
-    $cats = explode(',', $thecat);
+    $cats = spsep($thecat);
     foreach ($cats as $cn) $nice[] = $cat[ trim($cn) ];
     return (implode (', ', $nice));
 }
@@ -778,6 +769,7 @@ function hesc($html)
             if ($disable == 2) $html = str_replace($vs[0], false, $html);
         }
     }
+
     return $html;
 }
 
@@ -788,7 +780,7 @@ function caticon( $cats, $cat_icon, $cat )
     if (empty($cats)) return false;
 
     $result = false;
-    foreach ( explode(',', $cats) as $cid )
+    foreach ( spsep($cats) as $cid )
     {
         if ($cat_icon[$cid])
             $result .= getpart( 'category_icon', array( $cat[ $cid ], $cat_icon[$cid] ) );
@@ -802,12 +794,13 @@ function template_replacer_news($news_arr, $output)
 {
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
-           $config_auto_wrap, $config_full_popup, $config_full_popup_string, $rss_news_include_url,
-           $my_names, $my_start_from, $cat, $action, $cat_icon, $archive, $name_to_nick, $template, $user_query, $member_db,
-           $_SESS, $PHP_SELF;
+           $config_full_popup, $config_full_popup_string, $rss_news_include_url, $my_names, $my_start_from, $cat, $action,
+           $cat_icon, $archive, $name_to_nick, $template, $user_query, $member_db, $_SESS, $PHP_SELF;
 
     // Short Story not exists
-    if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) ) $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
+    if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) )
+        $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
+
     $output      = more_fields($news_arr[NEW_MF], $output);
 
     // Date Formatting [year, month, day, hour, minute, date=$config_timestamp_active]
@@ -817,14 +810,14 @@ function template_replacer_news($news_arr, $output)
     // Replace news content
     $output      = str_replace("{title}",           hesc($news_arr[NEW_TITLE]), $output);
     $output      = str_replace("{author}",          $my_names[$news_arr[NEW_USER]] ? $my_names[$news_arr[NEW_USER]] : $news_arr[NEW_USER], $output);
-    $output      = str_replace("{avatar-url}",      $news_arr[NEW_AVATAR], $output);
-    $output      = str_replace("{category}",        hesc(catid2name($news_arr[NEW_CAT])), $output);
-    $output      = str_replace("{category-url}",    linkedcat($news_arr[NEW_CAT]), $output);
     $output      = str_replace("{author-name}",     hesc($name_to_nick[$news_arr[NEW_USER]]), $output);
     $output      = str_replace("{short-story}",     hesc($news_arr[NEW_SHORT]), $output);
     $output      = str_replace("{full-story}",      hesc($news_arr[NEW_FULL]), $output);
 
-    // @TODO Page Views parameter
+    // Replace system information
+    $output      = str_replace("{avatar-url}",      $news_arr[NEW_AVATAR], $output);
+    $output      = str_replace("{category}",        hesc(catid2name($news_arr[NEW_CAT])), $output);
+    $output      = str_replace("{category-url}",    linkedcat($news_arr[NEW_CAT]), $output);
     $output      = str_replace("{page-views}",      false, $output);
     $output      = str_replace("{phpself}",         $PHP_SELF, $output);
     $output      = str_replace("{index-link}",      '<a href="'.$PHP_SELF.'">'.lang('Go back').'</a>', $output);
@@ -837,57 +830,6 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{category-icon}",   caticon( $news_arr[NEW_CAT], $cat_icon, $cat ), $output);
     $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;" />' : '', $output);
 
-    // Mail Exist in mailist
-    if ( !empty($my_mails[ $news_arr[NEW_USER] ]) )
-         $output = str_replace( array("[mail]", '[/mail]'), array('<a href="mailto:'.$my_mails[ $news_arr[NEW_USER] ].'">', ''), $output);
-    else $output = str_replace( array("[mail]", '[/mail]'), '', $output);
-
-    // By click to comments - popup window
-    if ( $config_comments_popup == "yes" )
-    {
-         $URL = build_uri('subaction,template,id,archive,start_from,ucat', array('showcomments',$template,$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
-         $output = str_replace(array("[com-link]", '[/com-link]'),
-                               array('<a href="#" onclick="window.open(\''.$config_http_script_dir.'/router.php'.$URL.'\', \'_News\', \''.$config_comments_popup_string.'\'); return false;">', '</a>'), $output);
-    }
-    else
-    {
-        $URL = build_uri('subaction,id,archive,start_from,ucat', array('showcomments',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT]));
-        $output = str_replace(array("[com-link]", '[/com-link]'),
-                              array("<a href=\"$PHP_SELF{$URL}\">", '</a>'), $output);
-    }
-
-    // Link to
-    $URL = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[NEW_ID],$archive,$my_start_from,$news_arr[NEW_CAT],$template));
-    $URL .= "&amp;#disqus_thread";
-    if ($user_query) $URL .= $user_query;
-    $output      = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);
-
-    // @TODO Only in active news, not archives
-    $output     = empty($archive) ? str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output) : str_replace("{star-rate}", false, $output);
-
-    // With Action = showheadlines
-    if ($news_arr[NEW_FULL] or $action == "showheadlines")
-    {
-        if ( $config_full_popup == "yes" )
-        {
-             $URL = build_uri('subaction,id,archive,template', array('showfull',$news_arr[0],$archive,$template));
-             $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
-        }
-        else
-        {
-            if ($template == 'Default') $template = false;
-            $URL = $bld = build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[6],$template));
-            if ($user_query) $URL = $PHP_SELF . $URL . ($bld ? '&amp;' : '?') . $user_query;
-            $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
-        }
-
-        $output = str_replace("[/full-link]","</a>", $output);
-    }
-    else
-    {
-        $output = preg_replace('~\[full-link\].*?\[/full-link\]~si', '<!-- no full story-->', $output);
-    }
-
     // in RSS we need the date in specific format
     if ($template == 'rss')
     {
@@ -899,15 +841,66 @@ function template_replacer_news($news_arr, $output)
         $output = str_replace("{date}", date($config_timestamp_active, $news_arr[NEW_ID]), $output);
     }
 
-    // Admin edit for news
+    // Star Rating
+    if ( empty($archive) )
+         $output = str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output);
+    else $output = str_replace("{star-rate}", false, $output);
+
+    // Mail Exist in mailist ---------------------------------------------------- [mail]...[/mail]
+    if ( !empty($my_mails[ $news_arr[NEW_USER] ]) )
+         $output = str_replace( array("[mail]", '[/mail]'), array('<a href="mailto:'.$my_mails[ $news_arr[NEW_USER] ].'">', ''), $output);
+    else $output = str_replace( array("[mail]", '[/mail]'), '', $output);
+
+    // By click to comments - popup window -------------------------------------- [com-link]...[/com-link]
+    if ( $config_comments_popup == "yes" )
+    {
+         $URL    = build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $my_start_from));
+         $output = str_replace(array('[com-link]',
+                                     '[/com-link]'),
+                               array('<a href="#" onclick="window.open(\''.$config_http_script_dir.'/router.php'.$URL.'\', \'News\', \''.$config_comments_popup_string.'\'); return false;">',
+                                     '</a>'), $output);
+    }
+    else
+    {
+        $URL = RWU( 'readcomm', $PHP_SELF . build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $my_start_from)) );
+        $output = str_replace(array("[com-link]", '[/com-link]'), array("<a href=\"$URL\">", '</a>'), $output);
+    }
+
+    // Open link --------------------------------------------------------------- [link]...[/link]
+    $URL     = build_uri('subaction,id,start_from,ucat,archive,template', array('showfull',$news_arr[NEW_ID],$my_start_from,$news_arr[NEW_CAT]));
+    $URL    .= "&amp;#disqus_thread";
+    $output  = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);
+
+    // With Action = showheadlines -------------------------------------------- [full-link]...[/full-link]
+    if ($news_arr[NEW_FULL] or $action == "showheadlines")
+    {
+        if ( $config_full_popup == "yes" )
+        {
+             $URL = build_uri('subaction,id,archive,template', array('showfull',$news_arr[NEW_ID],$archive,$template));
+             $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
+        }
+        else
+        {
+            if ($template == 'Default') $template = false;
+            $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[NEW_CAT],$template)) . "&amp;$user_query" );
+            $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
+        }
+
+        $output = str_replace("[/full-link]", "</a>", $output);
+    }
+    else
+    {
+        $output = preg_replace('~\[full-link\].*?\[/full-link\]~si', '<!-- no full story-->', $output);
+    }
+
+    // Admin can edit for news ------------------------------------------------ [edit]...[/edit]
     $DREdit = false;
-    if (!empty($_SESS['user']))
+    if (empty($_SESS['user']) == false)
     {
         $member_db = bsearch_key($_SESS['user'], DB_USERS);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
-            $source = 0;
-            $url = build_uri('mod,action,id,source,source', array('editnews','editnews',$news_arr[NEW_ID],$source,$archive));
+            $url    = build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
             $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = str_ireplace('[/edit]', '</a>', $output);
             $DREdit = true;
@@ -915,17 +908,7 @@ function template_replacer_news($news_arr, $output)
     }
 
     // If not used, replace [edit]..[/edit]
-    if ($DREdit == false)
-        $output = preg_replace('~\[edit\].*?\[/edit\]~si', '', $output);
-
-    // Star Rating
-    if ( empty($archive) )
-         $output = str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output);
-    else $output = str_replace("{star-rate}", false, $output);
-
-    // Auto Wrapper
-    if ($config_auto_wrap > 40) $auto_wrap = $config_auto_wrap; else $auto_wrap = 40;
-    $output = preg_replace('~(\w{'.$auto_wrap.'})~', "\\1 ", $output);
+    if ($DREdit == false) $output = preg_replace('~\[edit\].*?\[/edit\]~si', '', $output);
 
     $output = hook('template_replacer_news_middle', $output);
     $output = replace_news("show", $output);
@@ -949,7 +932,6 @@ function more_fields($mf, $output)
             $output = str_replace('{'.$a.'}', hesc($b), $output );
         }
     }
-
     return $output;
 }
 
@@ -979,23 +961,12 @@ function add_to_log($username, $action, $try = 3)
     if ( !file_exists($flog) ) return false;
 
     // add to log
-    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m').'.php', 'a') or ($locked = true);
-    if ($locked)
-    {
-        if ($try > 0)
-        {
-            sleep(1);
-            add_to_log($username, $action, $try - 1);
-        }
-        else return false;
-    }
-    else
-    {
-        flock($log, LOCK_EX);
-        fwrite($log, time().'|'.serialize(array('user' => $username, 'action' => $action, 'time' => time(), 'ip' => $_SERVER['REMOTE_ADDR']))."\n");
-        flock($log, LOCK_UN);
-        fclose($log);
-    }
+    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m').'.php', 'a');
+    flock($log, LOCK_EX);
+    fwrite($log, time().'|'.serialize(array('user' => $username, 'action' => $action, 'time' => time(), 'ip' => $_SERVER['REMOTE_ADDR']))."\n");
+    flock($log, LOCK_UN);
+    fclose($log);
+
     return true;
 }
 
@@ -1077,13 +1048,35 @@ function pagination($count, $per = 25, $current = 0, $spread = 5)
 // make full URI (left & right parts)
 function build_uri($left, $right, $html = 1)
 {
-    $URI = array();
-    foreach ((array)explode(',', $left) as $i => $v) if (!empty($right[$i])) $URI[] = urlencode($v).'='.urlencode($right[$i]);
+    $URI = $DDR = array();
+    list ($left, $adds) = explode(':', $left);
 
-    if (empty($URI)) return false;
-    return '?'.implode(($html?'&amp;':'&'), $URI);
+    $ex = spsep($left);
+    $uq = spsep($adds);
+
+    // Main parameters get from
+    if (!empty($left) && is_array($ex)) foreach ($ex as $i => $v)
+    {
+        // Value present in enum
+        if (!empty($right[$i])) $URI[ $v ] = $right[$i];
+
+        // Enum not present, but in GLOBALS is set
+        elseif (!isset($right[$i]) && !empty($GLOBALS[$v])) $URI[$v] = $GLOBALS[$v];
+    }
+
+    // Enum not present, but in GLOBALS is set
+    if (!empty($adds) && is_array($uq))
+        foreach ($uq as $v) if (!empty($GLOBALS[$v])) $URI[ $v ] = $GLOBALS[$v];
+
+    // Encode new query
+    foreach ($URI as $i => $v) $DDR[] = urlencode($i)."=".str_replace('%2C', ',', urlencode($v));
+
+    $DDU = implode(($html?'&amp;':'&'), $DDR);
+    if ($DDU == false) return '?c';
+
+    // Return true link
+    return '?'.$DDU;
 }
-
 
 // Fast masked ban searcher (return found mask and dest mask for IP as ID)
 function ip_mask_check($key, $AIP)
@@ -1201,7 +1194,7 @@ function embedateformat($timestamp, $output)
             if (empty($v[1])) $output = str_replace($v[0], date('F', $timestamp), $output);
             else
             {
-                $monthlist = explode(',', substr($v[1], 1));
+                $monthlist = spsep(substr($v[1], 1));
                 $output = str_replace($v[0], $monthlist[date('n', $timestamp)-1], $output);
             }
     }
@@ -1611,7 +1604,7 @@ function insertSmilies($insert_location, $break_location = FALSE, $admincp = FAL
 
     $i          = 0;
     $output     = false;
-    $smilies    = explode(",", $config_smilies);
+    $smilies    = spsep($config_smilies);
 
     foreach($smilies as $smile)
     {
@@ -1669,7 +1662,7 @@ function replace_comment($way, $sourse)
             "<blockquote><div style=\"font-size: 13px;\">quote:</div><hr style=\"border: 1px solid #ACA899;\" /><div>\\1</div><hr style=\"border: 1px solid #ACA899;\" /></blockquote>",
         );
 
-        $smilies_arr = explode(",", $config_smilies);
+        $smilies_arr = spsep($config_smilies);
         foreach($smilies_arr as $smile)
         {
             $smile      = trim($smile);
@@ -1767,7 +1760,7 @@ function replace_news($way, $sourse, $use_html = true)
             /* 19 */ "\n",
         );
 
-        $smilies_arr = explode(",", $config_smilies);
+        $smilies_arr = spsep($config_smilies);
         foreach ($smilies_arr as $smile)
         {
             $smile = trim($smile);
@@ -1946,7 +1939,7 @@ function make_postponed_date($gstamp = 0)
         else              $_dateM .= "<option value=$i>". date("M", $timestamp) ."</option>";
     }
 
-    for ($i = date('Y'); $i < (date('Y') + 7); $i++)
+    for ($i = 2003; $i < (date('Y') + 4); $i++)
     {
         if ($year == $i) $_dateY .= "<option selected value=$i>$i</option>";
         else             $_dateY .= "<option value=$i>$i</option>";
@@ -1998,6 +1991,31 @@ function relocation($url)
     die();
 }
 
+// Takes content from remote addrs
+function cwget($url)
+{
+    if ( ini_get('allow_url_fopen') )
+    {
+        if (substr(PHP_VERSION, 0, 5) > '4.3.0')
+        {
+            $context = stream_context_create( array('http' => array('method' => 'GET', 'ignore_errors' => true) ) );
+            $r = fopen( $url, 'r', false, $context );
+        }
+        else
+        {
+            $r = fopen( $url, 'r' );
+        }
+
+        ob_start();
+        fpassthru($r);
+        $rd = ob_get_clean();
+        return $rd;
+
+    }
+
+    return false;
+}
+
 // Extract all options
 function options_extract($data)
 {
@@ -2035,7 +2053,9 @@ function edit_option($data, $name, $value)
 
 function getpart($name, $data = array())
 {
-    $parts = str_replace('{$PHP_SELF}', PHP_SELF, read_tpl('sg_cutes'));
+    global $PHP_SELF;
+
+    $parts = str_replace('{$PHP_SELF}', $PHP_SELF, read_tpl('micro'));
     if ( preg_match('~^'.$name.'\|(.*)$~m', $parts, $match) )
     {
         foreach ($data as $i => $v) $match[1] = str_replace('%'.($i+1), $v, $match[1]);
@@ -2056,12 +2076,11 @@ function make_order($by, $params, $data)
     return ' <a '.$colorize.' href="'.PHP_SELF.build_uri($params, $data).'">'.(($ordby == 'desc')? '&#x25B4;' : '&#x25BE;').'</a>';
 }
 
-
 /* === HELPERS === */
 function linkedcat($catids)
 {
     $cat_url        = array();
-    $art_cat_arr    = explode(",", $catids);
+    $art_cat_arr    = spsep($catids);
     if (count($art_cat_arr) == 1)
     {
         return "<a href='".PHP_SELF."?cid=".$catids."'>".catid2name($catids)."</a>";
@@ -2075,16 +2094,62 @@ function linkedcat($catids)
     }
 }
 
-// duck flying
 function bd_config($str) { return base64_decode($str); }
-
 function spack($s)   { return str_replace(array('{','|',';','=',"\n"), array("{I}","{kv}","{eq}","{eol}"), $s); }
 function sunpack($s) { return str_replace(array("{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $s); }
-
+function preg_sanitize($s) { return str_replace(array('.', '|', '[', ']', '*', '?'), array('\.', '\|', '\[', '\]', '\*', '\?'), $s); }
 function clbTruncate($match) { return word_truncate($match[2], $match[1]);  }
 function word_truncate($data, $length = 75) { return preg_replace('~^(.{'.$length.',}?)\s.*$~', '\\1\\2...', $data); }
-
 function check_email($email) { return (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/", $email)); }
+function substru($str, $from, $len) { return preg_replace('#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $from .'}'.'((?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $len .'}).*#s','$1', $str); }
+
+// Manual replacements in URLs --------------
+// $type - apply template
+function RWU($type = 'readmore', $url, $html = true)
+{
+    global $config_use_replacement;
+
+    // Disable to use mod_rewrite ---> it is a safe way
+    if ($config_use_replacement == '0') return $url;
+
+    // get default template
+    $tpl    = $GLOBALS["conf_rw_$type"];
+    $layout = $GLOBALS["conf_rw_{$type}_layout"];
+    $adds   = array();
+
+    // If url contains PHP_SELF and html [&amp;], remove it
+    $url = str_replace( '&amp;', '&', $url );
+    if (preg_match('~.*?\?(.*)$~', $url, $ourl)) $url = $ourl[1];
+
+    // Make parts with replace: if param not present, out it at query string
+    $parts = explode('&', $url);
+    foreach ($parts as $v)
+    {
+        list($c, $s) = explode('=', $v, 2);
+        if (empty($c)) continue;
+
+        /* If in template is %var template, replace it */
+        if (stripos($tpl, '%'.$c) !== false) $tpl = str_ireplace('%'.$c, $s, $tpl);
+
+        /* If in layout variable present key, skip */
+        elseif (!preg_match('~'.$c.'\='.$s.'~i', $layout)) $adds[] = "$c=$s";
+    }
+
+    // Set unused as 0
+    $tpl = preg_replace('~\%\w+~', '0', $tpl);
+
+    if (count($adds)) $tpl .= '?'.implode(($html?'&amp;':'&'), $adds);
+    return $tpl;
+}
+
+// Separate string to array: imporved "explode" function
+function spsep($separated_string, $seps = ',')
+{
+    if (empty($separated_string) ) return array();
+    if (strpos($separated_string, $seps) === false) return array( $separated_string );
+    $ss = preg_split("~$seps~i", $separated_string, -1, PREG_SPLIT_NO_EMPTY);
+    return $ss;
+}
 
 // ------------- CSRF value -------------
 function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
@@ -2101,7 +2166,7 @@ function CSRFCheck($Name = 'U:CSRF', $token = 'csrf_code') /* Check CSRF code  *
     if ($_SESS[ $Name ] != $_REQUEST[$token])
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
-        msg("error", LANG_ERROR_TITLE, "<script type='text/javascript'> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
+        msg("error", lang('Error!'), "<script type='text/javascript'> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
     }
 }
 

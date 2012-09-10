@@ -3,8 +3,9 @@
 // Update check not for commenter
 if ($action == 'check' && $member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
 {
-    $r = fopen('http://cutephp.com/latest/.export.log', 'r');
-    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
+    $statext = cwget('http://cutephp.com/latest/.export.log');
+    $stat    = strlen($statext);
+
     if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
     {
         $my_current_rev = 0;
@@ -12,7 +13,7 @@ if ($action == 'check' && $member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
             include (SERVDIR.'/cdata/log/revision.php');
 
         if  ($my_current_rev < $rev[1] && $my_current_rev)
-            echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
+             echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
         else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest. Check updates in Options > Update Cutenews').'</span>");';
         die();
     }
@@ -24,8 +25,8 @@ if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
 
 if ($action == 'update' )
 {
-    $r = fopen('http://cutephp.com/latest/.export.log', 'r');
-    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
+    $statext = cwget('http://cutephp.com/latest/.export.log');
+    $stat    = strlen($statext);
 
     $w = fopen(SERVDIR.'/cdata/cache/.export.log', 'w');
     fwrite($w, $statext);
@@ -48,12 +49,11 @@ if ($action == 'update' )
 
         echofooter();
     }
-    else msg('error', LANG_ERROR_TITLE, lang('No update: Error while receiving update file'));
+    else msg('error', lang('Error!'), lang('No update: Error while receiving update file'));
 }
 elseif ($action == 'do_update' )
 {
-    $r = fopen(SERVDIR.'/cdata/cache/.export.log', 'r');
-    ob_start(); $stat = fpassthru($r); $statext = ob_get_clean();
+    $statext = cwget(SERVDIR.'/cdata/cache/.export.log');
     $bundle = explode("\n", $statext);
     $proc   = intval( $_GET['proc'] );
 
@@ -82,8 +82,8 @@ elseif ($action == 'do_update' )
 
             if ($name == '.' || $name == false || $name == 'inc/install.php') continue;
 
-            $r = fopen("http://cutephp.com/latest/?cp=".urlencode($name), 'r');
-            ob_start(); fpassthru($r); $data = ob_get_clean();
+            // Receive content
+            $data = cwget("http://cutephp.com/latest/?cp=".urlencode($name));
 
             // Make paths
             $DEST_DIR = SERVDIR;

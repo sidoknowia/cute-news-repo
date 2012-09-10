@@ -2,8 +2,6 @@
 if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", "Access Denied", "You don't have permission for this section");
 
-extract(filter_request('add_ip,add_nick,remove_ip'), EXTR_OVERWRITE);
-
 // ********************************************************************************
 // Add IP
 // ********************************************************************************
@@ -31,7 +29,7 @@ if ($action == "add" or $action == "quickadd")
 elseif($action == "remove")
 {
     if (!$remove_ip)
-        msg("error", LANG_ERROR_TITLE, lang("The IP or nick can not be blank"), '#GOBACK');
+        msg("error", lang('Error!'), lang("The IP or nick can not be blank"), '#GOBACK');
     
     // remove nick or IP
     if (bsearch_key('>'.$remove_ip, DB_BAN))

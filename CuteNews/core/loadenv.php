@@ -1,5 +1,19 @@
 <?php
 
+    // In case if uses MOD-Rewrite, variables must be come from external url
+    if ($config_use_replacement)
+    {
+        $R = $_SERVER['REQUEST_URI'];
+        if (preg_match('~^.*?\?(.*)$~', $_SERVER['REQUEST_URI'], $c ))
+        {
+            foreach ( explode('&', $c[1]) as $cv )
+            {
+                list($k, $v) = explode('=', $cv, 2);
+                if ($k) $_GET[ $k ] = $v;
+            }
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     if (isset($_COOKIE)) extract($_COOKIE, EXTR_SKIP);
     if (isset($_POST))   extract($_POST,   EXTR_SKIP);
@@ -21,8 +35,8 @@
     $config_version_id      = VERSION_ID;
     $comm_start_from        = htmlspecialchars($comm_start_from);
     $start_from             = htmlspecialchars($start_from);
-    $archive                = htmlspecialchars($archive);
-    $subaction              = htmlspecialchars($subaction);
+    $archive                = htmlspecialchars(trim($archive));
+    $subaction              = htmlspecialchars(trim($subaction));
     $id                     = htmlspecialchars($id);
     $ucat                   = htmlspecialchars($ucat);
     $number                 = htmlspecialchars($number);

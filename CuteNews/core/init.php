@@ -83,6 +83,9 @@
     // catch errors
     set_error_handler("user_error_handler", E_ALL);
 
+    // Off magic_quotes
+    ini_set ('magic_quotes_gpc', 0);
+
     // configuration files
     if (file_exists(SERVDIR.'/cdata/config.php'))
         include_once (SERVDIR.'/cdata/config.php');
@@ -108,9 +111,10 @@
          $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
     else $cfg = array();
 
-    // language initialize
-    include_once (SERVDIR.'/skins/language.php');
-    if ( file_exists(SERVDIR.'/cdata/language.php') ) include (SERVDIR.'/cdata/language.php'); // override
+    // initialize mod_rewrite if present
+    if  ($config_use_replacement && file_exists(SERVDIR.'/cdata/conf_rw.php'))
+         include ( SERVDIR.'/cdata/conf_rw.php' );
+    else $config_use_replacement = 0;
 
     // check skin if exists
     $config_skin = preg_replace('~[^a-z]~i','', $config_skin);
@@ -138,8 +142,6 @@
 
     // CRYPT_SALT consist an IP?
     define('CRYPT_SALT',        ($config_ipauth == '1'? $ip : false).'@'.$cfg['crypt_salt']);
-    define('LANG_ERROR_TITLE',  $lang['error']);
-    define('ALLOWED_TIME',      0.75 * ini_get('max_execution_time'));
 
     // experimental defines
     define('RATEY_SYMBOL',      empty($config_ratey) ? '*' : str_replace('&amp;', '&', $config_ratey) ); // &#9734;

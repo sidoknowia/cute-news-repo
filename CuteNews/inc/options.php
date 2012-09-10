@@ -108,7 +108,18 @@ if ($action == "options" or $action == '')
         ),
     );
 
-    hook('more_options');
+    // Optional Fields -------------------------------
+    if ($config_use_replacement)
+    {
+        $options[] = array(
+            'name'              => lang('URL Rewrite manager', 'options'),
+            'url'               => "$PHP_SELF?mod=tools&action=rewrite",
+            'access'            => ACL_LEVEL_ADMIN,
+        );
+    }
+
+
+    $options = hook('more_options', $options);
 
     //------------------------------------------------
     // Cut the options for wich we don't have access
@@ -178,7 +189,7 @@ elseif ($action == "dosavepersonal")
     $change_avatar      = replace_comment("add", $change_avatar);
 
     if ($editpassword and !preg_match("/^[\.A-z0-9_\-]{1,31}$/i", $editpassword))
-        msg("error", LANG_ERROR_TITLE, lang("Your password must contain only valid characters and numbers"), '#GOBACK');
+        msg("error", lang('Error!'), lang("Your password must contain only valid characters and numbers"), '#GOBACK');
 
     $edithidemail = $edithidemail? 1 : 0;
     $avatars = preg_replace(array("'\|'","'\n'","' '"), array("","","_"), $avatars);
@@ -193,7 +204,7 @@ elseif ($action == "dosavepersonal")
             $pack[UDB_PASS] = $hashs[ count($hashs) - 1 ];
             $_SESS['pwd']   = $editpassword;
         }
-        else msg('error', LANG_ERROR_TITLE, lang('Confirm password not match'), "#GOBACK");
+        else msg('error', lang('Error!'), lang('Confirm password not match'), "#GOBACK");
     }
 
     $pack[UDB_NICK]         = $editnickname;
@@ -244,15 +255,15 @@ elseif ($action == "templates")
     if ($subaction == "donew")
     {
         if (!preg_match('/^[a-z0-9_-]+$/i', $template_name))
-            msg("error", LANG_ERROR_TITLE, lang("The name of the template must be only with letters and numbers"), '#GOBACK');
+            msg("error", lang('Error!'), lang("The name of the template must be only with letters and numbers"), '#GOBACK');
 
         if (file_exists(SERVDIR."/cdata/$template_name.tpl"))
-            msg("error", LANG_ERROR_TITLE, lang("Template with this name already exists"), '#GOBACK');
+            msg("error", lang('Error!'), lang("Template with this name already exists"), '#GOBACK');
 
         // Make file
         if ( !file_exists(SERVDIR."/cdata/$base_template.tpl")) $base_template = 'Default';
         if ( !copy(SERVDIR."/cdata/$base_template.tpl", SERVDIR."/cdata/$template_name.tpl") )
-             msg("error", LANG_ERROR_TITLE, str_replace('%1', $base_template, lang("Can not copy file %1 to ./cdata/ folder with name "))."$template_name.tpl", '#GOBACK');
+             msg("error", lang('Error!'), str_replace('%1', $base_template, lang("Can not copy file %1 to ./cdata/ folder with name "))."$template_name.tpl", '#GOBACK');
 
         chmod(SERVDIR."/cdata/$template_name.tpl", 0666);
 
@@ -264,10 +275,10 @@ elseif ($action == "templates")
     if ($subaction == "delete")
     {
         if (strtolower($do_template) == "default")
-            msg("Error",  LANG_ERROR_TITLE, lang("You can not delete the default template"), '#GOBACK');
+            msg("Error",  lang('Error!'), lang("You can not delete the default template"), '#GOBACK');
 
         if (strtolower($do_template) == "rss")
-            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
+            msg("Error", lang('Error!'), lang("You can not delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
 
         $msg = proc_tpl('options/sure_delete');
         msg("info", lang("Deleting Template"), $msg);
@@ -278,11 +289,11 @@ elseif ($action == "templates")
     if ($subaction == "dodelete")
     {
         if(strtolower($do_template) == "default")
-            msg("Error", LANG_ERROR_TITLE, lang("You can not delete the default template"), '#GOBACK');
+            msg("Error", lang('Error!'), lang("You can not delete the default template"), '#GOBACK');
 
         $unlink = unlink(SERVDIR."/cdata/$do_template.tpl");
         if ( !$unlink )
-             msg("error", LANG_ERROR_TITLE, "Can not delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
+             msg("error", lang('Error!'), "Can not delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
         else msg("info",  lang("Template Deleted"), str_replace('%1', $do_template, lang("The template <b>%1</b> was deleted.")));
     }
 
@@ -415,10 +426,11 @@ elseif ($action == "syscon")
     showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
     showRow(lang("Time Adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
     showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
-    showRow(lang("Auto-Archive every Month"),       lang("if yes, evrery month the active news will be archived"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", "$config_auto_archive"));
-    showRow(lang("Allow Self-Registration"),        lang("allow users to auto-register"),                               makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", "$config_allow_registration"));
+    showRow(lang("Auto-Archive every Month"),       lang("if yes, evrery month the active news will be archived"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
+    showRow(lang("Allow Self-Registration"),        lang("allow users to auto-register"),                               makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
 
-    showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", "$config_registration_level"));
+    showRow(lang("Custom Rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
+    showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", $config_registration_level));
     showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));
     showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
     showRow(lang("Enable user logs"),               lang("store user logs"),                                            makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[userlogs]", $config_userlogs));

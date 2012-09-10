@@ -205,7 +205,7 @@
     {
         echoheader('info', 'Cute News v'.VERSION.' Installer');
         $site = $_SERVER['SERVER_NAME'] . dirname($_SERVER['REQUEST_URI']);
-        echo str_replace('{site}', preg_replace('~/$~', '', $site), proc_tpl('install/copy'));
+        echo str_replace('{site}', preg_replace('~[\\\|/]\s*$~', '', $site), proc_tpl('install/copy'));
     }
     // step 3
     elseif ($action == 'finish')
@@ -218,15 +218,15 @@
         $nick     = $_POST['nick'];
 
         if (empty($site) or empty($user) or empty($email))
-            msg('error', LANG_ERROR_TITLE, lang('You must fill all required fields'), '#GOBACK');
+            msg('error', lang('Error!'), lang('You must fill all required fields'), '#GOBACK');
 
         // error in password
         if ($password && $password != $retype or !$password)
-            msg('error', LANG_ERROR_TITLE, lang("Invalid password(s) or don't match"), '#GOBACK');
+            msg('error', lang('Error!'), lang("Invalid password(s) or don't match"), '#GOBACK');
 
         // add config.php
         $hac = $_SERVER['HTTP_ACCEPT_CHARSET'];
-        list($cp) = explode(',', $hac);
+        list($cp) = spsep($hac);
 
         $cfg = fopen(SERVDIR.'/cdata/config.php', 'w');
         fwrite($cfg, read_tpl('install/copy/config'));
@@ -263,7 +263,7 @@
         else
         {
             echoheader('info', 'Cute News v'.VERSION.' Installer');
-            proc_tpl('install/welcome', array(), array('WRITABLE' => is_writable(SERVDIR.'/cdata')));
+            proc_tpl('install/welcome');
         }
     }
 

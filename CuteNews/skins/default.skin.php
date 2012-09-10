@@ -37,11 +37,11 @@ html, body
 }
 select, textarea, input, button
 {
-    border: #808080 1px solid;
+    border: #c0c0c0 1px solid;
     color: #000000;
     font-size: 12px;
     margin: 2px;
-    padding: 3px;
+    padding: 4px;
     background-color: #ffffff;
 }
 .menu-border, input[type=submit], input[type=button], button {
@@ -63,7 +63,7 @@ input[type=submit]:hover, input[type=button]:hover, button:hover
 }
 a:active,a:visited,a:link
 {
-    color: #446488;
+    color: #446688;
     text-decoration: none;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 12px;

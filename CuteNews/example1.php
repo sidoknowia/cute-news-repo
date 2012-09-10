@@ -7,12 +7,11 @@
 <head><title>Example1</title></head>
 <body>
 
-<a href="index.php">admin panel</a> ||
-<a href="?go=news">news</a> ||
-<a href="?go=headlines">headlines</a> ||
-<a href="?go=archives">archives</a> ||
-<a href="?go=search">search</a> ||
-<a href="?go=userlist">userlist</a> ||
+<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=news">news</a> ||
+<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=headlines">headlines</a> ||
+<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=archives">archives</a> ||
+<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=search">search</a> ||
+<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=userlist">userlist</a> ||
 <a style="font-size:120%" href="example2.php">See Advanced Example >></a>
 
 <hr>

@@ -42,7 +42,7 @@ if ($banid)
 {
     if ( isset($banid[$REMOTE_ADDR]) )
     {
-        if ( $banid[$REMOTE_ADDR]['E'] > time() ) msg('error', LANG_ERROR_TITLE, "You're banned");
+        if ( $banid[$REMOTE_ADDR]['E'] > time() ) msg('error', lang('Error!'), "You're banned");
         elseif ( $banid[$REMOTE_ADDR]['E'] > 0)   delete_key($REMOTE_ADDR, DB_BAN);
     }
 }
@@ -60,8 +60,6 @@ if ($action == "logout")
 
 // sanitize
 $is_loged_in = false;
-extract(filter_request('mod'), EXTR_OVERWRITE);
-
 if ($csrfmake == 'csrfmake')
 {
     $CSRF = CSRFMake();

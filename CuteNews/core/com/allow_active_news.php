@@ -33,7 +33,7 @@
             if (strstr($news_arr[NEW_CAT], ','))
             {
                 // if the article is in multiple categories
-                $this_cats_arr = explode(',',$news_arr[NEW_CAT]);
+                $this_cats_arr = spsep($news_arr[NEW_CAT]);
                 foreach ($this_cats_arr as $this_single_cat)
                 {
                     if (isset($requested_cats[$this_single_cat]) && isset($requested_cats[$this_single_cat])) $is_in_cat = TRUE;
@@ -64,7 +64,7 @@
             if (strstr($news_arr[NEW_CAT], ','))
             {
                 // if the article is in multiple categories
-                $this_cats_arr = explode(',', $news_arr[NEW_CAT]);
+                $this_cats_arr = spsep($news_arr[NEW_CAT]);
                 foreach ($this_cats_arr as $this_single_cat)
                 {
                     if (isset($requested_cats[$this_single_cat]) && isset($requested_cats[$this_single_cat])) $is_in_cat = true;
@@ -150,9 +150,8 @@
     if ($start_from)
     {
         $prev = $start_from - $number;
-        $burl = build_uri('start_from,ucat,archive,subaction,id', array($prev,$ucat,$url_archive,$subaction,$id));
-        if ($burl) $burl .= $user_query; else $burl .= "&amp;$user_query";
-        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF".build_uri('start_from,ucat,archive,subaction,id', array($prev,$ucat,$url_archive,$subaction,$id))."\">\\1</a> ", $prev_next_msg);
+        $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($prev, $ucat, $url_archive, $subaction, $id));
+        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a> ', $prev_next_msg);
     }
     else
     {
@@ -173,9 +172,8 @@
         {
             if ( $pages_start_from != $start_from)
             {
-                $URL = build_uri('start_from,ucat,archive,subaction,id', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
-                if ($user_query) $URL .= "&amp;$user_query";
-                $pages .= '<a href="'.$PHP_SELF.$URL.'">'.$j.'</a> ';
+                $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
+                $pages .= '<a href="'.RWU('newspage', $URL).'">'.$j.'</a> ';
             }
             else $pages .= '<strong>'.$j.'</strong> ';
             $pages_start_from += $number;
@@ -189,9 +187,8 @@
     //----------------------------------
     if($number < $count_all and $i < $count_all)
     {
-        $URL = build_uri('start_from,ucat,archive,subaction,id', array($i, $ucat, $url_archive, $subaction, $id));
-        if ($user_query) $URL .= "&amp;$user_query";
-        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$PHP_SELF{$URL}\">\\1</a>", $prev_next_msg);
+        $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($i, $ucat, $url_archive, $subaction, $id));
+        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a>', $prev_next_msg);
     }
     else
     {

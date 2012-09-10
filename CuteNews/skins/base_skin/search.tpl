@@ -20,39 +20,39 @@
         } else item.visibility = "show";
     }
 </script>
-<form method=get action="{PHP_SELF}?subaction=search">
+<form method=get action="{$PHP_SELF}?subaction=search">
 
     <input type=hidden name=dosearch value=yes>
-    {user_post_query}
+    {$user_post_query}
 
     <table>
-        <tr><td align="right">News</td><td><input type=text value="{story}" name=story size="24"></td></tr>
+        <tr><td align="right">News</td><td><input type=text value="{$story}" name=story size="24"></td></tr>
 
-        <tr id="advance_1" style='display:none; z-index:1;'><td align="right">Title</td><td><input type=text value="{title}" name=title size="24"></td></tr>
-        <tr id="advance_2" style='display:none; z-index:1;'><td align="right">Author</td><td><input type=text value="{user}" name=user size="24"></td></tr>
-        <tr id="advance_3" style='display:none; z-index:1;'>
+        <tr id="advance_1" {if $hide}style='display:none; z-index:1;{/if}'><td align="right">Title</td><td><input type=text value="{$title}" name=title size="24"></td></tr>
+        <tr id="advance_2" {if $hide}style='display:none; z-index:1;{/if}'><td align="right">Author</td><td><input type=text value="{$user}" name=user size="24"></td></tr>
+        <tr id="advance_3" {if $hide}style='display:none; z-index:1;{/if}'>
             <td align="right">From date</td>
             <td>
-                <select name=from_date_day> <option value=""></option> {day_f} </select>
-                <select name=from_date_month> <option value=""></option> {month_f} </select>
-                <select name=from_date_year> <option value=""></option> {year_f} </select>
+                <select name=from_date_day> <option value=""></option> {$day_from} </select>
+                <select name=from_date_month> <option value=""></option> {$month_from} </select>
+                <select name=from_date_year> <option value=""></option> {$year_from} </select>
             </td>
         </tr>
-        <tr id="advance_4" style='display:none; z-index:1;'>
+        <tr id="advance_4" {if $hide} style='display:none; z-index:1;'{/if}>
             <td align="right">To date</td>
             <td>
-                <select name=to_date_day> <option value=""></option> {day_t} </select>
-                <select name=to_date_month> <option value=""></option> {month_t}  </select>
-                <select name=to_date_year> <option value=""></option> {year_t} </select>
+                <select name=to_date_day> <option value=""></option> {$day_to} </select>
+                <select name=to_date_month> <option value=""></option> {$month_to}  </select>
+                <select name=to_date_year> <option value=""></option> {$year_to} </select>
             </td>
         </tr>
 
-        <tr id="advance_5" style='display:none; z-index:1;'>
-            <td align="right">Search and archives</td><td><input type=checkbox {selected_search_arch} name="search_in_archives" value="TRUE"> </td>
+        <tr id="advance_5" {if $hide}style='display:none; z-index:1;'{/if}>
+            <td align="right">Search and archives</td><td><input type=checkbox {$selected_search_arch} name="archives" value="Y"> </td>
         </tr>
 
         <tr>
-            <td><a href="javascript:ShowOrHide('advance',6)">advanced</a></td>
+            <td><a href="javascript:ShowOrHide('advance', 6)">advanced</a></td>
             <td><input type=submit value=Search></td>
         </tr>
     </table>

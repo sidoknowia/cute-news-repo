@@ -57,10 +57,9 @@
 
         if ($hope_archive)
         {
-            $URL = build_uri('start_from,ucat,subaction,id,archive', array($start_from,$ucat,$subaction,$id,$hope_archive));
-            if ($user_query) $URL .= "&amp;$user_query";
-            echo '<div>'.lang('You are now being redirected to the article in our archives, if the redirection fails, please').' <a href="'.$PHP_SELF.$URL.'">'.lang('click here').'</a></div>
-                    <script type="text/javascript">window.location="'.$PHP_SELF.$URL.'";</script>';
+            $URL = $PHP_SELF.build_uri('archive,start_from,ucat,subaction,id', array($hope_archive));
+            echo '<div>'.lang('You are now being redirected to the article in our archives, if the redirection fails, please').' <a href="'.$URL.'">'.lang('click here').'</a></div>
+                    <script type="text/javascript">window.location="'.str_replace('&amp;', '&', $URL).'";</script>';
         }
         else
         {

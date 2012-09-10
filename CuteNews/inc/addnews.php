@@ -3,8 +3,6 @@
 if ($member_db[UDB_ACL] > 3)
     msg("error", lang("Access Denied"), lang("You don't have permission to add news"));
 
-extract(filter_request('full_story,title,short_story,category,postpone_draft,from_date_hour,from_date_minutes,from_date_month,from_date_day,from_date_year,if_convert_new_lines,if_use_html'), EXTR_OVERWRITE);
-
 // only show allowed categories
 list ($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
 
@@ -36,7 +34,7 @@ if ($action == "addnews")
             foreach ($category as $ckey => $cvalue)
             {
                 if ( !in_array($cvalue, $allowed_cats) and isset($cat[$cvalue]) )
-                     msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+                     msg('error', lang('Error!'), lang('Not allowed category'), '#GOBACK');
 
                 $nice_category[] = $cvalue;
             }
@@ -47,7 +45,7 @@ if ($action == "addnews")
             // Single or Not category
             // don't format $nice_cats because we have not selected any.
             if ( $category && !in_array($category, $allowed_cats) and isset($cat[$category]) )
-                 msg('error', LANG_ERROR_TITLE, lang('Not allowed category'), '#GOBACK');
+                 msg('error', lang('Error!'), lang('Not allowed category'), '#GOBACK');
 
             $nice_category = $category;
         }
@@ -201,8 +199,14 @@ if ($action == "addnews")
             }
 
             if  ($postpone)
+            {
                  msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" Y-m-d H:i:s", $added_time), '#GOBACK');
-            else msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
+            }
+            else
+            {
+                relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=yes");
+                // msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
+            }
         }
     }
 
@@ -270,6 +274,7 @@ if ($action == "addnews")
     $short_story = htmlspecialchars( $_POST['short_story'] );
     $full_story  = htmlspecialchars( $_POST['full_story'] );
 
+    $UseAvatar   = ($config_use_avatar == 'yes') ? 1 : 0;
     echo proc_tpl
     (
             'addnews/'.$tpl,
@@ -285,12 +290,6 @@ if ($action == "addnews")
                 'datey'                  => $_dateY,
                 'dateh'                  => $_dateH,
                 'datei'                  => $_dateI,
-            ),
-            array
-            (
-                'CATEGORY'               => $cat_lines? 1 : 0,
-                'WYSIWYG'                => $use_wysiwyg,
-                'USE_AVATAR'             => ($config_use_avatar == 'yes') ? 1 : 0,
             )
     );
 

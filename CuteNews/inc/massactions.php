@@ -10,7 +10,7 @@ $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);
 if ($action == "mass_delete")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     // Check permissions
     $have_perm = 0;
@@ -24,7 +24,7 @@ if ($action == "mass_delete")
 
     // Check access user for category
     if ( !empty($item_db[NEW_CAT]) )
-        foreach (explode(',', $item_db[NEW_CAT]) as $all_this_cat)
+        foreach (spsep($item_db[NEW_CAT]) as $all_this_cat)
             if ( !in_array($all_this_cat, $allowed_cats) )
                 msg("error", lang("Access Denied"), lang("This article is posted under category which you are not allowed to access."), "#GOBACK");
 
@@ -54,7 +54,7 @@ elseif($action == "do_mass_delete")
 {
     CSRFCheck();
     if(!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles to be deleted"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles to be deleted"), "#GOBACK");
 
     $deleted_articles = 0;
     list ($news_file, $comm_file) = detect_source($source);
@@ -115,10 +115,10 @@ elseif ($action == "mass_approve")
     CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $member_db[UDB_ACL] != ACL_LEVEL_EDITOR)
-        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You do not have permissions for this action"), "#GOBACK");
 
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     $news_file = SERVDIR."/cdata/unapproved_news.txt";
 
@@ -162,7 +162,7 @@ elseif ($action == "mass_approve")
 elseif ($action == "mass_move_to_cat")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     $CSRF = CSRFMake();
     echoheader("options", lang("Move Articles to Category"));
@@ -202,7 +202,7 @@ elseif ($action == "do_mass_move_to_cat")
     CSRFCheck();
 
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-        msg("error", LANG_ERROR_TITLE, lang("You do not have permissions for this action"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You do not have permissions for this action"), "#GOBACK");
 
     if( is_array($category) )
     {
@@ -219,7 +219,7 @@ elseif ($action == "do_mass_move_to_cat")
     }
 
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     // Source detect
     $moved_articles = 0;
@@ -265,10 +265,10 @@ elseif ($action == "do_mass_move_to_cat")
 elseif($action == "mass_archive")
 {
     if (!$selected_news)
-        msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+        msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     if ($source != "")
-        msg("error", LANG_ERROR_TITLE, lang("These news are already archived or are in postpone queue"), "#GOBACK");
+        msg("error", lang('Error!'), lang("These news are already archived or are in postpone queue"), "#GOBACK");
 
     $CSRF = CSRFMake();
     echoheader("options", lang("Send News To Archive"));
@@ -300,10 +300,10 @@ elseif ($action == "do_mass_archive")
          msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
 
     if ( !$selected_news )
-         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+         msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     if (!is_writable(SERVDIR."/cdata/archives/"))
-         msg("error", LANG_ERROR_TITLE, lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"), "#GOBACK");
+         msg("error", lang('Error!'), lang("The ./cdata/archives/ directory is not writable, CHMOD it to 775"), "#GOBACK");
     
     $news_file = SERVDIR."/cdata/news.txt";
     $comm_file = SERVDIR."/cdata/comments.txt";
@@ -344,7 +344,7 @@ elseif ($action == "do_mass_archive")
     fclose($new_db);
 
     if ($archived_news == 0)
-        msg("error", LANG_ERROR_TITLE, lang("No news were found for archiving"), "#GOBACK");
+        msg("error", lang('Error!'), lang("No news were found for archiving"), "#GOBACK");
 
     // Prepare the comments for Archiving
     $old_db = file($comm_file);
@@ -404,7 +404,7 @@ elseif ($action == 'mass_change_pubdate')
          msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
 
     if ( !$selected_news )
-         msg("error", LANG_ERROR_TITLE, lang("You have not specified any articles"), "#GOBACK");
+         msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     // --------
     $the_selected_news = array();
@@ -460,7 +460,7 @@ elseif ($action == 'dochangedate')
                     unset($db_news_file[$idx]);
                     array_unshift($db_news_file, $date.'|'.$match[1]."\n"); // Shift Up
                 }
-                else msg('error', LANG_ERROR_TITLE, lang("Can't find ID in news to change").' '.$id);
+                else msg('error', lang('Error!'), lang("Can't find ID in news to change").' '.$id);
             }
         }
 

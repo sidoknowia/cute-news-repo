@@ -177,7 +177,7 @@
     // ---------------------------------
     if ($config_useutf8 == "1" && function_exists('iconv'))
     {
-        list($hac) = explode(',', $config_default_charset);
+        list($hac) = spsep($config_default_charset);
         $name      = iconv($hac, 'utf-8', $name);
         $comments  = iconv($hac, 'utf-8', $comments);
     }
@@ -330,9 +330,7 @@
         send_mail($config_notify_email, lang("CuteNews - New Comment Added"), lang("New Comment was added by")." $name:\n--------------------------$comments");
     }
 
-    $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from', array('showfull',$id,$ucat,$archive,$start_from), false);
-    if ($user_query) $URL .= '&' . $user_query;
-
+    $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from', array('showfull',$id,$ucat,$archive,$start_from), false);
     echo '<script type="text/javascript">window.location="'.$URL.'";</script>';
 
     // ------------ ALL OK ----------------

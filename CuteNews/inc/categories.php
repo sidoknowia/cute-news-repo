@@ -16,7 +16,7 @@ if ($action == "add")
     $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
-    if(!$cat_name) msg("error", LANG_ERROR_TITLE, "Please enter name of the category", "#GOBACK");
+    if(!$cat_name) msg("error", lang('Error!'), "Please enter name of the category", "#GOBACK");
 
     $cat_icon = preg_replace("/ /", "", $cat_icon);
     if ($cat_icon == "(optional)") $cat_icon = "";
@@ -29,7 +29,7 @@ if ($action == "add")
     foreach($all_cats as $cat_line)
     {
         $cat_arr = explode("|", $cat_line);
-        if ($cat_arr[1] == $cat_name) msg("error", LANG_ERROR_TITLE, "Category with this name already exist", '#GOBACK');
+        if ($cat_arr[1] == $cat_name) msg("error", lang('Error!'), "Category with this name already exist", '#GOBACK');
         if ($cat_arr[0] == $big_num)  $big_num = 33;
     }
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "a");
@@ -48,7 +48,7 @@ if ($action == "add")
 // ********************************************************************************
 elseif ($action == "remove")
 {
-    if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
+    if (!$catid) msg("error", lang('Error!'), "No category ID", '#GOBACK');
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");
@@ -66,7 +66,7 @@ elseif ($action == "remove")
 elseif ($action == "edit")
 {
     $CSRF = CSRFMake();
-    if (!$catid) msg("error", LANG_ERROR_TITLE, "No category ID", '#GOBACK');
+    if (!$catid) msg("error", lang('Error!'), "No category ID", '#GOBACK');
 
     $all_cats = file(SERVDIR."/cdata/category.db.php");
     foreach($all_cats as $cat_line)
@@ -103,8 +103,8 @@ elseif($action == "doedit")
     $cat_access = str_replace('<'.'?', '', $cat_access);
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
-    if (!$catid) msg("error", LANG_ERROR_TITLE, lang("No category ID"), '#GOBACK');
-    if ($cat_name == "") msg("error", LANG_ERROR_TITLE, lang("Category name can not be blank"), "#GOBACK");
+    if (!$catid) msg("error", lang('Error!'), lang("No category ID"), '#GOBACK');
+    if ($cat_name == "") msg("error", lang('Error!'), lang("Category name can not be blank"), "#GOBACK");
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");

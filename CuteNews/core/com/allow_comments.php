@@ -103,10 +103,8 @@
     if ($comm_start_from)
     {
         $prev = $comm_start_from - $comm_per_page;
-
-        $URL = build_uri('comm_start_from,subaction,subaction,id,ucat', array($prev,'showcomments',$id,$ucat));
-        if ($user_query) $URL .= "&amp;$user_query";
-        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"$PHP_SELF{$URL}\">\\1</a>", $prev_next_msg);
+        $URL = $PHP_SELF . build_uri('subaction,comm_start_from,id,ucat', array('showcomments', $prev));
+        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"{$URL}\">\\1</a>", $prev_next_msg);
     }
     else
     {
@@ -123,13 +121,15 @@
 
         for ($j=1; $j <= $pages_count; $j++)
         {
-            if( $pages_start_from != $comm_start_from )
+            if ($pages_start_from != $comm_start_from)
             {
-                $URL = build_uri('comm_start_from,archive,subaction,subaction,id,ucat', array($pages_start_from,$archive,'showcomments',$id,$ucat));
-                if ($user_query) $URL .= "&amp;$user_query";
-                $pages .= '<a href="'.$PHP_SELF.$URL.'">'.$j.'</a> ';
+                $URL = $PHP_SELF . build_uri('subaction,comm_start_from,archive,id,ucat', array('showcomments', $pages_start_from));
+                $pages .= '<a href="'.$URL.'">'.$j.'</a> ';
             }
-            else $pages .= ' <strong>'.$j.'</strong> ';
+            else
+            {
+                $pages .= ' <strong>'.$j.'</strong> ';
+            }
 
             $pages_start_from += $comm_per_page;
         }
@@ -140,7 +140,8 @@
     // Next link
     if ($comm_per_page < $total_comments and $comment_number < $total_comments)
     {
-        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$PHP_SELF?comm_start_from=$comment_number&amp;archive=$archive&amp;subaction=showcomments&amp;id=$id&amp;ucat=$ucat&amp;$user_query\">\\1</a>", $prev_next_msg);
+        $URL = $PHP_SELF . build_uri('subaction,comm_start_from,archive,id,ucat', array('showcomments', $comment_number));
+        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$URL\">\\1</a>", $prev_next_msg);
     }
     else
     {

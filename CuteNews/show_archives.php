@@ -23,8 +23,8 @@
     hook('show_archives_init');
 
     $category = preg_replace("/ /", "", $category);
-    $tmp_cats_arr = explode(",", $category);
-    foreach($tmp_cats_arr as $key=>$value)
+    $tmp_cats_arr = spsep($category);
+    foreach ($tmp_cats_arr as $key => $value)
     {
         if ($value != "") $requested_cats[$value] = true;
     }

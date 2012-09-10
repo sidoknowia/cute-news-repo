@@ -37,7 +37,7 @@
                         </td>
                         <td height="1" width="180">&nbsp;</td>
                     </tr>
-                    {OPT_AUTHOR}
+                    {if $opt_author}
                     <tr>
                         <td width="284" align="right">Author&nbsp;</td>
                         <td width="178" >
@@ -48,7 +48,7 @@
                         </td>
                         <td height="1" width="180" >&nbsp;</td>
                     </tr>
-                    {/OPT_AUTHOR}
+                    {/if}
                     <tr>
                         <td width="284" align="right" > News per page&nbsp; </td>
                         <td width="178"> <input style="text-align: center" name="news_per_page" value="{$news_per_page}" type=text size=3> <input type=submit value="{{Show}}"> </td>

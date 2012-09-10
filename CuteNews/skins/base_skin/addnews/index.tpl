@@ -21,21 +21,21 @@
         </tr>
     {/foreach}
 
-    {USE_AVATAR}
+    {if $UseAvatar}
     <tr>
         <td width="75" align="right">Avatar URL&nbsp;</td>
         <td width="575" colspan="2"><input tabindex=2 type=text size="42" value="{$member_db8}" name="manual_avatar" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span></td>
     </tr>
-    {/USE_AVATAR}
+    {/if}
 
     <tr id='singlecat'>
         <td width="75" align="right">Category&nbsp;</td>
         <td colspan="2">
-        {CATEGORY}
+        {if $cat_lines}
             <select id='selecsinglecat' name=category tabindex=3> <option value=""> --- </option> {$cat_html} </select>
             <a href="javascript:ShowOrHide('multicat','singlecat');" onClick="javascript:document.getElementById('selecsinglecat').name='';">(multiple categories)</a>
-        {/CATEGORY}
-        {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
+        {/if}
+        {if !$cat_lines}<span style="color: gray;">{{No category}}</span>{/if}
         </td>
     </tr>
 

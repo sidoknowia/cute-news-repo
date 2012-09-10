@@ -8,17 +8,19 @@ function confirmDelete(url)
 }
 </script>
 
+{$error_messages}
 <form onSubmit= "return submitForm();" method="POST" name="addnews" action="{$PHP_SELF}">
 
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
     <input type="hidden" name="id" value="{$id}">
-    <input type="hidden" name="action" value="doeditnews">
     <input type="hidden" name="mod" value="editnews">
+    <input type="hidden" name="action" value="editnews">
+    <input type="hidden" name="subaction" value="doeditnews">
     <input type="hidden" name="source" value="{$source}">
 
     <table border=0 cellpadding=1 cellspacing=0 width="100%">
-    {ALLOWPOSTPONED}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/ALLOWPOSTPONED}
-    {SAVED}<tr><td>&nbsp;</td><td><h3>The changes were successfully saved</h3></td></tr>{/SAVED}
+    {if $postpone_date}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/if}
+    {if $saved}<tr><td>&nbsp;</td><td><h3 style="color: green;">The changes were successfully saved</h3></td></tr>{/if}
     <tr>
         <td width="75">&nbsp;</td>
         <td> Posted on {$newstime} by {$item_db1} </td>
@@ -36,18 +38,18 @@ function confirmDelete(url)
         </tr>
     {/foreach}
 
-    {USE_AVATAR}
+    {if $Using_Avat}
     <tr>
         <td>Avatar URL</td>
         <td> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span> </td>
     </tr>
-    {/USE_AVATAR}
+    {/if}
 
     <tr>
         <td>Category</td>
         <td>
-            {CATEGORY} <table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table> {/CATEGORY}
-            {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
+            {if $cat_lines} <table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table> {/if}
+            {if !$cat_lines} <span style="color: gray;">{{No category}}</span> {/if}
         </td>
     </tr>
 
@@ -58,7 +60,7 @@ function confirmDelete(url)
     </tr>
 
     <!-- Postponed options -->
-    {ALLOWPOSTPONED}
+    {if $postpone_date}
     <tr>
         <td align="right">Postponed</td>
         <td height="30">
@@ -70,7 +72,7 @@ function confirmDelete(url)
 
         </td>
     </tr>
-    {/ALLOWPOSTPONED}
+    {/if}
 
     <!-- Full story -->
     <tr>
@@ -86,7 +88,7 @@ function confirmDelete(url)
                 <tr>
                     <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>
                     <td align="right">
-                        {UNAPPROVED}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/UNAPPROVED}
+                        {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/if}
                         <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=doeditnews&source={$source}&ifdelete=yes&id={$id}')">
                     </td>
               </tr>
@@ -103,14 +105,14 @@ function confirmDelete(url)
 <form method=post name=comments action="{$PHP_SELF}">
     <table border=0 cellpadding=0 cellspacing=0 width="100%" >
 
-    {HASCOMMENTS}
+    {if $found_newsid}
     <tr>
         <td width="75">Comments</td>
         <td><b>Poster</b>, Comment preview</td>
         <td width="120"> <b>Date</b> </td>
         <td width="1">&nbsp;</td>
     </tr>
-    {/HASCOMMENTS}
+    {/if}
     {$Comments_HTML}
 
 <script type="text/javascript">

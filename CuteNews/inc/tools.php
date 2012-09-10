@@ -98,14 +98,14 @@ elseif ($action == "doarchive")
     CSRFCheck();
 
     // Check archives
-    if (filesize(SERVDIR."/cdata/news.txt") == 0)     msg("error", LANG_ERROR_TITLE, lang("Sorry but there are no news to be archived"), "#GOBACK");
+    if (filesize(SERVDIR."/cdata/news.txt") == 0)     msg("error", lang('Error!'), lang("Sorry but there are no news to be archived"), "#GOBACK");
 
     $arch_name = time() + ($config_date_adjust*60);
     if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))
-        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.news.arch", "#GOBACK");
+        msg("error", lang('Error!'), lang("Can not create file")." ./cdata/archives/$arch_name.news.arch", "#GOBACK");
 
     if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))
-        msg("error", LANG_ERROR_TITLE, lang("Can not create file")." ./cdata/archives/$arch_name.comments.arch", "#GOBACK");
+        msg("error", lang('Error!'), lang("Can not create file")." ./cdata/archives/$arch_name.comments.arch", "#GOBACK");
 
     $handle = fopen(SERVDIR."/cdata/news.txt","w");
     fclose($handle);
@@ -140,10 +140,10 @@ elseif ($action == "dodeletearchive")
         msg("info", lang("Archive Deleted"), lang("The archive was successfully deleted"), "#GOBACK");
 
     elseif ($success > 0)
-        msg("error", LANG_ERROR_TITLE, lang("Either the comments part, or the news part, or the count part of the archive was not deleted"), "#GOBACK");
+        msg("error", lang('Error!'), lang("Either the comments part, or the news part, or the count part of the archive was not deleted"), "#GOBACK");
 
     else
-        msg("error", LANG_ERROR_TITLE, lang("The archive you specified was not deleted, it is not on the server or you don't have permissions to delete it"), "#GOBACK");
+        msg("error", lang('Error!'), lang("The archive you specified was not deleted, it is not on the server or you don't have permissions to delete it"), "#GOBACK");
 
 }
 // ********************************************************************************
@@ -232,7 +232,7 @@ elseif($action == "dorestorebackup")
 
     // Check files
     if (!copy(SERVDIR."/cdata/backup/$backup/news.txt", SERVDIR."/cdata/news.txt"))
-        msg("error", LANG_ERROR_TITLE, "./cdata/backup/$backup/news.txt", "#GOBACK");
+        msg("error", lang('Error!'), "./cdata/backup/$backup/news.txt", "#GOBACK");
 
     $dirp = opendir(SERVDIR."/cdata/backup/$backup/archives");
     if ($dirp)
@@ -242,7 +242,7 @@ elseif($action == "dorestorebackup")
             if (!is_dir(SERVDIR."/cdata/backup/$backup/archives/$entryname") and $entryname!="." and $entryname!="..")
             {
                if(!copy(SERVDIR."/cdata/backup/$backup/archives/$entryname", SERVDIR."/cdata/archives/$entryname"))
-                   msg("error", LANG_ERROR_TITLE, lang("Can not copy")." ./cdata/backup/$backup/archives/$entryname", "#GOBACK");
+                   msg("error", lang('Error!'), lang("Can not copy")." ./cdata/backup/$backup/archives/$entryname", "#GOBACK");
             }
         }
     }
@@ -259,16 +259,16 @@ elseif($action == "dobackup")
 
     // Check files
     if (filesize(SERVDIR."/cdata/news.txt") == 0)
-        msg("error", LANG_ERROR_TITLE, lang("The news file is empty and can not be backed-up"), "#GOBACK");
+        msg("error", lang('Error!'), lang("The news file is empty and can not be backed-up"), "#GOBACK");
 
     if (is_readable(SERVDIR."/cdata/backup/$back_name"))
-        msg("error", LANG_ERROR_TITLE, lang("A backup with this name already exist"), "#GOBACK");
+        msg("error", lang('Error!'), lang("A backup with this name already exist"), "#GOBACK");
 
     if (!is_readable(SERVDIR."/cdata/backup"))
         mkdir(SERVDIR."/backup", 0777);
 
     if (!is_writable(SERVDIR."/cdata/backup"))
-        msg("error", LANG_ERROR_TITLE, lang("The directory ./cdata/backup is not writable, please chmod it"), "#GOBACK");
+        msg("error", lang('Error!'), lang("The directory ./cdata/backup is not writable, please chmod it"), "#GOBACK");
 
     mkdir(SERVDIR."/cdata/backup/$back_name", 0777);
     mkdir(SERVDIR."/cdata/backup/$back_name/archives", 0777);
@@ -296,20 +296,18 @@ elseif($action == "dobackup")
 }
 elseif ($action == 'userlog')
 {
-    extract(filter_request('year_s,month_s,day_s,hour_s,year_e,month_e,day_e,hour_e,per,cr'), EXTR_OVERWRITE);
-    
     echoheader("options", lang("User log"), make_breadcrumbs('main/options/='.lang('User log')));
 
     // make default date filter
-    $year_s     = $year_s? $year_s : date('Y');
+    $year_s     = $year_s?  $year_s : date('Y');
     $month_s    = $month_s? $month_s : date('m');
-    $day_s      = $day_s? $day_s : date('d');
-    $hour_s     = $hour_s? $hour_s : 0;
-    $year_e     = $year_e? $year_e : date('Y');
+    $day_s      = $day_s?   $day_s : date('d');
+    $hour_s     = $hour_s?  $hour_s : 0;
+    $year_e     = $year_e?  $year_e : date('Y');
     $month_e    = $month_e? $month_e : date('m');
-    $day_e      = $day_e? $day_e : date('d');
-    $hour_e     = $hour_e? $hour_e : 23;
-    $per        = $per? $per : 25;
+    $day_e      = $day_e?   $day_e : date('d');
+    $hour_e     = $hour_e?  $hour_e : 23;
+    $per        = $per?     $per : 25;
 
     // make request files
     $from_time  = mktime($hour_s, 0, 0, $month_s, $day_s, $year_s);
@@ -335,7 +333,7 @@ elseif ($action == 'userlog')
                     $pack = unserialize($sarr);
                     $pack['time'] = format_date($pack['time'], 'since');
                     $pack['bg'] = $count%2? '#FFFFFF' : '#F0F4FF';
-                    $logs[ $time ] = $pack;
+                    $logs[ $time.'|'.mt_rand() ] = $pack;
                     $count++;
                 }
             }
@@ -345,14 +343,14 @@ elseif ($action == 'userlog')
 
     // Paginate (array slice)
     krsort($logs);
+
     $logs = array_slice($logs, $cr*$per, $per);
 
     // retrieve pagination
     $pages = pagination($count, $per, $cr);
     foreach ($pages as $i => $v)
     {
-        $pages[$i]['link'] = PHP_SELF.build_uri( 'mod,action,year_s,month_s,day_s,hour_s,year_e,month_e,day_e,hour_e,per,cr',
-                                                 array($mod,$action,$year_s,$month_s,$day_s,$hour_s,$year_e,$month_e,$day_e,$hour_e,$per,(int)$v['id']) );
+        $pages[$i]['link'] = $PHP_SELF . build_uri( 'cr,mod,action,year_s,month_s,day_s,hour_s,year_e,month_e,day_e,hour_e,per', array(intval($v['id']) ) );
         $pages[$i]['id']++;
         if ($v['pt'] == 0) $pages[$i]['id'] = '...';
         if ($v['cr'])
@@ -367,16 +365,7 @@ elseif ($action == 'userlog')
     }
 
     // show filter
-    echo proc_tpl('tools/userlog/index',
-                  array(
-                    'logs' => $logs, 'pages' => $pages, 'count' => $count,
-                    'per' => $per,
-                    'year_s' => $year_s, 'month_s'=> $month_s, 'day_s'=> $day_s, 'hour_s'=> $hour_s,
-                    'year_e'=> $year_e, 'month_e'=> $month_e, 'day_e'=> $day_e, 'hour_e'=> $hour_e,
-                  ),
-                  array('IFLOG' => $count)
-    );
-    
+    echo proc_tpl('tools/userlog/index', array(), array('IFLOG' => $count));
     echofooter();
 }
 elseif ($action == 'replaces')
@@ -385,7 +374,6 @@ elseif ($action == 'replaces')
     $CSRF = CSRFMake();
 
     echoheader('options', lang('Replace words'), make_breadcrumbs('main/options/='.lang('Word Replacement')));
-    extract(filter_request('do,replaces'), EXTR_OVERWRITE);
 
     $result = false;
     if ($do == 'replace')
@@ -405,8 +393,6 @@ elseif ($action == 'replaces')
 }
 elseif ($action == 'xfields')
 {
-    extract(filter_request('do,add_name,add_vis,remove,name,optional'), EXTR_OVERWRITE);
-
     if ($do == 'submit')
     {
         CSRFCheck();
@@ -531,6 +517,93 @@ elseif ($action == 'plugins')
 
     echo proc_tpl('plugins/list');
 
+    echofooter();
+}
+elseif ($action == 'rewrite')
+{
+
+    if ($subaction == 'save')
+    {
+        $w = fopen(SERVDIR.'/cdata/conf_rw.php', 'w');
+        flock($w, LOCK_EX);
+        fwrite($w, '<'."?php\n");
+        foreach ($_REQUEST as $i => $v)
+        {
+
+            if (substr($i, 0, 5) == 'conf_')
+                fwrite( $w, '$conf_rw_'.substr($i, 5).' = "'.str_replace('"', '\"', $v) . "\";\n" );
+        }
+        flock($w, LOCK_UN);
+        fclose($w);
+
+        $saved_ok = getpart('saved_ok');
+    }
+
+    // Read data from datatable
+    if (file_exists(SERVDIR.'/cdata/conf_rw.php'))
+        include ( SERVDIR.'/cdata/conf_rw.php' );
+
+    // Default values -----------------
+    if (empty($conf_rw_htaccess))
+    {
+        $conf_rw_htaccess = SERVDIR.'/.htaccess';
+    }
+
+    if (empty($conf_rw_readmore))           $conf_rw_readmore = '/news/view/%id';
+    if (empty($conf_rw_readmore_layout))    $conf_rw_readmore_layout = '/show_news.php?subaction=showfull';
+
+    if (empty($conf_rw_readarch))           $conf_rw_readarch = '/news/archive/%id';
+    if (empty($conf_rw_readarch_layout))    $conf_rw_readarch_layout = '/show_archive.php';
+
+    if (empty($conf_rw_readcomm))           $conf_rw_readcomm = '/news/read/%id/comment?subaction=showcomments';
+    if (empty($conf_rw_readcomm_layout))    $conf_rw_readcomm_layout = '/show_news.php?subaction=showcomment';
+
+    if (empty($conf_rw_newspage))           $conf_rw_newspage = '/news/read/%start_from/';
+    if (empty($conf_rw_newspage_layout))    $conf_rw_newspage_layout = '/show_news.php';
+
+    if (empty($conf_rw_commpage))           $conf_rw_commpage = '/news/read/%id/comment/%start_from';
+    if (empty($conf_rw_commpage_layout))    $conf_rw_commpage_layout = '/show_news.php?subaction=showcomment';
+
+    hook('insert_additional_rewrites');
+
+    // Try to update htaccess
+    if ($update_htaccess == 'Y')
+    {
+        $w = fopen($conf_rw_htaccess, 'w');
+        flock($w, LOCK_EX);
+        fwrite($w, "RewriteEngine ON\n");
+
+        // Get all config values
+        foreach ($GLOBALS as $idv => $rwa)
+        if (is_string($rwa) && substr($idv, 0, 8) == 'conf_rw_' && !preg_match('~(layout|htaccess)~i', $idv))
+        {
+            $rwb = array();
+
+            // Get layout for data settings
+            $cin = $GLOBALS[ 'conf_rw_'.substr($idv, 8).'_layout' ];
+            if (strpos($cin, '?') === false) $cin .= '?';
+
+            // Make path
+            if ( preg_match_all('~\%\w+~', $rwa, $c, PREG_SET_ORDER ))
+                 foreach ($c as $i => $v)
+                     $cin .= ((substr($cin, -1, 1) == '?')? '' : '&').substr($v[0], 1).'=$'.($i+1);
+
+            // Clear leading slash
+            if ($rwa[0] == '/') $rwa = substr($rwa, 1);
+            $rwa = '^'.preg_replace('~\%\w+~', '([0-9a-zA-Z_]+)', $rwa);
+
+            // Save rule
+            $last = count($c) + 1;
+            fwrite($w, "RewriteRule $rwa(.*)\$ $cin&xfw=\$$last [L]\n");
+        }
+
+        flock($w, LOCK_UN);
+        fclose($w);
+    }
+
+    // view template
+    echoheader('home', lang('URL Rewrite Manager'), make_breadcrumbs('main=main/options:options=options/tools:rewrite=Rewrite Manager', true));
+    echo proc_tpl('tools/rewrites/index');
     echofooter();
 }
 

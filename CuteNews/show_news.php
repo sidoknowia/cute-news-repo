@@ -33,9 +33,6 @@
     // use static path to all links
     if ( empty($static_path) == false ) $PHP_SELF = $static_path;
 
-    // filter
-    extract(filter_request('ucat,subaction,archive'), EXTR_OVERWRITE);
-
     // Linked cats
     if (isset($_GET['cid']) && $_GET['cid']) $category = $_GET['cid'];
     hook('show_news_init');
@@ -50,7 +47,7 @@
 
     $requested_cats = array();
     $category       = preg_replace("/\s/", "", $category);
-    $tmp_cats_arr   = explode(",", $category);
+    $tmp_cats_arr   = spsep($category);
 
     foreach ($tmp_cats_arr as $key => $value) if ($value) $requested_cats[$value] = true;
 
@@ -75,7 +72,7 @@
     $ucat = isset($_GET['ucat']) && $_GET['ucat']? $_GET['ucat'] : $category;
     if (strstr($ucat, ','))
     {
-        $article_cat_arr = explode(',', $ucat);
+        $article_cat_arr = spsep($ucat);
         foreach ($article_cat_arr as $one_cat)
         {
             if (isset($requested_cats[$one_cat]) && $requested_cats[$one_cat])

@@ -14,9 +14,10 @@ A:hover     { color: #54622D;  }
 
 BODY,TD,TR{
     font-family: verdana, arial, sans-serif;
-    color:#000;
-    font-size:11;
+    color: #000;
+    font-size: 12px;
     font-weight:normal;
+    line-height: 1.3em;
 }
 .banner {
     font-family: georgia, verdana, arial, sans-serif;
@@ -68,26 +69,21 @@ BODY,TD,TR{
     </td>
      </tr>
      <tr>
-          <tr>
-              <td width="100%">
-                  &nbsp;<a href="index.php">admin panel</a>
-              </td>
-          </tr>
 
           <td width="100%">
-    &nbsp;<a href="?">main page</a>
+    &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>">main page</a>
     </td>
      </tr>
      <tr>
 
     <td width="100%">
-    &nbsp;<a href="?do=archives">archives</a>
+    &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=archives">archives</a>
     </td>
      </tr>
      <tr>
 
     <td width="100%">
-    &nbsp;<a href="?do=stats">statistic</a>
+    &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=stats">statistic</a>
     </td>
      </tr>
      <tr>

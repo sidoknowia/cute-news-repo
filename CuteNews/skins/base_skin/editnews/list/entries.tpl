@@ -1,16 +1,4 @@
-{-ENTRIES_SHOWED}
-    <table border=0 cellpadding=0 cellspacing=0 width=100% >
-        <tr>
-            <td colspan=6>
-                <p style="border: solid black 1px; margin: 22px; padding: 4px;" align=center>
-                    - No news were found matching your criteria -<br>
-                    <a href="#" onclick="getElementById('options').style.display='';">[options]</a>
-                </p>
-            </td>
-        </tr>
-    </table>
-{/-ENTRIES_SHOWED}
-{ENTRIES_SHOWED}
+{if $entries_showed}
     <script type="text/javascript">
     <!--
     function ckeck_uncheck_all()
@@ -64,4 +52,17 @@
             </tr>
         </table>
     </form>
-{/ENTRIES_SHOWED}
+{/if}
+
+{if !$entries_showed}
+    <table border=0 cellpadding=0 cellspacing=0 width=100% >
+        <tr>
+            <td colspan=6>
+                <p style="border: solid black 1px; margin: 22px; padding: 4px;" align=center>
+                    - No news were found matching your criteria -<br>
+                    <a href="#" onclick="getElementById('options').style.display='';">[options]</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+{/if}

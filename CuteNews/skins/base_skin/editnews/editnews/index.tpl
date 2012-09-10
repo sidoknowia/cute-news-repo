@@ -6,17 +6,20 @@
         if (agree) document.location = url;
     }
 </script>
+
+{$error_messages}
 <form method="POST" name="addnews" action="{$PHP_SELF}">
 
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
     <input type="hidden" name="id" value="{$id}">
-    <input type="hidden" name="action" value="doeditnews">
     <input type="hidden" name="mod" value="editnews">
+    <input type="hidden" name="action" value="editnews">
+    <input type="hidden" name="subaction" value="doeditnews">
     <input type="hidden" name="source" value={$source}>
 
     <table border=0 cellpadding=1 cellspacing=0 width="750" >
-        {ALLOWPOSTPONED}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/ALLOWPOSTPONED}
-        {SAVED}<tr><td>&nbsp;</td><td><h3>The changes were successfully saved</h3></td></tr>{/SAVED}
+        {if $postpone_date}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/if}
+        {if $saved}<tr><td>&nbsp;</td><td><h3 style="color: green;">The changes were successfully saved</h3></td></tr>{/if}
         <tr>
             <td width="75">&nbsp;</td>
             <td colspan="2"> Posted on {$newstime} by {$item_db1} </td>
@@ -33,18 +36,18 @@
             </tr>
         {/foreach}
 
-        {USE_AVATAR}
+        {if $Using_Avat}
         <tr>
             <td align="right">Avatar URL&nbsp;</td>
             <td width="464" colspan="2"> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span>
         </tr>
-        {/USE_AVATAR}
+        {/if}
 
         <tr>
             <td align="right">Category&nbsp;</td>
             <td>
-                {CATEGORY}<table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table>{/CATEGORY}
-                {-CATEGORY}<span style="color: gray;">{{No category}}</span>{/-CATEGORY}
+                {if $cat_lines}<table width="100%" border="0" cellspacing="0" cellpadding="0" class="panel"> {$lines_html} </table>{/if}
+                {if !$cat_lines}<span style="color: gray;">{{No category}}</span>{/if}
             </td>
             <td>&nbsp;</td>
         </tr>
@@ -62,7 +65,7 @@
             </td>
         </tr>
 
-        {ALLOWPOSTPONED}
+        {if $postpone_date}
         <tr>
             <td align="right">Postponed</td>
             <td height="30">
@@ -74,7 +77,7 @@
             </td>
             <td>&nbsp;</td>
         </tr>
-        {/ALLOWPOSTPONED}
+        {/if}
 
         <!-- Full story -->
         <tr>
@@ -95,7 +98,7 @@
                     <tr>
                         <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>
                         <td align="right">
-                            {UNAPPROVED}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/UNAPPROVED}
+                            {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/if}
                             <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=doeditnews&source={$source}&ifdelete=yes&id={$id}')"> &nbsp;
                             <input style='width:120px;' type=button onClick="ShowOrHide('options','')" value=" Article Options ">
                         </td>
@@ -108,7 +111,7 @@
         <tr id='options' style='display:none;'>
             <td valign="top">Options</td>
             <td width="565" colspan="2">
-                <label for='html'><input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html" {USING_HTML}checked{/USING_HTML}> Use HTML in this article</label><br/>
+                <label for='html'><input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html" {if $Using_HTML}checked{/if}> Use HTML in this article</label><br/>
             </td>
         </tr>
     </table>
@@ -120,13 +123,13 @@
 <form method=post name=comments action="{$PHP_SELF}">
     <table border=0 cellpadding=0 cellspacing=0 width="100%" >
 
-    {HASCOMMENTS}
+    {if $found_newsid}
     <tr>
         <td width="75">Comments</td>
         <td><b>Poster</b>, Comment preview</td>
         <td width="120"> <b>Date</b> </td>
         <td width="1">&nbsp;</td>
     </tr>
-    {/HASCOMMENTS}
+    {/if}
 
     {$Comments_HTML}

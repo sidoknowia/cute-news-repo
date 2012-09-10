@@ -31,7 +31,7 @@ elseif ($action == "news")
     $templates_html = "<select name=w_template>";
     foreach($templates_list as $single_template)
     {
-        if($single_template != "rss")
+        if ($single_template != "rss")
         {
             if ($single_template == "Default")
                  $templates_html .= "<option selected value=\"$single_template\">$single_template</option>";
@@ -153,9 +153,9 @@ elseif ($action == "rss_step2")
 elseif ($action == "dosaverss")
 {
     if (strpos($rss_news_include_url, 'http://') === false)
-        msg("error",  LANG_ERROR_TITLE, lang("The URL where you include your news must start with <b>http://</b>"));
+        msg("error",  lang('Error!'), lang("The URL where you include your news must start with <b>http://</b>"));
 
-    $handler = fopen(SERVDIR."/cdata/rss_config.php", "w") or msg("error",  LANG_ERROR_TITLE, "Can not open file ./cdata/rss_config.php");
+    $handler = fopen(SERVDIR."/cdata/rss_config.php", "w") or msg("error",  lang('Error!'), "Can not open file ./cdata/rss_config.php");
     fwrite($handler, "<?PHP \n\n//RSS Configurations (Auto Generated file)\n\n");
 
     fwrite($handler, "\$rss_news_include_url = \"".htmlspecialchars($rss_news_include_url)."\";\n\n");
@@ -242,5 +242,5 @@ elseif ($action == 'rewrite')
 
         echofooter();
     }
-    else msg('error', LANG_ERROR_TITLE, lang('You want to see at least one piece of news that is included on the<br/> site to Cutenews determined the path to the news automatically'));
+    else msg('error', lang('Error!'), lang('You want to see at least one piece of news that is included on the<br/> site to Cutenews determined the path to the news automatically'));
 }

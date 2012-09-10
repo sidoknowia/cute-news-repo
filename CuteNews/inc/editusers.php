@@ -65,13 +65,13 @@ elseif ($action == "adduser")
     }
 
     if (!$regusername)
-        msg("error", LANG_ERROR_TITLE, lang("Username can not be blank"), "#GOBACK");
+        msg("error", lang('Error!'), lang("Username can not be blank"), "#GOBACK");
 
     if (!$regpassword)
-        msg("error", LANG_ERROR_TITLE, lang("Password can not be blank"), "#GOBACK");
+        msg("error", lang('Error!'), lang("Password can not be blank"), "#GOBACK");
 
     if (!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
-        msg("error", LANG_ERROR_TITLE, lang("Not valid Email"), "#GOBACK");
+        msg("error", lang('Error!'), lang("Not valid Email"), "#GOBACK");
 
     $all_users = file(SERVDIR."/cdata/db.users.php");
     unset ($all_users[0]);
@@ -79,7 +79,7 @@ elseif ($action == "adduser")
     {
         list(,$user_arr) = explode("|", $user_line, 2);
         $user_arr        = unserialize($user_arr);
-        if ($user_arr[UDB_NAME]  == $regusername) msg("error", LANG_ERROR_TITLE, lang("Sorry but user with this username already exist"), "#GOBACK");
+        if ($user_arr[UDB_NAME]  == $regusername) msg("error", lang('Error!'), lang("Sorry but user with this username already exist"), "#GOBACK");
     }
 
     $add_time = time() + ($config_date_adjust*60);
