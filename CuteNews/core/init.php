@@ -138,7 +138,10 @@
          define('SKIN',         $SKIN);
     else define('SKIN',         SKINS.'/'.(isset($cfg['skin'])? $cfg['skin'] : 'base_skin'));
 
-    define('PHP_SELF',          isset($_SERVER["PHP_SELF"]) ? $_SERVER["PHP_SELF"] : false);
+    // Definity PHPSELF
+    if ( !isset($PHP_SELF) && empty($PHP_SELF) )
+         define('PHP_SELF', $_SERVER["PHP_SELF"]);
+    else define('PHP_SELF', $PHP_SELF);
 
     // CRYPT_SALT consist an IP?
     define('CRYPT_SALT',        ($config_ipauth == '1'? $ip : false).'@'.$cfg['crypt_salt']);

@@ -41,7 +41,8 @@ select, option, textarea, input {
  BORDER: #808080 1px solid;
  COLOR: #000000;
  FONT-SIZE: 11px;
- FONT-FAMILY: Verdana; BACKGROUND-COLOR: #ffffff
+ FONT-FAMILY: Verdana, Arial;
+ BACKGROUND-COLOR: #ffffff
 }
 
 input[type=submit]:hover, input[type=button]:hover{
@@ -50,16 +51,15 @@ background-color:#EBEBEB !important;
 
 a:active,a:visited,a:link {color: #446488; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt;}
 a:hover {color: #00004F; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt; }
-a.nav:active, a.nav:visited,  a.nav:link { color: #000000; font-size : 10px; font-weight: bold; font-family: verdana; text-decoration: none;}
-a.nav:hover { font-size : 10px; font-weight: bold; color: black; font-family: verdana; text-decoration: underline; }
+a.nav:active, a.nav:visited,  a.nav:link { color: #000000; font-size : 10px; font-weight: bold; font-family: Verdana, Arial, Helvetica; text-decoration: none;}
+a.nav:hover { font-size : 10px; font-weight: bold; color: black; font-family: Verdana, Arial, Helvetica; text-decoration: underline; }
 .bborder        { background-color: #FFFFFF; }
-.panel                {-moz-border-radius: .3em .3em .3em .3em; border: 1px dotted silver; background-color: #F7F6F4; padding: 4px;}
+.panel                { border-radius: 8px; border: 1px dotted silver; background-color: #F7F6F4; padding: 4px;}
 BODY, TD, TR {text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt; cursor: default;}
 -->
 </style>
 </head>
-<body bgcolor=white marginwidth='0' leftmargin='0'>
-<center>
+<body bgcolor=white style="width: 685px; margin: 10px auto;">
 <table border="0" cellspacing="0" cellpadding="2">
 <tr>
 <td class="bborder" bgcolor="#FFFFFF" >
@@ -77,7 +77,7 @@ BODY, TD, TR {text-decoration: none; font-family: Verdana, Arial, Helvetica, san
 </tr>
 <tr>
 <td height="19">
-</center>
+
 <!--SELF-->
 <table border=0 cellpadding=0 cellspacing=15 width="100%" height="100%" >
 <tr>

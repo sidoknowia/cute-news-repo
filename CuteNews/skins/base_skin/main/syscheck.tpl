@@ -54,5 +54,7 @@
 
 </div>
 
-<p>&middot; <a href="example1.php" target="blank">Example site 1</a>
-   &middot; <a href="example2.php" target="blank">Preview site 2</a></p>
+<p><a href="example1.php" target="blank">Example 1</a>
+   &middot; <a href="example2.php" target="blank">Example 2</a>
+   &middot; <a href="{$config_cutenews_path}/README.html">Readme</a>
+</p>

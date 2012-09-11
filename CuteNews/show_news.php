@@ -3,9 +3,9 @@
     /*  External arguments:
         array  $category
         string $archive  = null or numeric id
-        $_GET['ucat']    - same as $category
-
+        $_GET['ucat']    - same as $category [user cat]
     */
+
     $NotHeaders = true;
     require_once ('core/init.php');
     include ('core/loadenv.php');
@@ -13,12 +13,10 @@
     // plugin tells us: he is fork, stop
     if ( hook('fork_news', false) ) return;
 
-    // Save path for htaccess
-    $w = fopen(SERVDIR.'/cdata/htpath.php', 'w'); fwrite($w, '<'.'?php $ht_path = "'.dirname(__FILE__).'"; ?>'); fclose($w);
-
     // Check including
     $Uri = '//'.dirname( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-    if (strpos($config_http_script_dir, $Uri) !== false && strpos($PHP_SELF, 'show_news.php') !== false) die_stat(403, 'Wrong including show_news.php! Check manual to get more information about this issue.');
+    if (strpos($config_http_script_dir, $Uri) !== false && strpos($PHP_SELF, 'show_news.php') !== false)
+        die_stat(403, 'Wrong including show_news.php! Check manual to get more information about this issue.');
 
     // If we are showing RSS, include some need variables.
     if ( $template == 'rss' ) include( SERVDIR.'/cdata/rss_config.php' );
@@ -46,10 +44,12 @@
     }
 
     $requested_cats = array();
+    $archive        = preg_replace('~[^0-9]~', '', $archive);
     $category       = preg_replace("/\s/", "", $category);
-    $tmp_cats_arr   = spsep($category);
+    $save_archive   = $archive;
 
-    foreach ($tmp_cats_arr as $key => $value) if ($value) $requested_cats[$value] = true;
+    foreach (spsep($category) as $value)
+        if ($value) $requested_cats[$value] = true;
 
     if ($archive)
     {
@@ -70,16 +70,12 @@
 
     // article is in multiple categories
     $ucat = isset($_GET['ucat']) && $_GET['ucat']? $_GET['ucat'] : $category;
-    if (strstr($ucat, ','))
+
+    foreach (spsep($ucat) as $one_cat)
     {
-        $article_cat_arr = spsep($ucat);
-        foreach ($article_cat_arr as $one_cat)
-        {
-            if (isset($requested_cats[$one_cat]) && $requested_cats[$one_cat])
-                $is_in_category = true;
-        }
+        if (isset($requested_cats[$one_cat]) && $requested_cats[$one_cat])
+            $is_in_category = true;
     }
-    elseif (isset($requested_cats[$ucat]) && $requested_cats[$ucat]) $is_in_category = true;
 
     // Default variables
     if (empty($number)) $number = 10;
@@ -118,8 +114,11 @@
     require(SERVDIR."/inc/shows.inc.php");
 
     // Save archive value
-    $archive = isset($_GET['archives']) && $_GET['archives']? $_GET['archive'] : $archive;
-    unset ($static, $template, $requested_cats, $category, $cat, $reverse, $in_use, $archives_arr, $number, $no_prev, $no_next, $i, $showed, $prev, $used_archives, $only_active, $user, $user_by);
+    $archive = $save_archive;
+
+    // Unset all used variables
+    unset ($static, $template, $requested_cats, $category, $cat, $reverse, $in_use, $archives_arr, $number, $no_prev);
+    unset ($QUERY_STRING, $no_next, $i, $showed, $prev, $used_archives, $only_active, $user, $user_member, $user_by);
 
     echo '<!-- News Powered by CuteNews: http://cutephp.com/ -->';
 ?>

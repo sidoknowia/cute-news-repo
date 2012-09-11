@@ -309,8 +309,8 @@ function read_tpl($tpl = 'index')
 
     ob_start();
     fpassthru($r);
-    fclose($r);
     $ob = ob_get_clean();
+    fclose($r);
 
     // cache file
     $_CACHE['tpl_'.$tpl] = $ob;
@@ -389,7 +389,7 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
             elseif ($vs[1][1] == '$') $var = $args[ substr($vs[1], 2) ];
 
             // If boolean logic OK, replace
-            if ($vs[1][0] == '$' && $var)      $d = str_replace($vs[0], $vs[2], $d);
+            if ($vs[1][0] == '$' && $var)            $d = str_replace($vs[0], $vs[2], $d);
             elseif ($vs[1][0] == '!' && empty($var)) $d = str_replace($vs[0], $vs[2], $d);
             else $d = str_replace($vs[0], false, $d);
         }
@@ -1048,6 +1048,8 @@ function pagination($count, $per = 25, $current = 0, $spread = 5)
 // make full URI (left & right parts)
 function build_uri($left, $right, $html = 1)
 {
+    global $QUERY_STRING;
+
     $URI = $DDR = array();
     list ($left, $adds) = explode(':', $left);
 
@@ -1067,6 +1069,14 @@ function build_uri($left, $right, $html = 1)
     // Enum not present, but in GLOBALS is set
     if (!empty($adds) && is_array($uq))
         foreach ($uq as $v) if (!empty($GLOBALS[$v])) $URI[ $v ] = $GLOBALS[$v];
+
+    // Import at url $QUERY_STRING
+    $QUERY_STRING = str_replace('&amp;', '&', $QUERY_STRING);
+    foreach ( spsep($QUERY_STRING, '&') as $qs )
+    {
+        list($k, $v) = explode('=', $qs, 2);
+        if ($k && $v) $URI[$v] = $v;
+    }
 
     // Encode new query
     foreach ($URI as $i => $v) $DDR[] = urlencode($i)."=".str_replace('%2C', ',', urlencode($v));
@@ -1991,14 +2001,23 @@ function relocation($url)
     die();
 }
 
+$sys_http_response_header = array();
+
 // Takes content from remote addrs
 function cwget($url)
 {
+    global $sys_http_response_header;
+
     if ( ini_get('allow_url_fopen') )
     {
         if (substr(PHP_VERSION, 0, 5) > '4.3.0')
         {
-            $context = stream_context_create( array('http' => array('method' => 'GET', 'ignore_errors' => true) ) );
+            $context = stream_context_create(
+                array('http' => array('method' => 'GET',
+                                      'user_agent'  => $_SERVER['HTTP_USER_AGENT'],
+                                      'ignore_errors' => true) )
+            );
+
             $r = fopen( $url, 'r', false, $context );
         }
         else
@@ -2009,8 +2028,10 @@ function cwget($url)
         ob_start();
         fpassthru($r);
         $rd = ob_get_clean();
-        return $rd;
 
+        // Save headers
+        $sys_http_response_header = $http_response_header;
+        return $rd;
     }
 
     return false;
@@ -2147,7 +2168,7 @@ function spsep($separated_string, $seps = ',')
 {
     if (empty($separated_string) ) return array();
     if (strpos($separated_string, $seps) === false) return array( $separated_string );
-    $ss = preg_split("~$seps~i", $separated_string, -1, PREG_SPLIT_NO_EMPTY);
+    $ss = explode($seps, $separated_string);
     return $ss;
 }
 

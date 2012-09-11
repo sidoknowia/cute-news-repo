@@ -9,7 +9,7 @@
             foreach ( explode('&', $c[1]) as $cv )
             {
                 list($k, $v) = explode('=', $cv, 2);
-                if ($k) $_GET[ $k ] = $v;
+                if ($k) $_REQUEST[$k] = $_GET[$k] = $v;
             }
         }
     }

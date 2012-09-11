@@ -37,12 +37,12 @@ TD {text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; f
 a:active,a:visited,a:link {color: #446488; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt;}
 a:hover {color: #00004F; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt;}
 
-a.nav { padding-top:3px; padding-bottom:3px; padding:2px;}
-a.nav:active, a.nav:visited,  a.nav:link { color: #000000; font-size : 10px; font-weight: bold; font-family: verdana; text-decoration: none;}
-a.nav:hover { font-size : 10px; font-weight: bold; color: black; font-family: verdana; background-color:000000; color:FFFFFF}
+a.nav {  padding:2px;}
+a.nav:active, a.nav:visited,  a.nav:link { color: #000000; font-size : 10px; font-weight: bold; font-family: Verdana, Arial, Helvetica; text-decoration: none;}
+a.nav:hover { font-size : 10px; font-weight: bold; color: black; font-family: Verdana, Arial, Helvetica; background-color:000000; color:FFFFFF}
 
 .bborder        { background-color: #FFFFFF; border: 1px #000000 solid; }
-.panel                {-moz-border-radius: .3em .3em .3em .3em; border: 1px dotted #B4D2E7; background-color: #ECF4F9;padding: 4px;}
+.panel                {border-radius: 8px; border: 1px dotted #B4D2E7; background-color: #ECF4F9;padding: 4px;}
 BODY, TD, TR {text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt; cursor: default;}
 
 input[type=submit]:hover, input[type=button]:hover{

@@ -15,4 +15,6 @@ $allowed_modules = hook('expand_allowed_modules', array
 if (in_array($imod, $allowed_modules))
     include ("core/features/$imod.php");
 
+hook('expand_code_shows');
+
 ?>
