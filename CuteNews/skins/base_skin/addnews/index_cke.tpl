@@ -16,6 +16,8 @@
         <td><input type=text style="width: 675px;" name="title" value="{$title}" tabindex=1></td>
     </tr>
 
+    {$Hook_AdditionalFieldsTop}
+
     {foreach from=xfields}
         <tr>
             <td align="right">{$xfields.1}</td>
@@ -61,6 +63,8 @@
         <td align="right" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
         <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;">{$full_story}</textarea> </td>
     </tr>
+
+    {$Hook_AdditionalFieldsBottom}
 
     <tr>
         <td>&nbsp;</td>

@@ -14,6 +14,8 @@
         <td colspan="2"><input type="text" style="width: 565px;" value="{$title}" name="title" tabindex=1></td>
     </tr>
 
+    {$Hook_AdditionalFieldsTop}
+
     {foreach from=xfields}
         <tr>
             <td width="75" align="right">{$xfields.1}&nbsp;</td>
@@ -83,6 +85,8 @@
         </td>
         <td>&nbsp;</td>
     </tr>
+
+    {$Hook_AdditionalFieldsBottom}
 
     <tr id='options' style="display:none;">
         <td align="center" valign="top" style="padding: 18px 0 0 0">Options</td>

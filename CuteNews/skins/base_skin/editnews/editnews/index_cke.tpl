@@ -31,6 +31,8 @@ function confirmDelete(url)
         <td><input type=text name=title value="{$item_db2}" style="width: 675px;" tabindex=1></td>
     </tr>
 
+    {$Hook_AdditionalFieldsTop}
+
     {foreach from=xfields}
         <tr>
             <td width="75">{$xfields.1}</td>
@@ -79,6 +81,8 @@ function confirmDelete(url)
         <td valign="top"> <br />Full Story<br /><span style="font-size:7pt">(optional)</span> </td>
         <td> <textarea style="resize: none; width: 680px; height: 320px;" rows="12" cols="74" id="full_story" name="full_story" tabindex=4>{$item_db4}</textarea> </td>
     </tr>
+
+    {$Hook_AdditionalFieldsBottom}
 
     <tr>
         <td>&nbsp;</td>

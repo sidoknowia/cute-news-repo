@@ -78,12 +78,12 @@
     }
 
     // Default variables
-    if (empty($number)) $number = 10;
+    if (empty($number))   $number = 0;
     if (empty($template)) $template = 'Default';
 
     // <<<------------ Determine what user want to do
     hook('show_news_determine_before');
-    if ( empty($CN_HALT) and empty($static) and ($subaction == "showcomments" or $subaction == "showfull" or $subaction == "addcomment") and (empty($category) or $is_in_category) )
+    if ( empty($CN_HALT) and empty($static) and in_array($subaction, array("showcomments","showfull","addcomment")) and (empty($category) or $is_in_category) )
     {
         if ($subaction == "addcomment")
         {
@@ -117,8 +117,8 @@
     $archive = $save_archive;
 
     // Unset all used variables
-    unset ($static, $template, $requested_cats, $category, $cat, $reverse, $in_use, $archives_arr, $number, $no_prev);
-    unset ($QUERY_STRING, $no_next, $i, $showed, $prev, $used_archives, $only_active, $user, $user_member, $user_by);
+    unset ($static, $template, $requested_cats, $category, $cat, $reverse, $in_use, $archives_arr, $number, $no_prev, $no_next);
+    unset ($QUERY_STRING, $i, $showed, $prev, $used_archives, $only_active, $user, $user_member, $user_by);
 
     echo '<!-- News Powered by CuteNews: http://cutephp.com/ -->';
 ?>

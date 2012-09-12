@@ -165,11 +165,12 @@
     //----------------------------------
     // Pages
     //----------------------------------
+    $pages = '';
+
     if ($number)
     {
         $pages_count        = ceil($count_all / $number);
         $pages_start_from   = 0;
-        $pages              = "";
 
         for($j=1; $j<= $pages_count; $j++)
         {
@@ -181,14 +182,18 @@
             else $pages .= '<strong>'.$j.'</strong> ';
             $pages_start_from += $number;
         }
-
+    }
+    else
+    {
+        $no_next = true;
+        $no_prev = true;
         $prev_next_msg = str_replace("{pages}", $pages, $prev_next_msg);
     }
 
     //----------------------------------
     // Next link  (typo here ... typo there... typos everywhere !)
     //----------------------------------
-    if($number < $count_all and $i < $count_all)
+    if ($number < $count_all and $i < $count_all)
     {
         $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($i, $ucat, $url_archive, $subaction, $id));
         $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a>', $prev_next_msg);

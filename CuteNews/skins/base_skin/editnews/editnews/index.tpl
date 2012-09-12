@@ -29,6 +29,8 @@
             <td colspan="2"><input type="text" name="title" style="width: 565px" value="{$item_db2}" tabindex=1></td>
         </tr>
 
+        {$Hook_AdditionalFieldsTop}
+
         {foreach from=xfields}
             <tr>
                 <td align="right">{$xfields.1}&nbsp;</td>
@@ -89,6 +91,8 @@
                 <p>{$full_story_smiles}</p>
             </td>
         </tr>
+
+        {$Hook_AdditionalFieldsBottom}
 
         <tr>
 
