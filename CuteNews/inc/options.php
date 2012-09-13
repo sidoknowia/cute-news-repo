@@ -312,7 +312,11 @@ elseif ($action == "templates")
 
     // Load template variables ---------------------
     require(SERVDIR."/cdata/$do_template.tpl");
-    foreach ($Template_Form as $id => $template) $Template_Form[$id]['part'] = htmlspecialchars( $$template['name'] );
+    foreach ($Template_Form as $id => $template)
+    {
+        $tplcon = (ini_get('magic_quotes_gpc')) ? stripslashes($$template['name']) : $$template['name'];
+        $Template_Form[$id]['part'] = htmlspecialchars( $tplcon );
+    }
 
     echoheader("options", "Templates", make_breadcrumbs('main/options=options/Templates'));
 
