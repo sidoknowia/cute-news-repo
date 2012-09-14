@@ -29,7 +29,6 @@
         die_stat(503, 'invalid archive characters');
 
     $a7f89abdcf9324b3       = "";
-    $PHP_SELF               = PHP_SELF;
     $phpversion             = phpversion();
     $config_version_name    = "CuteNews v".VERSION;
     $config_version_id      = VERSION_ID;
@@ -42,6 +41,9 @@
     $number                 = htmlspecialchars($number);
     $template               = htmlspecialchars($template);
     $show                   = htmlspecialchars($show);
+
+    // Only if not exists or PHP_SELF is empty
+    if (empty($PHP_SELF))   $PHP_SELF = PHP_SELF;
 
     if  (is_array($category))
          foreach ($category as $k => $v) $category[$k] = htmlspecialchars($v);

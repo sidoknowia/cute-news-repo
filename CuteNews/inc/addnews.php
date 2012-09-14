@@ -116,7 +116,28 @@ if ($action == "addnews")
                 $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!') ));
         }
 
-        // Only without errors -----------------------------------------------------------------------------------------
+        // Additional fields ---
+        foreach ($cfg['more_fields'] as $i => $v) $pack = edit_option($pack, $i, $_REQUEST[$i]);
+
+        // Preview tool
+        $preview_hmtl = false;
+        if (isset($preview) && $preview == 'preview')
+        {
+            $new[NEW_ID]        = time();
+            $new[NEW_USER]      = $member_db[2];
+            $new[NEW_TITLE]     = $title;
+            $new[NEW_SHORT]     = $short_story;
+            $new[NEW_FULL]      = $full_story;
+            $new[NEW_AVATAR]    = $manual_avatar;
+            $new[NEW_CAT]       = $nice_category;
+            $new[NEW_MF]        = $pack;
+            $new[NEW_OPT]       = $options;
+
+            $error_messages = getpart('addnews_notify', array( lang('Preview add news') ));
+            $preview_hmtl   = template_replacer_news($new, $template_full);
+        }
+
+        // ---------------------------------------------------------------------------------------------------- SAVE ---
         if ($error_messages == false)
         {
             // Make unique time, just for draft/normal: not postponed
@@ -133,9 +154,6 @@ if ($action == "addnews")
                 fwrite($w, $added_time);
                 fclose($w);
             }
-
-            // Additional fields ---
-            foreach ($cfg['more_fields'] as $i => $v) $pack = edit_option($pack, $i, $_REQUEST[$i]);
 
             // Save The News Article In Active_News_File
             $all_db         = file($decide_news_file);
@@ -202,7 +220,7 @@ if ($action == "addnews")
             {
                  msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" Y-m-d H:i:s", $added_time), '#GOBACK');
             }
-            else
+            elseif (empty($preview_hmtl))
             {
                 $source = '';
                 if (strpos($decide_news_file, 'unapproved')) $source = '&source=unapproved';
