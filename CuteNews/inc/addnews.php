@@ -204,8 +204,10 @@ if ($action == "addnews")
             }
             else
             {
-                relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=yes");
-                // msg("info", lang("News added"), lang("The news item was successfully added").'. '.$unapproved_status_msg, '#GOBACK');
+                $source = '';
+                if (strpos($decide_news_file, 'unapproved')) $source = '&source=unapproved';
+                if (strpos($decide_news_file, 'postponed')) $source = '&source=postponed';
+                relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=yes$source");
             }
         }
     }
