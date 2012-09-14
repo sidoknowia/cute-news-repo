@@ -801,11 +801,12 @@ function template_replacer_news($news_arr, $output)
     if (empty($news_arr[NEW_FULL]) and (strpos($output, '{short-story}') === false) )
         $news_arr[NEW_FULL] = $news_arr[NEW_SHORT];
 
-    $output      = more_fields($news_arr[NEW_MF], $output);
+    $output = more_fields($news_arr[NEW_MF], $output);
 
     // Date Formatting [year, month, day, hour, minute, date=$config_timestamp_active]
+    list($output, $news_arr) = hook('template_replacer_news_before', array($output, $news_arr));
+
     $output      = embedateformat($news_arr[NEW_ID], $output);
-    $output      = hook('template_replacer_news_before', $output);
 
     // Replace news content
     $output      = str_replace("{title}",           hesc($news_arr[NEW_TITLE]), $output);
@@ -910,9 +911,9 @@ function template_replacer_news($news_arr, $output)
     // If not used, replace [edit]..[/edit]
     if ($DREdit == false) $output = preg_replace('~\[edit\].*?\[/edit\]~si', '', $output);
 
-    $output = hook('template_replacer_news_middle', $output);
-    $output = replace_news("show", $output);
-    $output = hook('template_replacer_news_after', $output);
+    list($output, $news_arr) = hook('template_replacer_news_middle', array($output, $news_arr));
+    $output                  = replace_news("show", $output);
+    list($output)            = hook('template_replacer_news_after', array($output, $news_arr));
 
     return $output;
 }
