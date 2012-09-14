@@ -2,10 +2,7 @@
 <script type="text/javascript"> function submitForm() { return true; } </script>
 
 {$error_messages}
-{if $preview_hmtl}
-    <div style="margin: 0 0 0 75px; border: 1px dashed gray; float: left; padding: 8px;">{$preview_hmtl}</div>
-    <div style="clear:left;"></div>
-{/if}
+{if $preview_hmtl}<div style="margin: 0 0 0 75px;">{$preview_hmtl}</div>{/if}
 
 <form onSubmit="return submitForm();"  method=post name=addnews action="{$PHP_SELF}">
 

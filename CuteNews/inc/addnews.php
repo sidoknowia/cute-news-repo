@@ -133,12 +133,13 @@ if ($action == "addnews")
             $new[NEW_MF]        = $pack;
             $new[NEW_OPT]       = $options;
 
-            $error_messages = getpart('addnews_notify', array( lang('Preview add news') ));
-            $preview_hmtl   = template_replacer_news($new, $template_full);
+            $preview_hmtl  = getpart('addnews_preview', array( lang('Preview active news'), template_replacer_news($new, $template_active) ));
+            $preview_hmtl .= getpart('addnews_preview', array( lang('Preview full story'),  template_replacer_news($new, $template_full) ));
+            $error_messages = false;
         }
 
         // ---------------------------------------------------------------------------------------------------- SAVE ---
-        if ($error_messages == false)
+        if ($error_messages == false && empty($preview_hmtl))
         {
             // Make unique time, just for draft/normal: not postponed
             if ($postpone == false)

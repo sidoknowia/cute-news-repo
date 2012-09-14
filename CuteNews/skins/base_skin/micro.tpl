@@ -9,6 +9,6 @@ logged_as_member|   <span style="color: green;">You logged as member</span>
 align_center|       <div style="text-align: center;">%1</div>
 forget_me_script|   <script type="text/javascript">CNforget();</script>
 addnews_err|        <div style="margin: 4px 0 4px 75px; color: red; ">&bull; %1</div>
-addnews_notify|     <div style="margin: 4px 0 4px 75px; color: green; ">%1</div>
+addnews_preview|    <div style="border: 1px dashed gray; float: left;"> <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px;">%1</div> <div style="border:4px solid #f0f0a0;">%2</div> </div> <div style="clear:left;"></div> <div style="height: 8px"></div>
 category_icon|      <img style="border: none; vertical-align: middle; margin: 2px;" alt="%1 icon" src="%2" />
 saved_ok|           <div style="color: green; font-size: 14px; margin: 8px 0 8px 0">The changes were successfully saved</div>
