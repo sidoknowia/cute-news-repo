@@ -93,7 +93,7 @@ function confirmDelete(url)
                     <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>
                     <td align="right">
                         {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/if}
-                        <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=doeditnews&source={$source}&ifdelete=yes&id={$id}')">
+                        <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=editnews&subaction=doeditnews&source={$source}&ifdelete=yes&id={$id}')">
                     </td>
               </tr>
             </table>
