@@ -79,7 +79,10 @@
         <td>
              <table border=0 cellspacing=0 cellpadding=0 width=100%>
              <tr>
-               <td width=50%> <input type=submit style='font-weight:bold' title="Post the New Article" value="     Add News     " accesskey="s"> </td>
+               <td width=50%>
+                   <input type=submit style='font-weight:bold' title="Post the New Article" value="     Add News     " accesskey="s">
+                   <button title="Preview the New Article" name="preview" value="preview" accesskey="p">Preview</button>
+               </td>
                <td width=50% align=right> <input style='width:110px;'type=button onClick="ShowOrHide('full-story',''); setTimeout('increaseTextareaBug()',310);" value="Toggle Full-Story"> <input style='width:90px;' type=button onClick="ShowOrHide('options','');" value="Article Options"> </td>
              </tr>
             </table>
