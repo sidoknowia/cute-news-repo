@@ -196,7 +196,7 @@ if ($action == "addnews")
 
             // Increase By 1 The Number of Written News for Current User
             $member_db[UDB_COUNT]++;
-            edit_key($username, $member_db, DB_USERS);
+            user_update($username, $member_db);
 
             // Do backup news (x2 disk space)
             if ($config_backup_news == 'yes')
@@ -249,7 +249,10 @@ if ($action == "addnews")
     if ( !isset($cfg['more_fields']) )
     {
         $cfg['more_fields'] = array();
-        fv_serialize('conf', $cfg);
+
+        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+        fclose($fx);
     }
 
     foreach ($cfg['more_fields'] as $i => $v)

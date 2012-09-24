@@ -1,10 +1,8 @@
 <?php
-
 /***************************************************************************
  CuteNews CutePHP.com
  Copyright (с) 2012 Cutenews Team
 ****************************************************************************/
-
 header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 header( 'Cache-Control: no-store, no-cache, must-revalidate' );
@@ -20,12 +18,15 @@ else require_once(SERVDIR."/skins/$config_skin.skin.php");
 
 $PHP_SELF = "index.php";
 
+// Deprecated functional checking
+deprecated_check();
+
 // Check if CuteNews is not installed
-$fp = fopen(SERVDIR."/cdata/db.users.php", 'r'); fgets($fp); $user = trim(fgets($fp)); fclose($fp);
+$fp = fopen(SERVDIR."/cdata/users.db.php", 'r'); fgets($fp); $user = trim(fgets($fp)); fclose($fp);
 if ($user == false)
 {
     if ( !file_exists(SERVDIR."/inc/install.php"))
-        die_stat(false, '<h2>Error!</h2>CuteNews detected that you do not have users in your db.users.php file and wants to run the install module.<br>
+        die_stat(false, '<h2>Error!</h2>CuteNews detected that you do not have users in your users.db.php file and wants to run the install module.<br>
                          However, the install module (<b>./inc/install.php</b>) can not be located, please reupload this file and make sure you set
                          the proper permissions so the installation can continue.');
 
@@ -85,7 +86,7 @@ if ( empty($_SESS['user']))
         CSRFCheck();
 
         // Do we have correct username and password ?
-        $member_db      = bsearch_key($username, DB_USERS);
+        $member_db      = user_search($username);
         $cmd5_password  = hash_generate($password);
 
         if ( in_array($member_db[UDB_PASS], $cmd5_password))
@@ -101,7 +102,7 @@ if ( empty($_SESS['user']))
 
             // Modify Last Login
             $member_db[UDB_LAST] = time();
-            edit_key($username, $member_db, DB_USERS);
+            user_update($username, $member_db);
 
             $is_loged_in = true;
             send_cookie();
@@ -121,7 +122,7 @@ if ( empty($_SESS['user']))
 else
 {
     // Check existence of user
-    $member_db  = bsearch_key($_SESS['user'], DB_USERS);
+    $member_db = user_search($_SESS['user']);
     if ($member_db)
     {
         $is_loged_in = true;

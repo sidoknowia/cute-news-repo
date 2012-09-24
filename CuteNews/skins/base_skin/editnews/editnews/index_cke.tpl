@@ -33,12 +33,25 @@ function confirmDelete(url)
 
     {$Hook_AdditionalFieldsTop}
 
-    {foreach from=xfields}
+    {if $xfields}
         <tr>
-            <td width="75">{$xfields.1}</td>
-            <td><input tabindex=2 type=text size="42" value="{$xfields.3}" name="{$xfields.0}">&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
+            <td align="right" valign="top">#&nbsp;</td>
+            <td>
+                <a href="#" onclick="DoDiv('add_flds_collapse'); return false;">More fields...</a>
+                <div id="add_flds_collapse" style="display: none;">
+                    <p><table class="panel">
+                        {foreach from=xfields}
+                            <tr>
+                                <td align="right">{$xfields.1}&nbsp;</td>
+                                <td colspan="2"><input tabindex=2 type=text size="42" value="{$xfields.3}" name="{$xfields.0}" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">{$xfields.2}</span></td>
+                            </tr>
+                        {/foreach}
+                        </table>
+                    </p>
+                </div>
+            </td>
         </tr>
-    {/foreach}
+    {/if}
 
     {if $Using_Avat}
     <tr>

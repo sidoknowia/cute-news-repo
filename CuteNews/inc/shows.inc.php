@@ -24,13 +24,12 @@ do
     }
 
     // Define Users
-    $all_users = file(SERVDIR."/cdata/db.users.php");
+    $all_users = file(SERVDIR."/cdata/users.db.php");
     unset ($all_users[UDB_ID]);
 
     foreach ($all_users as $user)
     {
-        $user_arr = explode("|", $user, 2);
-        $user_arr = unserialize($user_arr[1]);
+        $user_arr = user_decode($user);
 
         // nick exists?
         if ($user_arr[UDB_NICK])

@@ -1,6 +1,7 @@
 <?php
 
     $comm_per_page          = $config_comments_per_page;
+    $template_comment       = stripslashes($template_comment);
     $total_comments         = 0;
     $showed_comments        = 0;
     $comment_number         = 0;
@@ -160,7 +161,7 @@
     if ( !empty($_SESS['user']) )
     {
         $captcha_enabled = false;
-        $member_db = bsearch_key($_SESS['user'], DB_USERS);
+        $member_db = user_search($_SESS['user']);
     }
 
     $template_form = str_replace('{username}', (isset($member_db[UDB_NAME]) ? $member_db[UDB_NAME] : false), $template_form);

@@ -16,7 +16,10 @@
             $cfg['crypt_salt'] .= md5($salt);
         }
         $CryptSalt = $cfg['crypt_salt'];
-        fv_serialize('conf', $cfg);
+
+        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+        fclose($fx);
 
         return $CryptSalt;
     }
@@ -29,7 +32,6 @@
 
         /* Deprecated
            - ipban.db.php
-           - users.db.php
 
            Added
            + replaces.php
@@ -42,7 +44,7 @@
             'category.db.php',
             'comments.txt',
             'db.ban.php',
-            'db.users.php',
+            'users.db.php',
             'flood.db.php',
             'news.txt',
             'postponed_news.txt',
@@ -94,7 +96,7 @@
                 }
                 else
                 {
-                    if ( !in_array($dc, array('ipban.db.php', 'users.db.php') ) )
+                    if ( !in_array($dc, array('ipban.db.php') ) )
                     {
                         // Don't replace exist file(s)
                         if (!file_exists($path))
@@ -144,39 +146,6 @@
 
         // MIGRATION SCRIPT --------------------------------------------------------------------------------------------
 
-        // Migrate Users
-        $migrate_users_done = false;
-        if (file_exists(SERVDIR.'/data/users.db.php'))
-        {
-            $users = file(SERVDIR.'/data/users.db.php');
-            if (isset($users[0])) unset($users[0]);
-
-            if (!empty($users))
-            {
-                foreach ($users as $v)
-                {
-                    $data = explode('|', $v);
-                    $pack = array
-                    (
-                        UDB_ID        => $data[UDB_ID],
-                        UDB_ACL       => $data[UDB_ACL],
-                        UDB_NAME      => $data[UDB_NAME],
-                        UDB_PASS      => $data[UDB_PASS],
-                        UDB_NICK      => $data[UDB_NICK],
-                        UDB_EMAIL     => $data[UDB_EMAIL],
-                        UDB_COUNT     => $data[UDB_COUNT],
-                        UDB_CBYEMAIL  => $data[UDB_CBYEMAIL],
-                        UDB_AVATAR    => $data[UDB_AVATAR],
-                        UDB_LAST      => $data[UDB_LAST],
-                    );
-
-                    // username is key
-                    add_key( $pack[UDB_NAME], $pack, DB_USERS );
-                }
-                $migrate_users_done = true;;
-            }
-        }
-
         // Migrate IPBans
         if (file_exists(SERVDIR.'/data/ipban.db.php'))
         {
@@ -188,8 +157,10 @@
             }
         }
 
+        $count_users = count( file(SERVDIR.'/cdata/users.db.php') );
+
         // Clean or migration installation
-        if  ($migrate_users_done == false)
+        if  ($count_users < 2)
         {
             relocation( PHP_SELF.'?action=register' );
         }
@@ -239,10 +210,12 @@
         // Generate unique salt
         $CryptSalt = make_salt();
 
-        // add user
+        // Make user table
         $hash = hash_generate($password);
         $pwd  = $hash[ count($hash)-1 ];
-        add_key($user, array(0 => time(), ACL_LEVEL_ADMIN, $user, $pwd, $nick, $email, 0, 0), DB_USERS);
+
+        rewritefile('/cdata/users.db.php', '<'.'?php die("You don\'t have access to open this file!"); ?>'."\n");
+        user_add(array(0 => time(), ACL_LEVEL_ADMIN, $user, $pwd, $nick, $email, 0, 0));
 
         // auto-login
         setcookie('session', base64_encode( xxtea_encrypt(serialize( array( 'user' => $user )), "$ip@$CryptSalt")), 0, '/');

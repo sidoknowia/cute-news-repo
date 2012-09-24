@@ -110,7 +110,7 @@
     //----------------------------------
     // Check if the name is protected
     //----------------------------------
-    $user_member = bsearch_key($name, DB_USERS);
+    $user_member = user_search($name);
 
     // In case if enter another name
     if ($CNname && $CNpass && $CNname != $name or $name && $_SESS['user'] && $_SESS['user'] != $name)
@@ -185,7 +185,7 @@
     // User is authorized
     if ( !empty($_SESS['user']))
     {
-        $member_db = bsearch_key($_SESS['user'], DB_USERS);
+        $member_db = user_search($_SESS['user']);
         if ($member_db[UDB_ACL] = ACL_LEVEL_ADMIN) $captcha_enabled = false;
     }
 

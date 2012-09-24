@@ -42,7 +42,7 @@ foreach ($news_db as $line)
 }
 
 $stats_news             = count( $news_db );
-$stats_users            = count( file(SERVDIR."/cdata/db.users.php") ) - 1;
+$stats_users            = count( file(SERVDIR."/cdata/users.db.php") ) - 1;
 $count_postponed_news   = count( file(SERVDIR."/cdata/postponed_news.txt") );
 
 if ($count_postponed_news > 0)      ResynchronizePostponed();
@@ -121,6 +121,12 @@ if($member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
 $warn = false;
 
 //----------------------------------
+// Deprecated data
+//----------------------------------
+if (file_exists(SERVDIR.'/cdata/db.users.php'))
+    $warn .= proc_tpl('main/deprecated', array('deprecate_message' => lang('File cdata/db.users.php is deprecated. Delete <b>db.users.php</b> file from cdata')));
+
+//----------------------------------
 // Notify user if the news were auto-archived
 //----------------------------------
 
@@ -193,7 +199,7 @@ $writables  = array('/cdata/comments.txt',
                     '/cdata/log',
                     '/cdata/config.php',
                     '/cdata/db.ban.php',
-                    '/cdata/db.users.php',
+                    '/cdata/users.db.php',
                     '/cdata/replaces.php',
                     '/cdata/flood.db.php',
                     '/cdata/cat.num.php',
@@ -206,7 +212,7 @@ $writables  = array('/cdata/comments.txt',
 
 $filesize   = array(
                     '/cdata/news.txt' => 'News size',
-                    '/cdata/db.users.php' => 'Users size',
+                    '/cdata/users.db.php' => 'Users size',
                     '/cdata/cache/error_dump.log' => 'Error dump size',
 );
 

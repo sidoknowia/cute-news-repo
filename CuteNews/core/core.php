@@ -1,12 +1,20 @@
 <?php
 
-// Cache-functions
-function fv_serialize($file, $data)
+// Strong check for deprecated -----------------------------------------------------------------------------------------
+function deprecated_check()
 {
-    $fn = SERVDIR.'/cdata/cache/'.$file.'.php';
-    $fx = fopen($fn, 'w');
-    fwrite($fx, "<?php die(); ?>\n" . serialize( (array)$data) );
-    fclose($fx);
+    // In 1.5.0b has exists temporary db.users
+    if (file_exists(SERVDIR.'/cdata/db.users.php'))
+    {
+        $users = file(SERVDIR.'/cdata/db.users.php');
+        unset($users[0]);
+        foreach ($users as $v)
+        {
+            list(,$b) = explode('|', $v, 2);
+            $b = unserialize($b);
+            if ( user_search($b[UDB_NAME]) == false ) user_add($b);
+        }
+    }
 }
 
 // ------------------------------------- DB on files -------------------------------------------------------------------
@@ -898,7 +906,7 @@ function template_replacer_news($news_arr, $output)
     $DREdit = false;
     if (empty($_SESS['user']) == false)
     {
-        $member_db = bsearch_key($_SESS['user'], DB_USERS);
+        $member_db = user_search($_SESS['user']);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
             $url    = build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
@@ -2119,11 +2127,33 @@ function linkedcat($catids)
 function bd_config($str) { return base64_decode($str); }
 function spack($s)   { return str_replace(array('{','|',';','=',"\n"), array("{I}","{kv}","{eq}","{eol}"), $s); }
 function sunpack($s) { return str_replace(array("{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $s); }
-function preg_sanitize($s) { return str_replace(array('.', '|', '[', ']', '*', '?'), array('\.', '\|', '\[', '\]', '\*', '\?'), $s); }
 function clbTruncate($match) { return word_truncate($match[2], $match[1]);  }
 function word_truncate($data, $length = 75) { return preg_replace('~^(.{'.$length.',}?)\s.*$~', '\\1\\2...', $data); }
 function check_email($email) { return (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/", $email)); }
 function substru($str, $from, $len) { return preg_replace('#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $from .'}'.'((?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $len .'}).*#s','$1', $str); }
+
+$preg_sanitize_af = array();
+$preg_sanitize_at = array();
+
+// Sanitize regexp [$rev=true -- revert]
+function preg_sanitize($s, $rev = false)
+{
+    global $preg_sanitize_af, $preg_sanitize_at;
+
+    if (empty($preg_sanitize_af) && empty($preg_sanitize_at))
+    {
+        $codes = '#!=~.|[]+*?()-{}$^/\\';
+        for ($i = 0; $i < strlen($codes); $i++)
+        {
+            $preg_sanitize_af[] = $codes[$i];
+            $preg_sanitize_at[] = '\\x' . dechex(ord($codes[$i]));
+        }
+    }
+
+    if ($rev)
+         return str_replace($preg_sanitize_at, $preg_sanitize_af, $s);
+    else return str_replace($preg_sanitize_af, $preg_sanitize_at, $s);
+}
 
 // Manual replacements in URLs --------------
 // $type - apply template
@@ -2173,6 +2203,84 @@ function spsep($separated_string, $seps = ',')
     return $ss;
 }
 
+// Simply rewrite file with locking
+function rewritefile($file, $data)
+{
+    if (is_array($data))
+        $data = implode('', $data);
+
+    $w = fopen(SERVDIR.$file, 'w');
+    flock($w, LOCK_EX);
+    fwrite($w, $data);
+    flock($w, LOCK_UN);
+    fclose($w);
+}
+
+// Load database in GLOBALS as string
+function load_database($dbname, $target)
+{
+    global $$dbname;
+
+    if (empty($$dbname))
+        $$dbname = join('', file(SERVDIR.'/cdata/'.$target.'.php'));
+
+    return $$dbname;
+}
+
+function user_search($user)
+{
+    $user = preg_sanitize( $user );
+    if ( empty($user) ) return false;
+
+    $users_db = load_database('users_db', 'users.db');
+    if  (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*$~m', $users_db, $c))
+         $member_db = user_decode($c[0]);
+    else $member_db = false;
+
+    return $member_db;
+}
+
+function user_update($user, $member_db)
+{
+    $user = preg_sanitize( $user );
+    if ( empty($user) ) return false;
+
+    // Try to save new data from user
+    $users_db = load_database('users_db', 'users.db');
+    if  (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*$~m', $users_db, $c))
+    {
+        foreach ($member_db as $i => $v) $member_db[$i] = spack($v);
+        rewritefile('/cdata/users.db.php', str_replace($c[0], implode('|', $member_db), $users_db) );
+    }
+}
+
+function user_add($member_db)
+{
+    $a = fopen(SERVDIR.'/cdata/users.db.php', 'a+');
+    foreach ($member_db as $i => $v) $member_db[$i] = spack($v);
+    fwrite($a, implode('|', $member_db)."\n");
+    fclose($a);
+}
+
+function user_delete($user)
+{
+    $user = preg_sanitize( $user );
+    if ( empty($user) ) return false;
+
+    $users_db = load_database('users_db', 'users.db');
+    if (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*?$~im', $users_db, $c))
+        $users_db = str_replace($c[0]."\n", '', $users_db);
+
+    rewritefile('/cdata/users.db.php', $users_db );
+}
+
+function user_decode($user_line)
+{
+    $member_db = explode('|', $user_line);
+    foreach ($member_db as $i => $v) $member_db[$i] = sunpack($v, true);
+    return $member_db;
+}
+
 // ------------- CSRF value -------------
 function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
 {
@@ -2185,6 +2293,7 @@ function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
 function CSRFCheck($Name = 'U:CSRF', $token = 'csrf_code') /* Check CSRF code  */
 {
     global $_SESS;
+
     if ($_SESS[ $Name ] != $_REQUEST[$token])
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);

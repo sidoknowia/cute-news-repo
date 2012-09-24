@@ -25,12 +25,11 @@ if (strpos($user_flags,'l') !== false) $th .= '<td><b>Access Level</b></td>';
 if (strpos($user_flags,'e') !== false) $th .= '<td><b>EMail</b></td>';
 $th .= '</tr>';
 
-$all_users = file(SERVDIR."/cdata/db.users.php");
+$all_users = file(SERVDIR."/cdata/users.db.php");
 unset($all_users[0]);
 
 // Get all $_GET parameters for future build_uri
 // Sorting
-
 
 // Show users
 $i = 0;
@@ -40,8 +39,7 @@ foreach ($all_users as $user_line)
     $bg = " align='center'";
     if($i%2 == 0 && isset($bgcolor) && $bgcolor != "") $bg .= " bgcolor='$bgcolor'";
 
-    list (,$user_str) = explode('|', $user_line, 2);
-    $user_arr = unserialize($user_str);
+    $user_arr = user_decode($user_line);
     $user_joined = date($date_format, $user_arr[UDB_ID]);
 
     if ($user_arr[UDB_AVATAR] != "")

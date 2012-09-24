@@ -412,7 +412,11 @@ elseif ($action == 'xfields')
         // add new field
         if ($add_name && $add_vis) $cfg['more_fields'][$add_name] = $add_vis;
 
-        fv_serialize('conf', $cfg);
+        // save
+        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+        fclose($fx);
+
         msg('info', lang('Saved'), lang('Config successfully saved'), false, make_breadcrumbs('main/options/tools:xfields=More fields', true));
     }
 

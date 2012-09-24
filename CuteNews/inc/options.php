@@ -191,9 +191,8 @@ elseif ($action == "dosavepersonal")
     if ($editpassword and !preg_match("/^[\.A-z0-9_\-]{1,31}$/i", $editpassword))
         msg("error", lang('Error!'), lang("Your password must contain only valid characters and numbers"), '#GOBACK');
 
-    $edithidemail = $edithidemail? 1 : 0;
-    $avatars = preg_replace(array("'\|'","'\n'","' '"), array("","","_"), $avatars);
-    $pack = bsearch_key($username, DB_USERS);
+    $edithidemail   = $edithidemail? 1 : 0;
+    $pack           = user_search($username);
 
     // editing password (with confirm)
     if ($editpassword)
@@ -211,7 +210,8 @@ elseif ($action == "dosavepersonal")
     $pack[UDB_EMAIL]        = $editmail;
     $pack[UDB_CBYEMAIL]     = $edithidemail;
     $pack[UDB_AVATAR]       = $change_avatar;
-    edit_key($username, $pack, DB_USERS);
+
+    user_update($username, $pack);
 
     msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "#GOBACK");
     

@@ -151,7 +151,6 @@
     define('RATEN_SYMBOL',      empty($config_raten) ? '&ndash;' : str_replace('&amp;', '&', $config_raten) ); // &#9733;
 
     // DATABASE DEFINITION
-    define('DB_USERS',          SERVDIR.'/cdata/db.users.php');          // users databases [key=user.md5password]
     define('DB_BAN',            SERVDIR.'/cdata/db.ban.php');            // ban filters
 
     // SERVER values make
@@ -173,7 +172,10 @@
 
     // save cfg file
     $cfg = hook('init_modify_cfg', $cfg);
-    fv_serialize('conf', $cfg);
+
+    $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+    fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+    fclose($fx);
 
     //----------------------------------
     // Html Special Chars
