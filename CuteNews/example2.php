@@ -102,7 +102,7 @@ BODY,TD,TR{
 
                         <tr>
                             <td width="100%">
-                                <a title="RSS Feed" href="<?php echo $_SERVER['PHP_SELF']; ?>?do=rss"><img src="http://cute150.com/skins/images/rss_icon.gif" border=0/></a>
+                                <a title="RSS Feed" href="<?php echo $_SERVER['PHP_SELF']; ?>?do=rss"><img src="<?php echo $config_http_script_dir; ?>/skins/images/rss_icon.gif" border=0/></a>
                             </td>
                         </tr>
 

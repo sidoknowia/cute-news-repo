@@ -187,8 +187,9 @@
     {
         $no_next = true;
         $no_prev = true;
-        $prev_next_msg = str_replace("{pages}", $pages, $prev_next_msg);
     }
+
+    $prev_next_msg = str_replace("{pages}", $pages, $prev_next_msg);
 
     //----------------------------------
     // Next link  (typo here ... typo there... typos everywhere !)
