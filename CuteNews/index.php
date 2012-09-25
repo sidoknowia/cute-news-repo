@@ -36,18 +36,6 @@ if ($user == false)
 
 hook('index_init');
 
-// User is banned?
-$REMOTE_ADDR = '__'.$_SERVER['REMOTE_ADDR'].'__';
-$banid = bsearch_key($REMOTE_ADDR, DB_BAN);
-if ($banid)
-{
-    if ( isset($banid[$REMOTE_ADDR]) )
-    {
-        if ( $banid[$REMOTE_ADDR]['E'] > time() ) msg('error', lang('Error!'), "You're banned");
-        elseif ( $banid[$REMOTE_ADDR]['E'] > 0)   delete_key($REMOTE_ADDR, DB_BAN);
-    }
-}
-
 b64dck();
 if ($action == "logout")
 {
@@ -78,6 +66,11 @@ $result      = false;
 $username    = empty($_POST['user']) ? $_POST['username'] : $_SESS['ix'];
 $password    = $_POST['password'];
 
+// User is banned
+if ( $bandata = user_getban($ip, false))
+     if ($bandata[2] > 3)
+        msg('error', lang('Error!'), getpart('youban', format_date( $bandata[2], 'since-short')));
+
 if ( empty($_SESS['user']))
 {
     /* Login Authorization using COOKIES */
@@ -98,7 +91,7 @@ if ( empty($_SESS['user']))
             elseif (isset($_SESS['@'])) unset($_SESS['@']);
 
             add_to_log($username, 'login');
-            delete_key($ip, DB_BAN);
+            user_remove_ban($ip);
 
             // Modify Last Login
             $member_db[UDB_LAST] = time();
@@ -110,8 +103,9 @@ if ( empty($_SESS['user']))
         else
         {
             $_SESS['user'] = false;
-            $result = "<span style='color:red;'>".lang('Wrong username or password')."</span>";
-            $result .= add_to_ban($ip);
+
+            $bandata = user_addban($ip, time() + 3600);
+            $result .= getpart('block_ban', $bandata[1], date('d-m-Y H:i:s', $bandata[2]) );
 
             add_to_log($username, lang('Wrong username/password'));
             $is_loged_in = false;
@@ -144,7 +138,7 @@ if (empty($is_loged_in))
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
                   array('lastusername'  => htmlspecialchars($username) ),
-                  array('ALLOW_REG' => ($config_allow_registration == "yes")? 1:0 ) );
+                  array('ALLOW_REG'     => ($config_allow_registration == "yes")? 1:0 ) );
 
     echofooter();
 }

@@ -17,179 +17,6 @@ function deprecated_check()
     }
 }
 
-// ------------------------------------- DB on files -------------------------------------------------------------------
-// Key insert
-function add_key($id, $value, $file)
-{
-    // init
-    $ms         = array();
-    $lock       = false;
-    $xs         = file($file);
-                  unset($xs[0]);
-    
-    // sort keys
-    if ( !is_array($id) ) $id = array( $id => $value );
-    foreach ($id as $i => $v) $ms[ md5($i) ] = $v;
-
-    ksort($ms);
-    reset($ms);
-
-    $fp = fopen($file, "w") or ($lock = true);
-    if ($lock) return false;
-    flock($fp, LOCK_EX);
-    fwrite($fp, '<'.'?php die(); ?>'."\n");
-
-    foreach ($xs as $v)
-    {
-        list($a) = explode('|', $v, 2);
-        while ($ms && $a >= key($ms))
-        {
-            // without duplicates
-            if ($a > key($ms)) fwrite($fp, key($ms).'|'.serialize(current($ms))."\n");
-            unset( $ms[ key($ms) ] );
-            reset( $ms );
-        }
-        fwrite($fp, $v);
-    }
-
-    // passthru content
-    foreach ($ms as $i => $v) fwrite($fp, $i.'|'.serialize($v)."\n");
-
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    return true;
-}
-
-function edit_key($id, $value, $file)
-{
-    // don't edit empty array or key
-    if (is_array($id) && count($id) == 0 || !$id) return false;
-
-    // array makes
-    if (is_array($id))
-    {
-         $ms = array();
-         foreach ($id as $i => $v) $ms[ md5($i) ] = $v;
-    }
-    else $ms = array( md5($id) => $value );
-
-    // open file for editing
-    $xs     = file($file);
-    $lock   = false;
-    $fp     = fopen($file, "w") or ($lock = true);
-    if ($lock) return false;
-    flock($fp, LOCK_EX);
-    fwrite($fp, '<'.'?php die(); ?>'."\n");
-
-    // replace all keys to value
-    unset($xs[0]);
-    foreach ($xs as $v)
-    {
-        list ($a) = explode('|', $v, 2);
-        if ( isset($ms[$a]) )
-             fwrite($fp, $a."|".serialize( $ms[$a] )."\n");
-        else fwrite($fp, $v);
-    }
-
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    return true;
-}
-
-function delete_key($id, $file)
-{
-    $lock = false;
-    $id = md5($id);
-
-    $xs = file($file);
-    unset($xs[0]);
-
-    $fp = fopen($file, "w") or ($lock = true);
-    if ($lock) return false;
-    flock($fp, LOCK_EX);
-    fwrite($fp, '<'.'?php die(); ?>'."\n");
-
-    // delete all keys
-    foreach ($xs as $v)
-    {
-        list ($a) = explode('|', $v, 2);
-        if ($a != $id) fwrite($fp, $v);
-    }
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    return true;
-}
-
-// $method = BSEARCH_LINE | BSEARCH_FLAT | BSEARCH_STAT
-function bsearch_key($id, $file, $method = false)
-{
-    // get searched file
-    $st  = 0;
-    $ret = false;
-    $fx  = file ($file);
-    unset($fx[0]);
-
-    // detect multisearch
-    if (is_array($id))
-    {
-        $founds = $id;
-        $method |= BSEARCH_MULTI;
-    }
-    else $founds = array($id);
-
-    // do search (one or many)
-    foreach ($founds as $kx => $id)
-    {
-        // MD5($id)? Set option BSEARCH_FLAT - and use any key
-        if ( ($method & BSEARCH_FLAT) == 0) $id = md5($id);
-
-        // Start
-        $pv  = 0;
-        $b   = 1;
-        $e   = count($fx);
-
-        do
-        {
-            $st++;
-            $p = (int)(($b + $e) / 2);
-
-            // try current value
-            list($v, $un) = explode('|', $fx[$p], 2);
-
-            // correction bounds
-            if ($v < $id)     $b = $p;
-            elseif ($v > $id) $e = $p;
-            else break;
-
-            // don't continue in this case -> check high value
-            if ($pv == $p && ($e - $b) == 1)
-            {
-                list($v, $un) = explode('|', $fx[++$p], 2);
-                break;
-            }
-            else $pv = $p;
-        }
-        while ($e - $b > 0);
-
-        // if breaks out and found, get $ret variable
-        $val = ($method & BSEARCH_LINE)? $p : unserialize($un);
-        if ( $method & BSEARCH_MULTI)
-        {
-            if ($v == $id) $ret[$kx] = $val; else $ret[$kx] = false;
-        }
-        else if ($v == $id) $ret = $val;
-    }
-    
-    // statistic mode for benchmark & check performance
-    if ($method & BSEARCH_STAT) return $st;
-
-    // return array or value
-    return $ret;
-}
-
 // DEBUG functions -----------------------------------------------------------------------------------------------------
 
 // error_dump.log always 0600 for deny of all
@@ -995,9 +822,16 @@ function format_date($time, $type = false)
             ' m. ' => 60,
         );
 
-        $rd = false;
-        $mids = $dist = time() - $time;
+        $ago    = 'ago';
+        $rd     = false;
+        $dist   = time() - $time;
+        if ($dist < 0)
+        {
+            $ago  = 'after';
+            $dist = -$dist;
+        }
 
+        $mids = $dist;
         foreach ($dists as $i => $v)
         {
             if ($dist > $v)
@@ -1008,7 +842,7 @@ function format_date($time, $type = false)
             }
         }
 
-        $rd .= ($rd? '' : '0 m' ).' ago'. (($type == 'since' && $mids > 24*3600) ? ' at '.date('Y-m-d H:i') : '');
+        $rd .= ($rd? '' : '0 m' ).' '.$ago. (($type == 'since' && $mids > 24*3600) ? ' at '.date('Y-m-d H:i') : '');
         return $rd;
     }
 
@@ -1095,113 +929,6 @@ function build_uri($left, $right, $html = 1)
 
     // Return true link
     return '?'.$DDU;
-}
-
-// Fast masked ban searcher (return found mask and dest mask for IP as ID)
-function ip_mask_check($key, $AIP)
-{
-    if (is_array($key))
-    foreach ( $key as $mask => $v)
-    {
-        $c = $d = 0;
-        $ipx  = explode('.', $mask);
-        foreach ($ipx as $p) if ($AIP[$c++] == $p || $p == '*') $d++;
-        if ($d == 4) return $mask;
-    }
-    return false;
-}
-
-function check_for_ban($IP = '127.0.0.1', $nick = false)
-{
-    // check for nickname
-    if ($nick)
-    {
-        // first nickname in database
-        $nick = strtolower( preg_replace('~[^0-9a-z]~i', '', $nick) );
-        if ( bsearch_key('>'.$nick, DB_BAN) )
-             return ('>'.$nick);
-    }
-
-    $AIP = explode('.', $IP);
-    list ($A, $B, $C, $D) = $AIP;
-
-    // Prepare ips for search
-    $ips[ 0 ] = "$A.$B.$C.$D";
-    $ips[ 1 ] = "$A.$B.$C";
-    $ips[ 2 ] = "$A.$B";
-    $ips[ 3 ] = "$A";
-
-    // search multiply ips
-    $keys = bsearch_key($ips, DB_BAN);
-
-    // real exists IP in keytable?
-    if ( isset($keys[0]) && isset($keys[0][ $ips[0] ])) return $ips[0].':'.$ips[0];
-
-    // masks check
-    if (isset($keys[1])) { if ( $mask = ip_mask_check($keys[1], $AIP) ) return $ips[1].":".$mask; }
-    if (isset($keys[2])) { if ( $mask = ip_mask_check($keys[2], $AIP) ) return $ips[2].":".$mask; }
-    if (isset($keys[3])) { if ( $mask = ip_mask_check($keys[3], $AIP) ) return $ips[3].":".$mask; }
-
-    // all ok
-    return false;
-}
-
-function add_ip_to_ban($add_ip, $expire = 0)
-{
-    if (preg_match('~^([0-9\*]+)\.([0-9\*]+)\.([0-9\*]+)\.([0-9\*]+)$~', $add_ip, $ip))
-    {
-        // unique first tail
-        $uniq = array();
-        for ($i = 1; $i < 5; $i++)
-        {
-            if ($ip[$i] == '*') break;
-            $uniq[] = $ip[$i];
-        }
-
-        // without * is unique
-        $uniq = implode('.', $uniq);
-        if ($uniq == $ip[0])
-        {
-            add_key($uniq, false, DB_BAN);
-            edit_key($uniq, array($uniq => array('T' => 0, 'E' => $expire)), DB_BAN); // if key exist, replace
-        }
-        else
-        {
-            // if key not exists, create
-            if ( $bans = bsearch_key($uniq, DB_BAN) )
-            {
-                $bans[$ip[0]] = array('T' => 0, 'E' => $expire);
-                edit_key($uniq, $bans, DB_BAN);
-            }
-            else
-            {
-                // add first key
-                add_key($uniq, false, DB_BAN);
-                edit_key($uniq, array($ip[0] => array('T' => 0, 'E' => $expire)), DB_BAN);  // if key exist, replace
-            }
-        }
-    }
-}
-
-// count times for login ban
-function add_to_ban($REMOTE_ADDR)
-{
-
-    // check for ban on 6 hour
-    $banid = bsearch_key($REMOTE_ADDR, DB_BAN);
-    if ( !isset($banid[$REMOTE_ADDR]) )
-    {
-        $banid[$REMOTE_ADDR] = array('T' => 0, 'E' => 0);
-        add_key($REMOTE_ADDR, array($REMOTE_ADDR => $banid[$REMOTE_ADDR]), DB_BAN);
-    }
-
-    // if more than 6 times, add ban time
-    if ($banid[$REMOTE_ADDR]['T'] > 6) $banid[$REMOTE_ADDR]['E'] = time() + 3600*6;
-    edit_key($REMOTE_ADDR, array($REMOTE_ADDR => array('T' => $banid[$REMOTE_ADDR]['T'] + 1,
-                                                       'E' => $banid[$REMOTE_ADDR]['E'])), DB_BAN);
-
-    if ( $banid[$REMOTE_ADDR]['T'] > 0 ) return ' <b>Ban attempt</b> '.$banid[$REMOTE_ADDR]['T'].'!';
-    
 }
 
 function embedateformat($timestamp, $output)
@@ -2085,6 +1812,17 @@ function getpart($name, $data = array())
 {
     global $PHP_SELF;
 
+    if (func_num_args() == 2)
+    {
+        if (!is_array($data)) $data = array($data);
+    }
+    elseif (func_num_args() > 2)
+    {
+        $data = array();
+        for ($i = 1; $i < func_num_args() + 1; $i++)
+            $data[$i-1] = func_get_arg($i);
+    }
+
     $parts = str_replace('{$PHP_SELF}', $PHP_SELF, read_tpl('micro'));
     if ( preg_match('~^'.$name.'\|(.*)$~m', $parts, $match) )
     {
@@ -2142,7 +1880,7 @@ function preg_sanitize($s, $rev = false)
 
     if (empty($preg_sanitize_af) && empty($preg_sanitize_at))
     {
-        $codes = '#!=~.|[]+*?()-{}$^/\\';
+        $codes = '/\\#!=~.|[]+*?()-{}$^';
         for ($i = 0; $i < strlen($codes); $i++)
         {
             $preg_sanitize_af[] = $codes[$i];
@@ -2214,14 +1952,16 @@ function rewritefile($file, $data)
     fwrite($w, $data);
     flock($w, LOCK_UN);
     fclose($w);
+
+    return true;
 }
 
 // Load database in GLOBALS as string
-function load_database($dbname, $target)
+function load_database($dbname, $target, $reload = false)
 {
     global $$dbname;
 
-    if (empty($$dbname))
+    if (empty($$dbname) or $reload)
         $$dbname = join('', file(SERVDIR.'/cdata/'.$target.'.php'));
 
     return $$dbname;
@@ -2272,6 +2012,71 @@ function user_delete($user)
         $users_db = str_replace($c[0]."\n", '', $users_db);
 
     rewritefile('/cdata/users.db.php', $users_db );
+}
+
+// If user not banned, return false
+function user_getban($ip, $stat = true)
+{
+    $users_ban = load_database('users_ban', 'ipban.db');
+
+    // Check for masked IP if present that
+    if (preg_match('~^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$~', $ip, $ei))
+         $ip = '('.$ei[1].'|\*)\.('.$ei[2].'|\*)\.('.$ei[3].'|\*)\.('.$ei[4].'|\*)';
+    else $ip = preg_sanitize($ip);
+
+    if (empty($ip)) return false;
+    if (preg_match('~^'.$ip.'\|.*$~im', $users_ban, $c))
+    {
+        $list = explode('|', $c[0]);
+
+        // With expire time user has unblocked
+        if ($list[2] && $list[2] < time())
+        {
+            user_remove_ban($ip);
+            return false;
+        }
+
+        // Status message
+        return $stat ? 'blocked' : $list;
+    }
+    else return false;
+}
+
+function user_addban($ip, $expire = false)
+{
+    if (empty($ip)) return false;
+
+    $users_ban = load_database('users_ban', 'ipban.db');
+    if ( $bandata = user_getban($ip, false) )
+    {
+        if (preg_match('~^'.preg_sanitize($bandata[0]).'\|.*$~im', $users_ban, $c))
+        {
+            $bandata = explode('|', $c[0]);
+            $bandata[1]++;
+            $bandata[2] = $expire;
+            $users_ban = str_replace($c[0], implode('|', $bandata), $users_ban);
+        }
+    }
+    else
+    {
+        $users_ban = load_database('users_ban', 'ipban.db', true);
+        $users_ban .= "$ip|1|$expire|\n";
+        $bandata = array($ip, 1, $expire);
+    }
+
+    rewritefile('/cdata/ipban.db.php', $users_ban );
+    return $bandata;
+}
+
+function user_remove_ban($ip)
+{
+    if (empty($ip)) return false;
+
+    $users_ban = load_database('users_ban', 'ipban.db');
+    if (preg_match_all('~^'.preg_sanitize($ip).'\|.*$~im', $users_ban, $c, PREG_SET_ORDER))
+        foreach ($c as $v) $users_ban = str_replace($v[0]."\n", '', $users_ban);
+
+    return rewritefile('/cdata/ipban.db.php', $users_ban );
 }
 
 function user_decode($user_line)

@@ -53,46 +53,13 @@
     //----------------------------------
     // Check if IP is blocked or wrong
     //----------------------------------
-    if ( ($ids = check_for_ban($ip, $name)) || $ip == false )
+    $is_ban = (user_getban($ip) or user_getban($name)) ? true : false;
+
+    // user really banned
+    if ($is_ban)
     {
-        $is_ban = false;
-        list ($kk, $dest) = explode(':', $ids);
-        $banuser = bsearch_key($kk, DB_BAN);
-
-        // check IP
-        if ($dest)
-        {
-            // if expire date out or never expired
-            if ($banuser[$dest]['E'] == 0 || $banuser[$dest]['E'] >= time())
-            {
-                $banuser[$dest]['T']++;
-                edit_key($kk, $banuser, DB_BAN);
-                $is_ban = true;
-            }
-            else
-            {
-                unset($banuser[$dest]);
-                edit_key($kk, $banuser, DB_BAN);
-            }
-        }
-        // check Nickname
-        else
-        {
-            list ($user, $times, $expire) = explode('|', $banuser);
-            if ($expire == 0 or $expire >= time() )
-            {
-                edit_key($kk, substr($kk,1).'|'.($times+1).'|'.$expire, DB_BAN);
-                $is_ban = true;
-            }
-            else delete_key($kk, DB_BAN);;
-        }
-
-        // user really banned
-        if ($is_ban)
-        {
-            echo '<div class="blocking_posting_comment">'.lang('Sorry but you have been blocked from posting comments').'</div>';
-            return FALSE;
-        }
+        echo '<div class="blocking_posting_comment">'.lang('Sorry but you have been blocked from posting comments').'</div>';
+        return FALSE;
     }
 
     //----------------------------------

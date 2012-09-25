@@ -1,4 +1,5 @@
-<?PHP
+<?php
+
 if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", "Access Denied", "You don't have permission for this section");
 
@@ -7,17 +8,7 @@ if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
 // ********************************************************************************
 if ($action == "add" or $action == "quickadd")
 {
-    // sanitize
-    $add_nick = strtolower( preg_replace('~[^0-9a-z]~i', '', $add_nick) );
-
-    if ($add_ip)
-    {
-        add_ip_to_ban($add_ip);
-    }
-    elseif ($add_nick)
-    {
-        add_key('>'.$add_nick, $add_nick.'|0|0', DB_BAN);
-    }
+    if (!empty($add_ip)) user_addban($add_ip);
 
     // from editcomments 
     if ($action == "quickadd")
@@ -28,22 +19,8 @@ if ($action == "add" or $action == "quickadd")
 // ********************************************************************************
 elseif($action == "remove")
 {
-    if (!$remove_ip)
-        msg("error", lang('Error!'), lang("The IP or nick can not be blank"), '#GOBACK');
-    
-    // remove nick or IP
-    if (bsearch_key('>'.$remove_ip, DB_BAN))
-    {
-        delete_key('>'.$remove_ip, DB_BAN);
-    }
-    else
-    {
-        $ip_search = check_for_ban($remove_ip);
-        list ($key, $bip) = explode(':', $ip_search);
-        $sban = bsearch_key($key, DB_BAN);
-        unset($sban[$bip]);
-        edit_key($key, $sban, DB_BAN);
-    }
+    if (empty($remove_ip)) msg("error", lang('Error!'), lang("The IP or nick can not be blank"), '#GOBACK');
+    user_remove_ban($remove_ip);
 }
 
 // ********************************************************************************
@@ -51,39 +28,22 @@ elseif($action == "remove")
 // ********************************************************************************
 echoheader("options", lang("Blocking IP / Nickname"), make_breadcrumbs('main/options=options/Block IP or nickname'));
 
-$ips = fopen(DB_BAN, 'r');
-
-// php secure header skip
-fgets($ips);
-
 $c      = 0;
 $iplist = array();
 
 // read all lines
+$ips = fopen(SERVDIR.'/cdata/ipban.db.php', 'r');
 while (!feof($ips))
 {
-    list(, $dip) = explode('|', fgets($ips), 2);
-    $dip = unserialize($dip);
+    $dip = explode('|', fgets($ips));
+    if (empty($dip[0])) continue;
+    if (substr($dip[0], 0, 2) == '<'.'?') continue;
 
-    // array only
-    if (is_array($dip)) foreach ($dip as $i => $v)
-    {
-        $e = $v['E'] ? date('Y-m-d H:i:s', $v['E']) : 'never';
-        $iplist[] = array('ip' => $i, 'bg' => $c++%2? 'bgcolor="#F7F8FF"' : '', 'times' => (int)$v['T'], 'expire' => $e );
-    }
-    elseif ($dip)
-    {
-        list ($i, $v, $e) = explode('|', $dip);
-        $e = $e ? date('Y-m-d H:i:s', $e) : 'never';
-        $iplist[] = array('ip' => $i, 'bg' => $c++%2? 'bgcolor="#F7F8FF"' : '', 'times' => (int)$v, 'expire' => $e );
-    }
-
+    $e = $dip[2] ? format_date($dip[2], 'since-short') : 'never';
+    $iplist[] = array('ip' => $dip[0], 'bg' => $c++%2? 'bgcolor="#F7F8FF"' : '', 'times' => $dip[1], 'expire' => $e );
 }
-
 fclose($ips);
 
-// show template
-echo proc_tpl('ipban/index', array('iplist' => $iplist));
+echo proc_tpl('ipban/index');
 echofooter();
-
 ?>

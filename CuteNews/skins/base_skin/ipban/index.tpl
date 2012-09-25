@@ -4,16 +4,12 @@
     <input type=hidden name=mod value=ipban>
     <table border=0 cellpadding=0 cellspacing=0 width="100%">
         <tr>
-            <td width=321 height="33">
+            <td width=100% height="33">
                 <p><b>Block IP or Nickname</b></p>
-                <table border=0 cellpadding=0 cellspacing=0 width=500  class="panel" cellpadding="7" >
+                <table border=0 cellpadding=0 cellspacing=0 width=100%  class="panel" cellpadding="7" >
                     <tr>
-                        <td width=79 height="25">&nbsp;IP Address:</td>
-                        <td width=274 height="25"> <input type=text name="add_ip"> example: <i>129.32.31.44</i> or <i>129.32.*.*</i> </td>
-                    </tr>
-                    <tr>
-                        <td width=79 height="25">&nbsp;Nick name:</td>
-                        <td width=274 height="25"> <input type=text name="add_nick"> <input type=submit value="Block IP or nick / Refresh"></td>
+                        <td width=150 align="right" height="25">IP Address / Nick name:&nbsp;</td>
+                        <td height="25"> <input type=text name="add_ip"> <input type=submit value="Block IP or nick / Refresh"> example: <i>129.32.31.44</i> or <i>129.32.*.*</i> </td>
                     </tr>
                 </table>
             </td>
@@ -21,7 +17,7 @@
     </table>
 </form>
 
-<div><b>Blocked IP Addresses</b></div>
+<div><b>Blocked IP Addresses / Names</b></div>
 <table cellspacing=0 cellpadding=3 width="100%">
 
     <tr  bgcolor=#F7F6F4>

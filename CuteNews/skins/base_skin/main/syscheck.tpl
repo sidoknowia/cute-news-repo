@@ -56,5 +56,5 @@
 
 <p><a href="example1.php" target="blank">Example 1</a>
    &middot; <a href="example2.php" target="blank">Example 2</a>
-   &middot; <a href="{$config_cutenews_path}/README.html">Readme</a>
+   &middot; <a href="{$config_http_script_dir}/README.html">Readme</a>
 </p>

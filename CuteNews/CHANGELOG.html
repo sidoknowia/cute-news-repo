@@ -68,7 +68,6 @@ CuteNews 1.5.0 release notes.
     - Added captcha for comments: with numbers and letters;
     - More safety by user registration and password restore;
     - Added check for password strength by registration;
-    - Simplified inserting &ldquo;Fulltext&rdquo; search (UTF-8 supported);
     - Proper display of the complete article, included in multiple categories.
     - Improved Dashboard at the main page of Administration Panel;
     - A more precise definition of permissions to read / write files;
@@ -169,6 +168,35 @@ CuteNews 1.5.0 release notes.
     + The migration script has been changed: copying of all files non registering codepage excepting users/ipban
       (they are separate)
     - Fix string truncation
+    + Hook for CKEditor modification through plug-ins is added
+    + The feature of changing the date of news publication is added
+    - Assortment of the news at the listing
+    - The news listing it's possible now to change a certain category by just a click
+    - Correction of mistakes while adding comments to the news
+    - Change of documentation and simplification of templates' editing
+    - Additional fields has become not obligatory field
+    - Fixed bug of the avatar from multi-category
+    - The bug that concerns editing the news category that is deleted has been fixed
+    - The XSS while editing additional fields for news is fixed
+    - There is a search by key words
+    + Mod_rewrite is added for several section experimentally
+    + The constructions {if $var}...{/if} and {if !$var}...{/if} are added to the template engine
+    + After adding the news it is passed for editing
+    + Add preview of news on add news in admin panel
+    + Add hooks for Additional fields in template add/edit news
+    + Add stripslashes for templates
+    + Add more data for hook in core.php:template_replacer_news
+    + Add "Deprecated message" at main panel
+    + Add hook for bottom of active news
+    - Remove fv_serialize function
+    - Use user_add, user_update, user_search, user_delete insead b-tree operations with users file
+    - More compartible upgrade process from 1.4.7 version
+    - Wrap into hidden panel xfields
+    - Function build_uri now uses $QUERY_STRING
+    - preg_split to explode: more stable splitting
+    - Fixed draft saving
+    - Fixed using PHP_SELF value
+    - Fixed pagination (also in archives)
 
 1.1 Requirements
 
@@ -220,20 +248,12 @@ ________________________________________________________________________________
     3.2 Upload all files into this folder;
     3.3 Set up the script from the specified folder(yourdomain.com/cnews, for instance);
     3.4 Fill in the administrator fields (login, password, email)
-
-    There are following modifications available to download:
-
-    - cutenews_1.5.0.light.zip (without Ckeditor)
-    - cutenews_1.5.0.zip (includes Ckeditor)
 ________________________________________________________________________________________________________________________
 
 4.0 Instruction on how to upgrade CuteNews from the older versions
 
     3.1 Install Cutenews 1.5.0 in the specified folder;
-    3.2 Launch the upgrading script in the Options > Integration Wizards > Migration from 1.4.7 to 1.5.0.
-
-    In case of the &ldquo;Timeout error&rdquo; try to launch the upgrading script again, setting checkbox only for those parts you
-    need to be completed.
+    3.2 Try to login.
 ________________________________________________________________________________________________________________________
 
 5.0 The use of embedded code
@@ -339,9 +359,7 @@ ________________________________________________________________________________
     It is necessary to follow the instructions which are presented in the Wizards.
 ________________________________________________________________________________________________________________________
 
-5.5 Search function
-
-5.5.1 Embedding search form
+5.5 Embedding search form
 
     This can be done in two ways:
 
@@ -359,27 +377,6 @@ ________________________________________________________________________________
     Once the values  $do = 'search' и dosearch = 'yes' have been shown in the URL- or Post query, search results will
     be displayed.
 
-5.5.2 Search algorithm description
-
-    Search function partly supports fulltext in the simplified search algorithm.
-    The search algorithm works as follows:
-
-    1. All the frequencies of words can be found in the active news or in the selected archive;
-    2. For each found word frequency of all words is formed;
-    3. For the active news the result is being sorted in the order of increasing frequency of all words included in the
-       document.
-
-    Just take for example &ldquo;find the bug&rdquo; search query.
-
-    The following words can be found in the document: &ldquo;find&rdquo; (3 times), &ldquo;the&rdquo; (0 times), &ldquo;bug&rdquo; (4 times).
-
-        News 1: find (1)       - 1
-        News 4: bug(3)         - 3
-        News 8: find(2) bug(1) - 2+1 = 3
-
-    Sorting the result, we find the least rare word in the document (News 1).
-    The algorithm has a drawback in that it ignores the request with a not occurring word.
-
 5.6 Facebook comments form
 
     To start using this form you need to add your Facebook AppID to the Options > System Configurations > Facebook.
@@ -388,12 +385,12 @@ ________________________________________________________________________________
 
         <code>&lt;meta property="fb:admins" content="012345678901234"/></code>
 
-    inside the &lt;head> tag to the pattern displayed on the web site. Where 012345678901234 is a numeric user ID on
+    inside the &lt;head> tag to the template displayed on the web site. Where 012345678901234 is a numeric user ID on
     Facebook. Embedding this meta tag allows you to administer comments.
 
 5.7 Custom date formatting
 
-    Insert code {month} into the pattern - the month will be shown in English.
+    Insert code {month} into the template - the month will be shown in English.
 
     Or use {month|jan,feb,....,dec} - listing of the months' titles is required.
 ________________________________________________________________________________________________________________________

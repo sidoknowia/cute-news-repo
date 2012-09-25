@@ -30,9 +30,7 @@
         $copy = array('Default', 'Headlines', 'rss');
         $dirs = array('archives', 'backup', 'cache', 'log', 'plugins', 'template');
 
-        /* Deprecated
-           - ipban.db.php
-
+        /*
            Added
            + replaces.php
            + idnews.db.php
@@ -52,6 +50,7 @@
             'unapproved_news.txt',
             'idnews.db.php',
             'replaces.php',
+            'ipban.db.php'
         );
 
         // Make Upload folder -----------
@@ -96,14 +95,11 @@
                 }
                 else
                 {
-                    if ( !in_array($dc, array('ipban.db.php') ) )
+                    // Don't replace exist file(s)
+                    if (!file_exists($path))
                     {
-                        // Don't replace exist file(s)
-                        if (!file_exists($path))
-                        {
-                            $success *= copy(SERVDIR.$fx, $path);
-                            chmod($path, 0666);
-                        }
+                        $success *= copy(SERVDIR.$fx, $path);
+                        chmod($path, 0666);
                     }
                 }
             }
@@ -145,18 +141,6 @@
         }
 
         // MIGRATION SCRIPT --------------------------------------------------------------------------------------------
-
-        // Migrate IPBans
-        if (file_exists(SERVDIR.'/data/ipban.db.php'))
-        {
-            $ipban = file(SERVDIR.'/data/ipban.db.php');
-            foreach ($ipban as $v)
-            {
-                $data = explode('|', trim($v));
-                add_ip_to_ban($data[0]);
-            }
-        }
-
         $count_users = count( file(SERVDIR.'/cdata/users.db.php') );
 
         // Clean or migration installation

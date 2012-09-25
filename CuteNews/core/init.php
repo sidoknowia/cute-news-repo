@@ -44,12 +44,6 @@
     define('UDB_RESERVED2',           11);
     define('UDB_RESERVED3',           12);
 
-    // binary search engine
-    define('BSEARCH_LINE',            1); // return line numbers
-    define('BSEARCH_FLAT',            2); // use given $id's for search
-    define('BSEARCH_MULTI',           4); // multilines (internal)
-    define('BSEARCH_STAT',            8); // return only count of iteration
-
     // Define news.db.php columns
     define('NEW_ID',                  0);
     define('NEW_USER',                1);
@@ -149,9 +143,6 @@
     // experimental defines
     define('RATEY_SYMBOL',      empty($config_ratey) ? '*' : str_replace('&amp;', '&', $config_ratey) ); // &#9734;
     define('RATEN_SYMBOL',      empty($config_raten) ? '&ndash;' : str_replace('&amp;', '&', $config_raten) ); // &#9733;
-
-    // DATABASE DEFINITION
-    define('DB_BAN',            SERVDIR.'/cdata/db.ban.php');            // ban filters
 
     // SERVER values make
     $_SERVER["HTTP_ACCEPT"]             = isset($_SERVER["HTTP_ACCEPT"])?           $_SERVER["HTTP_ACCEPT"] : false;
