@@ -1,6 +1,6 @@
 <?php
 
-    define('CONVERT_UPIMAGES', false);
+    define('CONVERT_UPIMAGES', true);
 
     function make_salt()
     {
@@ -27,6 +27,7 @@
     // -----------------------------------------------------------------------------------------------------------------
     if ($action == 'make')
     {
+        $fail = array();
         $copy = array('Default', 'Headlines', 'rss');
         $dirs = array('archives', 'backup', 'cache', 'log', 'plugins', 'template');
 
@@ -54,10 +55,9 @@
         );
 
         // Make Upload folder -----------
-        $success = 1;
         if (!is_dir(SERVDIR.'/uploads'))
         {
-            $success *= mkdir(SERVDIR.'/uploads', 0777);
+            if (!mkdir(SERVDIR.'/uploads', 0777)) $fail[] = array('mkdir', SERVDIR.'/uploads');
             $x = fopen(SERVDIR.'/uploads/index.html', 'w');
             fwrite($x, 'Access denied');
             fclose($x);
@@ -71,14 +71,21 @@
 
         foreach ($data_dir as $fx)
         {
-            // Skip data/emoticons
-            if (preg_match('~^/data/emoticons/~i', $fx)) continue;
+            // // Emoticons migration
+            if (preg_match('~^/data/emoticons/~i', $fx))
+            {
+                $dest = SERVDIR.str_replace('/data/emoticons/', '/skins/emoticons/', $fx);
+                if (!file_exists($dest) && !copy(SERVDIR.$fx, $dest)) $fail[] = array('copy', SERVDIR.$fx, $dest);
+                continue;
+            }
+
             if (preg_match('~\.htaccess~i', $fx)) continue;
 
             // Migration uploads
             if (preg_match('~^/data/upimages/~i', $fx) && defined('CONVERT_UPIMAGES') && CONVERT_UPIMAGES)
             {
-                $success *= copy(SERVDIR.$fx, SERVDIR.str_replace('/data/upimages/', '/uploads/', $fx));
+                $dest = SERVDIR.str_replace('/data/upimages/', '/uploads/', $fx);
+                if (!file_exists($dest) && !copy(SERVDIR.$fx, $dest)) $fail[] = array('copy', SERVDIR.$fx, $dest);
                 continue;
             }
 
@@ -88,18 +95,15 @@
                 $path .= '/'.$dc;
                 if (strpos($dc, '.') === false)
                 {
-                    if (!is_dir($path))
-                    {
-                        $success *= mkdir($path, 0775);
-                    }
+                    if (!is_dir($path) && !mkdir($path, 0775)) $fail[] = array('mkdir', $path);
                 }
                 else
                 {
                     // Don't replace exist file(s)
                     if (!file_exists($path))
                     {
-                        $success *= copy(SERVDIR.$fx, $path);
-                        chmod($path, 0666);
+                        if (!copy(SERVDIR.$fx, $path)) $fail[] = array('copy', SERVDIR.$fx, $path);
+                        if (!chmod($path, 0666)) $fail[] = array('chmod', $path);
                     }
                 }
             }
@@ -125,7 +129,7 @@
             if (!file_exists($file))
             {
                 fclose( fopen($file, 'w') );
-                $success *= chmod ($file, 0666);
+                if (!chmod ($file, 0666)) $fail[] = array('chmod', $file);
             }
         }
 
@@ -137,7 +141,7 @@
             $cp = fopen($file, 'w');
             fwrite ($cp, $rw);
             fclose($cp);
-            $success *= chmod ($file, 0666);
+            if (!chmod ($file, 0666)) $fail[] = array('chmod', $file);
         }
 
         // MIGRATION SCRIPT --------------------------------------------------------------------------------------------
@@ -151,7 +155,8 @@
         else
         {
             $CryptSalt = make_salt();
-            msg('info', lang('Migration success'), lang("Congrats! You migrated to 1.5.0 automatically"). " | <a href='$PHP_SELF'>Login</a>");
+            $found_problems = proc_tpl('install/problemlist');
+            msg('info', lang('Migration success'), lang("Congrats! You migrated to 1.5.0 automatically"). " | <a href='$PHP_SELF'>Login</a> ".$found_problems);
         }
 
     }
@@ -208,19 +213,16 @@
     // step 1
     else
     {
-        // Try create cdata folder or set rights
-        if (is_dir(SERVDIR.'/cdata') == false) mkdir(SERVDIR.'/cdata', 0777);
-        if (is_writable(SERVDIR.'/cdata') == false) chmod(SERVDIR.'/cdata', 0777);
-
-        // Check - ok?
-        if (is_writable(SERVDIR.'/cdata'))
+        // Check cdata and uploads folder
+        if (is_dir(SERVDIR.'/cdata') && is_dir(SERVDIR.'/uploads') &&
+            is_writable(SERVDIR.'/cdata') && is_writable(SERVDIR.'/uploads'))
         {
             relocation(PHP_SELF.'?action=make');
         }
         else
         {
             echoheader('info', 'Cute News v'.VERSION.' Installer');
-            proc_tpl('install/welcome');
+            echo proc_tpl('install/welcome');
         }
     }
 

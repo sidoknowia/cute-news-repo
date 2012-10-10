@@ -126,12 +126,12 @@ BODY,TD,TR{
                         </tr>
                         <tr>
                             <!-- The Quick Search Form -->
-                            <form method="post">
-                                <td width="100%" align="center">&nbsp;<br>
+                            <td width="100%" align="center">&nbsp;<br>
+                                <form method="post">
                                     <input type="text" name="story" size="14">
                                     <input type="hidden" name="do" value="search">
-                                </td>
-                            </form>
+                                </form>
+                            </td>
                             <!-- End of the Search Form -->
 
                         </tr>

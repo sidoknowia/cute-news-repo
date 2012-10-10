@@ -24,7 +24,8 @@
     // definition FB comments if uses
     if ( $config_use_fbcomments == 'yes' and !isset($_CACHE['__first_time__']) )
     {
-        echo str_replace('{appID}', $config_fb_appid, read_tpl('fb_comments'));
+        if (empty($config_fb_i18n)) $config_fb_i18n = 'en_US';
+        echo str_replace( array('{appID}', '{fbi18n}'), array($config_fb_appid, $config_fb_i18n), read_tpl('fb_comments'));
         $_CACHE['__first_time__'] = true;
     }
 

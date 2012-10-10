@@ -491,9 +491,11 @@ elseif ($action == "syscon")
     // Facebook preferences
     $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
+    $config_fb_i18n = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
 
     echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("no"=>"No","yes"=>"Yes"), "save_con[use_fbcomments]", $config_use_fbcomments));
+    showRow(lang("Facebook i18n code"),             lang("by default en_US"),                           "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_i18n]\" value=\"$config_fb_i18n\" size=8>", "save_con[fb_i18n]", $config_fb_i18n);
     showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
     showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);
     showRow(lang("Box width"),                      lang("In pixels"),                                  "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_box_width]\" value=\"$config_fb_box_width\" size=8>", "save_con[fb_box_width]", $config_fb_box_width);
