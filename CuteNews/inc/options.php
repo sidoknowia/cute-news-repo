@@ -428,6 +428,7 @@ elseif ($action == "syscon")
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
     showRow(lang("CuteNews Skin"),                  lang("you can download more from our website"),                     makeDropDown($sys_con_skins_arr, "save_con[skin]", $config_skin));
     showRow(lang("Use UTF-8"),                      lang("with this option, admin panel uses utf-8 charset"),           makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[useutf8]", $config_useutf8));
+    showRow(lang("Don't convert UTF8 symbols to HTML entities"), lang("no conversion, e.g. &aring; to &amp;aring;"),    makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[utf8html]", $config_utf8html));
     showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
     showRow(lang("Time Adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
     showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
