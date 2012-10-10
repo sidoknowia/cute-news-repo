@@ -351,6 +351,7 @@ elseif($action == "dosavetemplates")
     {
         $name  = $parts['name'];
         $value = $_REQUEST['edit_'.$name];
+        $value = (ini_get('magic_quotes_gpc')) ? stripslashes($value) : $value;
         fwrite($handle, "\${$name} = <<<HTML\n{$value}\nHTML;\n\n\n");
     }
     fwrite($handle, "?>");
