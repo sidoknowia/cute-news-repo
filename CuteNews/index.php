@@ -68,8 +68,10 @@ $password    = $_POST['password'];
 
 // User is banned
 if ( $bandata = user_getban($ip, false))
-     if ($bandata[2] > 3)
+{
+     if ($bandata[1] > 4)
         msg('error', lang('Error!'), getpart('youban', format_date( $bandata[2], 'since-short')));
+}
 
 if ( empty($_SESS['user']))
 {
