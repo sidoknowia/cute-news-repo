@@ -1,6 +1,7 @@
 <?php
 
     error_reporting(E_ALL ^ E_NOTICE);
+    require_once("core/init.php");
     if ($_GET['do'] == "rss"){ include("rss.php"); }
 
 ?>
