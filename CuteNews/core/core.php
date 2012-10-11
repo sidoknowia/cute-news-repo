@@ -2106,4 +2106,18 @@ function CSRFCheck($Name = 'U:CSRF', $token = 'csrf_code') /* Check CSRF code  *
     }
 }
 
+function RereferCheck($pattern = false)
+{
+    if ($pattern == false)
+        $pattern = $_SERVER['HTTP_HOST'] . preg_replace('~index.php.*$~i', '', $_SERVER['REQUEST_URI']);
+
+    $referer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : false;
+    if ($referer == false) die("Restricted Area");
+
+    if (strpos($referer, $pattern ) === false)
+        msg("error", lang('Error!'), lang("Restricted Area"));
+
+    return true;
+}
+
 ?>

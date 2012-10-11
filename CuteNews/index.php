@@ -78,7 +78,8 @@ if ( empty($_SESS['user']))
     /* Login Authorization using COOKIES */
     if ($action == 'dologin')
     {
-        CSRFCheck();
+        // Check referer
+        RereferCheck();
 
         // Do we have correct username and password ?
         $member_db      = user_search($username);
@@ -136,7 +137,6 @@ else
 
 if (empty($is_loged_in))
 {
-    $CSRF = CSRFMake();
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
                   array('lastusername'  => htmlspecialchars($username) ),
