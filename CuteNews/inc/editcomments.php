@@ -1,6 +1,8 @@
 <?PHP
 
-if($member_db[UDB_ACL] > ACL_LEVEL_EDITOR)
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
+if ($member_db[UDB_ACL] > ACL_LEVEL_EDITOR)
     msg("error", "Access Denied", "You don't have permission to edit comments");
 
 $source = preg_replace('~[^a-z0-9_\.]~i', '' , $source);

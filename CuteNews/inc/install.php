@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     define('CONVERT_UPIMAGES', true);
 
     function make_salt()

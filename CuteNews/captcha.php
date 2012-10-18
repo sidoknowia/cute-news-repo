@@ -7,11 +7,9 @@
 
     include(SERVDIR.'/core/captcha/captcha.php');
 
-    $code = $_GET['pattern']? $_GET['pattern'] : 'CSW';
     $captcha = new SimpleCaptcha();
-
     $captcha->imageFormat   = 'png';
-    $captcha->session_var   = $code;
+    $captcha->session_var   = 'CSW';
     $captcha->scale         = 2;
     $captcha->blur          = true;
     $captcha->resourcesPath = SERVDIR.'/core/captcha/resources';

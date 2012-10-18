@@ -1,6 +1,8 @@
 <?php
 
-if($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
+if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", "Access Denied", "You don't have permission for this section");
 
 // ********************************************************************************

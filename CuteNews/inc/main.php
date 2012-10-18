@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 hook('init_main');
 
 //If member access level is commenter, redirect him to personal options

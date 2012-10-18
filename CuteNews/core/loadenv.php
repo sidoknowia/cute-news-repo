@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     // In case if uses MOD-Rewrite, variables must be come from external url
     if ($config_use_replacement)
     {

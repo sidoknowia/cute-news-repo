@@ -21,12 +21,11 @@ if ($user == false)
 }
 
 $register_level = $config_registration_level;
-$user_arr       = user_search($user);
+$user_arr       = user_search($regusername);
 
 // sanitize
 if ($action == "doregister")
 {
-
     if ($config_allow_registration != "yes")     msg("error", lang('Error!'), "User registration is Disabled", '#GOBACK');
     if (!$regusername)                           msg("error", lang('Error!'), "Username can not be blank", '#GOBACK');
     if (!$regpassword)                           msg("error", lang('Error!'), "Password can not be blank", '#GOBACK');
@@ -104,6 +103,7 @@ elseif ($action == "validate")
 }
 elseif ($a == "dsp")
 {
+    $s = $_GET['s'];
     if ($s == false) msg("error", lang('Error!'), "All fields are required", '#GOBACK');
     list($user) = explode('@', xxtea_decrypt( base64_decode($s), CRYPT_SALT ));
 
@@ -123,7 +123,7 @@ elseif ($a == "dsp")
         user_update($user, $user_arr);
         
         $message = str_replace(array('%1','%2'), array($user, $new_pass), lang("Hi %1,\n Your new password for CuteNews is %2, please after you login change this password."));
-        send_mail($user_arr[5], lang("Your New Password for CuteNews"), $message);
+        send_mail($user_arr[UDB_EMAIL], lang("Your New Password for CuteNews"), $message);
 
         add_to_log ($user, lang('New password received'));
         msg("info", lang("Password Sent"), str_replace('%1', $user, lang("The new password for <b>%1</b> was sent to the email.")), '#GOBACK');

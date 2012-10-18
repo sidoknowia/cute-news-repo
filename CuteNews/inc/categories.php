@@ -1,5 +1,7 @@
 <?PHP
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 $result = false;
 if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", "Access Denied", "You don't have permission to edit categories");

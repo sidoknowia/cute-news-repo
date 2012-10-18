@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 /* Order Start: put chars in whatever order you want
 
     u = usernames
@@ -10,7 +12,6 @@
     l = access levels
     e = emails
 */
-
 
 $user_flags = strtolower($user_flags);
 $date_format = "F, d Y @ H:i a";

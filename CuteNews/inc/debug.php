@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
         msg("error", lang("Access Denied"), lang("You don't have permission"));
 

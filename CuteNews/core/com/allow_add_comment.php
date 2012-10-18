@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     // Get only POST or COOKIE vars
     $id         = intval($id);
     $mail       = isset($_POST['mail']) ? trim($_POST['mail']) : false;
@@ -153,7 +155,7 @@
     if ( !empty($_SESS['user']))
     {
         $member_db = user_search($_SESS['user']);
-        if ($member_db[UDB_ACL] = ACL_LEVEL_ADMIN) $captcha_enabled = false;
+        if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) $captcha_enabled = false;
     }
 
     // Captcha test (if not disabled force)

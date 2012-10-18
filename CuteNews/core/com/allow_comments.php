@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     $comm_per_page          = $config_comments_per_page;
     $template_comment       = stripslashes($template_comment);
     $total_comments         = 0;

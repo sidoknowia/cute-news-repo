@@ -41,7 +41,7 @@ if ($action == "logout")
 {
     add_to_log( $_SESS['user'], 'logout');
 
-    $_SESS['user'] = $_SESS['pwd'] = false;
+    $_SESS['user'] = false;
     send_cookie(true);
 
     msg("info", lang("Logout"), lang("You are now logged out").", <a href=\"$PHP_SELF\">".lang('login')."</a>");

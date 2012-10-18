@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     $all_active_news = file($news_file);
     foreach ($all_active_news as $active_news)
     {

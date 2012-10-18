@@ -1,5 +1,7 @@
 <?PHP
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN )
      msg("error", lang("Access Denied"), lang("You don't have permission to edit users"));
 
@@ -165,7 +167,6 @@ elseif ($action == "doedituser")
     {
         $hmet = hash_generate($editpassword);
         $the_user[UDB_PASS] = $hmet[ count($hmet)-1 ];
-        if ($id == $_SESS['user']) $_SESS['pwd'] = $editpassword;
         send_cookie();
     }
 

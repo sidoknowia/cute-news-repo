@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 $CNpass             = isset($_COOKIE['CNpass']) && $_COOKIE['CNpass'] ? $_COOKIE['CNpass'] : false;
 $captcha_enabled    = $CNpass ? false : true;
 

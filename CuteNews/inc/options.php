@@ -1,5 +1,7 @@
 <?PHP
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER and ($action != 'personal' and $action != 'options' and $action != 'dosavepersonal'))
     msg('error', 'Error!', 'Access Denied for your user-level (commenter)');
 
@@ -201,7 +203,6 @@ elseif ($action == "dosavepersonal")
         {
             $hashs          = hash_generate($editpassword);
             $pack[UDB_PASS] = $hashs[ count($hashs) - 1 ];
-            $_SESS['pwd']   = $editpassword;
         }
         else msg('error', lang('Error!'), lang('Confirm password not match'), "#GOBACK");
     }

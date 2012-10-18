@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 // Strong check for deprecated -----------------------------------------------------------------------------------------
 function deprecated_check()
 {
@@ -776,9 +778,12 @@ function more_fields($mf, $output)
  * Log, base on multifiles and md5 tells about day & hour for user login
  * Array search slice
  */
-function add_to_log($username, $action, $try = 3)
+function add_to_log($username, $action)
 {
     global $config_userlogs;
+
+    // Sanitize username
+    $username = preg_replace('/[^a-z0-9_\- ]/i', '', $username);
 
     // User logs is disabled
     if ($config_userlogs == '0') return false;

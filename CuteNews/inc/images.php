@@ -1,5 +1,7 @@
 <?PHP
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST or ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $action == "doimagedelete"))
     msg("error", "Access Denied", "You don't have permission to manage images");
 

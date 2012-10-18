@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 // Update check not for commenter
 if ($action == 'check' && $member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
 {

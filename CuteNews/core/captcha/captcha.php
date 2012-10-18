@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 /**
  * SimpleCaptcha class
  * PHP 4.x classes

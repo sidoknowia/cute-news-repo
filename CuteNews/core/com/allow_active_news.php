@@ -1,5 +1,7 @@
 <?php
 
+    if (!defined('INIT_INSTANCE')) die('Access restricted');
+
     $in_use         = 0;
     $used_archives  = array();
     $all_news       = file($news_file);

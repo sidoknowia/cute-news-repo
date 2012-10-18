@@ -1,5 +1,7 @@
 <?PHP
 
+if (!defined('INIT_INSTANCE')) die('Access restricted');
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Load the specified section in PopUp Window
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
