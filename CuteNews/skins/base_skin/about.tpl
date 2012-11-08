@@ -20,10 +20,6 @@
 
         <p><strong>Important note:</strong> no formal official support is provided apart from the support forum found on this website and maintained by other users.</p>
     </div>
-    <div style="height: 16px;"></div>
-
-    <div style="background: #F7F6F4; font: 15px/1em Arial; margin: 0 0 4px 0;">Version Check</div>
-    <script type="text/javascript" src="{$PHP_SELF}?mod=update&amp;action=check"></script>
 
     <div style="height: 16px;"></div>
     

@@ -1756,7 +1756,8 @@ function cwget($url)
             $context = stream_context_create(
                 array('http' => array('method' => 'GET',
                                       'user_agent'  => $_SERVER['HTTP_USER_AGENT'],
-                                      'ignore_errors' => true) )
+                                      'ignore_errors' => true
+                ) )
             );
 
             $r = fopen( $url, 'r', false, $context );

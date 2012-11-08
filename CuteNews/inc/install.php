@@ -158,7 +158,7 @@
         {
             $CryptSalt = make_salt();
             $found_problems = proc_tpl('install/problemlist');
-            msg('info', lang('Migration success'), lang("Congrats! You migrated to 1.5.0 automatically"). " | <a href='$PHP_SELF'>Login</a> ".$found_problems);
+            msg('info', lang('Migration success'), lang("Congrats! You migrated to ".VERSION." automatically"). " | <a href='$PHP_SELF'>Login</a> ".$found_problems);
         }
 
     }

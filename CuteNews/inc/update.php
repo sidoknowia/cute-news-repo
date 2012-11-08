@@ -2,136 +2,113 @@
 
 if (!defined('INIT_INSTANCE')) die('Access restricted');
 
-// Update check not for commenter
-if ($action == 'check' && $member_db[UDB_ACL] != ACL_LEVEL_COMMENTER)
-{
-    $statext = cwget('http://cutephp.com/latest/.export.log');
-    $stat    = strlen($statext);
-
-    if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
-    {
-        $my_current_rev = 0;
-        if  (file_exists(SERVDIR.'/cdata/log/revision.php'))
-            include (SERVDIR.'/cdata/log/revision.php');
-
-        if  ($my_current_rev < $rev[1] && $my_current_rev)
-             echo 'document.write("<span style=\'color: red; font-size: 15px;\'>'.lang('Build ').' '.$my_current_rev.'. Latest is '.$rev[1].' <a style=\'font-size: 18px;\' href=\"'.$PHP_SELF.'?mod=update&amp;action=update\">Update</a></span>");';
-        else echo 'document.write("<span style=\'color: green; font-size: 18px;\'>'.lang('Your version is latest. Check updates in Options > Update Cutenews').'</span>");';
-        die();
-    }
-}
-
 // Only admin there
 if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 
+// --------------------- STAT ---------------------
 if ($action == 'update' )
 {
-    $statext = cwget('http://cutephp.com/latest/.export.log');
-    $stat    = strlen($statext);
+    $try_get = 0;
+    $update_file = SERVDIR.'/cdata/log/revision.file.log';
 
-    $w = fopen(SERVDIR.'/cdata/cache/.export.log', 'w');
-    fwrite($w, $statext);
-    fclose($w);
+    // Every 3 hour reloading
+    if (file_exists($update_file) && ((time() - filemtime($update_file)) > 3*3600)) $try_get = 1;
+    if (!file_exists($update_file)) $try_get = 1;
 
-    if ($stat && preg_match('~Exported revision (\d+)~i', $statext, $rev))
+    // local cache update file too old or not exists - try to get new file
+    if ($try_get)
     {
-        if (file_exists(SERVDIR.'/cdata/log/revision.php'))
-             include (SERVDIR.'/cdata/log/revision.php');
-        else $my_current_rev = 0;
+        $statext = cwget('http://cutephp.com/latest/.revision.log');
+        $stat    = strlen($statext);
 
-        $uselast = ($my_current_rev == $rev[1])? 1 : 0;
-
-        echoheader('info', lang("Update Status"), make_breadcrumbs('main/options=options/Update Status'));
-        echo proc_tpl('update',
-            array('rev' => $rev[1]),
-            array('ALREADYLAST' => $uselast,
-                  'UPIFRAME' => (($_GET['do'] == 'do_update')? 1:0))
-        );
-
-        echofooter();
-    }
-    else msg('error', lang('Error!'), lang('No update: Error while receiving update file'));
-}
-elseif ($action == 'do_update' )
-{
-    $statext = cwget(SERVDIR.'/cdata/cache/.export.log');
-    $bundle = explode("\n", $statext);
-    $proc   = intval( $_GET['proc'] );
-
-    if ($proc >= count($bundle))
-    {
-        // Auto update to latest version
-        include (SERVDIR.'/migrate/latest.revision.php');
-        echo lang('OK! Success updated');
+        if ($stat)
+        {
+            $w = fopen($update_file, 'w');
+            fwrite($w, $statext);
+            fclose($w);
+        }
     }
     else
     {
-        $mc  = time();
-        $log = false;
-
-        if ($proc == 0)
-        {
-            // Truncate the log
-            fclose ( fopen(SERVDIR.'/cdata/log/update.log', 'w') );
-        }
-
-        while (time() - $mc < 15 && $proc < count($bundle))
-        {
-            list (,$name) = explode("A ", $bundle[$proc]);
-            $name = trim($name);
-            $proc++;
-
-            if ($name == '.' || $name == false || $name == 'inc/install.php') continue;
-
-            // Receive content
-            $data = cwget("http://cutephp.com/latest/?cp=".urlencode($name));
-
-            // Make paths
-            $DEST_DIR = SERVDIR;
-            $dirs = explode('/', $name);
-
-            if (preg_match('~exported revision (\d+)~i', $bundle[$proc], $rev))
-            {
-                $w = fopen(SERVDIR.'/cdata/log/revision.php', 'w');
-                fwrite($w, '<'.'? $my_current_rev = '.$rev[1].'; ?>');
-                fclose($w);
-            }
-            elseif( preg_match('~\.[a-z0-9]+?$~i', $dirs[count($dirs)-1] ) )
-            {
-                // Make dirs...
-                $w = fopen($DEST_DIR.'/'.$name, 'w');
-                fwrite($w, $data);
-                fclose($w);
-
-                $log .= date('r')." Write file {$name}\n";
-            }
-            else
-            {
-                $depth = '';
-                foreach ($dirs as $vd)
-                {
-                    $depth .= '/'.$vd;
-                    if (!is_dir($DEST_DIR.$depth) && !file_exists($DEST_DIR.$depth))
-                    {
-                        mkdir($DEST_DIR . $depth);
-                        $log .= date('r')." Make dir {$depth}\n";
-                    }
-                }
-            }
-        }
-
-        $a = fopen(SERVDIR.'/cdata/log/update.log', 'a');
-        fwrite($a, $log);
-        fclose($a);
-
-        $percent = intval( $proc / count($bundle) * 100 );
-
-        // Redirect for continue loading
-        echo ( '<html>
-                <head><meta http-equiv="refresh" content="1; URL='.$config_http_script_dir.'?mod=update&action=do_update&proc='.$proc.'"></head>
-                <body><script type="text/javascript">parent.document.getElementById("progress").style.width = "'.$percent.'%";</script></body>
-                </html><head></head>');
-        die();
+        $r = fopen($update_file, 'r');
+        ob_start();
+        fpassthru($r);
+        $statext = ob_get_clean();
+        $stat    = strlen($statext);
     }
+
+    if ($stat)
+    {
+        $rev = explode("\n", $statext);
+        list(,$revid) = explode('=', array_shift($rev));
+
+        // check files
+        if (!function_exists('md5_file'))
+            msg('error', lang('Update Info'), lang('Function `md5_file` not found: update php version'));
+
+        $files_to_update = array();
+        foreach ($rev as $files)
+        {
+            list($hash_rec, $file) = explode('|', $files, 2);
+            if (empty($file)) continue;
+
+            // New or modified files detection
+            if (file_exists(SERVDIR.'/'.$file))
+                 $hash_my = md5_file(SERVDIR.'/'.$file);
+            else $hash_my = false;
+
+            if ($hash_my != $hash_rec)
+            {
+                $stat = '<span style="color:red;">'.lang('not writable or not exists!').' <a target="_blank" href="https://raw.github.com/CuteNews/cute-news-repo/master/CuteNews/'.$file.'">get file</a></span>';
+                if ( is_writable(SERVDIR.'/'.$file) ) $stat = '<span style="color:green;">'.lang('writable').'</span>';
+                if ( !file_exists(SERVDIR.'/'.$file) ) $stat = '<span style="color:red;">'.lang('not exists').'</span>';
+                $files_to_update[] = array($file, $stat);
+            }
+        }
+
+        if (count($files_to_update) == 0)
+            msg('info', lang('Update status'), lang('No update: your revision is the latest one'));
+
+        echoheader('info', lang("Files to update"), make_breadcrumbs('main/options=options/Update Status'));
+        echo proc_tpl('update/status');
+        echofooter();
+    }
+    else msg('error', lang('Error!'), lang('No update: Error while receiving update file'));
+
+}
+elseif ($action == 'do_update' )
+{
+    $upfail = 0;
+    $start = time();
+    foreach ($_POST['files'] as $i => $file)
+    {
+        $dest = SERVDIR.'/'.$file;
+        if (is_writable(SERVDIR.'/'.$file) || !file_exists(SERVDIR.'/'.$file))
+        {
+            // Make Folder
+            $path = explode('/', $file);
+            $upth = SERVDIR;
+            foreach ($path as $f => $d)
+            {
+                $upth .= '/'.$d;
+                if (strpos($d, '.') !== false) continue;
+                if (!is_dir($upth)) $upfail += mkdir($upth);
+            }
+
+            // Write File
+            $dn = cwget('https://raw.github.com/CuteNews/cute-news-repo/master/CuteNews/'.$file);
+            $w = fopen($dest, 'w');
+            fwrite($w, $dn);
+            fclose($w);
+        }
+        else $upfail = true;
+    }
+    $end = time();
+
+    if ($upfail)
+        msg('error', lang('Update Status'), lang('Update broken!').' '.($end-$start).' sec.');
+    else
+        msg('info', lang('Update Status'), lang('Update success').' '.($end-$start).' sec.');
+
 }
