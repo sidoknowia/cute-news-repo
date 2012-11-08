@@ -12,8 +12,8 @@
             {/foreach}
         </table>
 
-        <p> Files marked as "not writable", you need to download and replace the hand.
-            If fatal errors occur during the upgrade, download the latest version from github and overwrite all the files on FTP.
+        <p> Files that are marked as 'not writable' should be downloaded and replaced manually.
+            In case of fatal update errors please download the latest version with github and rewrite all files by FTP.
         </p>
         <p><input type="submit" value="Try to update" /></p>
     </form>

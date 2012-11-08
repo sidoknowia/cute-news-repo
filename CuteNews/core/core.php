@@ -445,14 +445,23 @@ function send_mail($to, $subject, $message, $hdr = false)
     $headers .= $hdr;
 
     foreach ($tos as $v)
+    {
         if ($v)
         {
             $mx = false;
             $pt = SERVDIR.'/cdata/cache/mail.log';
             $ms = "-------------\n".$headers."Subject: $subject\n\n".$message."\n\n";
             mail($v, $subject, $message, $headers) or $mx = true;
-            if ($mx) { $log = fopen($pt, 'a'); fwrite($log, $ms); fclose($log); }
+            if (defined('EMAIL_FORCE_LOG') && EMAIL_FORCE_LOG or $mx)
+            {
+                $log = fopen($pt, 'a+');
+                fwrite($log, $ms);
+                fclose($log);
+            }
         }
+    }
+
+    return true;
 }
 
 function exec_time()
@@ -1973,15 +1982,24 @@ function load_database($dbname, $target, $reload = false)
     return $$dbname;
 }
 
-function user_search($user)
+function user_search($user, $field = 'name')
 {
     $user = preg_sanitize( $user );
     if ( empty($user) ) return false;
 
+    $member_db = false;
     $users_db = load_database('users_db', 'users.db');
-    if  (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*$~m', $users_db, $c))
-         $member_db = user_decode($c[0]);
-    else $member_db = false;
+
+    if ($field == 'name')
+    {
+        if  (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*$~m', $users_db, $c))
+             $member_db = user_decode($c[0]);
+    }
+    elseif ($field == 'email')
+    {
+        if  (preg_match('~^[0-9]*?\|[0-9]*?\|.*?\|.*?\|.*?\|'.$user.'\|.*$~m', $users_db, $c))
+            $member_db = user_decode($c[0]);
+    }
 
     return $member_db;
 }

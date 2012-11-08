@@ -4,6 +4,18 @@
 
     define('CONVERT_UPIMAGES', true);
 
+    // Create blank PHP file
+    function make_php($phpfile)
+    {
+        $file = SERVDIR.'/cdata/'.$phpfile;
+        if (file_exists($file))
+        {
+            $w = fopen($file, 'w');
+            fwrite($w, '<'.'?php die("Access restricted"); ?>'."\n");
+            fclose($w);
+        }
+    }
+
     function make_salt()
     {
         // Generate unique salt
@@ -53,7 +65,8 @@
             'unapproved_news.txt',
             'idnews.db.php',
             'replaces.php',
-            'ipban.db.php'
+            'ipban.db.php',
+            'confirmations.php'
         );
 
         // Make Upload folder -----------
@@ -64,6 +77,9 @@
             fwrite($x, 'Access denied');
             fclose($x);
         }
+
+        // Make php-files
+        make_php('confirmations.php');
 
         // COPY ALL FROM DATA FOLDER
         $data_dir = array();

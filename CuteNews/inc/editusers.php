@@ -83,12 +83,10 @@ elseif ($action == "adduser")
         {
             msg("error", lang('Error!'), lang("User with this username already exist"), "#GOBACK");
         }
-        /* // @TODO Check registration email
         elseif ($user_arr[UDB_EMAIL]  == $regemail)
         {
             msg("error", lang('Error!'), lang("User with this email already exist"), "#GOBACK");
         }
-        */
     }
 
     $add_time = time() + ($config_date_adjust*60);
