@@ -2110,6 +2110,20 @@ function user_decode($user_line)
     return $member_db;
 }
 
+// ---------- Sanitize: get POST vars --------
+function POST_get($var)
+{
+    $result = array();
+    $vars   = spsep($var);
+    foreach ( $vars as $var )
+    {
+        $value = false;
+        if (isset($_POST[$var])) $value = $_POST[$var];
+        $result[] = $value;
+    }
+    return $result;
+}
+
 // ------------- CSRF value -------------
 function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
 {

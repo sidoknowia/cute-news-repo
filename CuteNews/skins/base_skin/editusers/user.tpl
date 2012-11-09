@@ -45,7 +45,7 @@
 
                 <tr>
                     <td width="126" height="20" bgcolor="#f7f6f4">Email</td>
-                    <td height="20" bgcolor="#f7f6f4" width="698">{$user_arr[5]}</td>
+                    <td height="20" bgcolor="#f7f6f4" width="698"><input size="20" name="editemail" value="{$user_arr[5]}" ></td>
                 </tr>
 
                 <tr>

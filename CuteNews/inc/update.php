@@ -7,10 +7,11 @@ if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 
 // --------------------- STAT ---------------------
+$update_file = SERVDIR.'/cdata/log/revision.file.log';
+
 if ($action == 'update' )
 {
     $try_get = 0;
-    $update_file = SERVDIR.'/cdata/log/revision.file.log';
 
     // Every 3 hour reloading
     if (file_exists($update_file) && ((time() - filemtime($update_file)) > 3*3600)) $try_get = 1;
@@ -117,6 +118,9 @@ elseif ($action == 'do_update' )
         else $upfail++;
     }
     $end = time();
+
+    if (file_exists($update_file))
+        unlink($update_file);
 
     if ($upfail)
         msg('error', lang('Update Status'), lang('Update broken!').' '.($end-$start).' sec.');

@@ -131,13 +131,13 @@ elseif ($action == "edituser")
 
     echo proc_tpl
     (
-        'editusers.user',
+        'editusers/user',
         array
         (
             'CSRF'          => $CSRF,
             'user_arr[2]'   => $user_arr[2],
             'user_arr[4]'   => $user_arr[4],
-            'user_arr[5]'   => $user_arr[4],
+            'user_arr[5]'   => $user_arr[5],
             'user_arr[6]'   => $user_arr[6],
             'user_date'     => date("r", $user_arr[0]),
             'edit_level'    => $edit_level,
@@ -154,11 +154,21 @@ elseif ($action == "doedituser")
 {
     CSRFCheck();
 
+    list($id, $editemail, $editpassword, $editlevel) = POST_get('id,editemail,editpassword,editlevel');
+
     if (empty($id))
-         msg('error', lang("This is not a valid user"), '#GOBACK');
+        die(lang("This is not a valid user"));
 
     if ( false === ($the_user = user_search($id)) )
-         msg('error', lang("This is not a valid user"), '#GOBACK');
+        die(lang("This is not a valid user"));
+
+    if ( check_email($editemail) == false )
+        die(lang("Invalid email"));
+
+    // In case if email already exists, and email not eq. --> error
+    $find_email = user_search($editemail, 'email');
+    if ($find_email && $find_email[UDB_EMAIL] != $the_user[UDB_EMAIL])
+        die(lang("User with this email already exists"));
 
     // Change password if present
     if (!empty($editpassword))
@@ -169,6 +179,7 @@ elseif ($action == "doedituser")
     }
 
     // Change user level anywhere
+    $the_user[UDB_EMAIL] = $editemail;
     $the_user[UDB_ACL] = $editlevel;
     user_update($id, $the_user);
 
