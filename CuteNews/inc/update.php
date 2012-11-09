@@ -27,6 +27,7 @@ if ($action == 'update' )
             $w = fopen($update_file, 'w');
             fwrite($w, $statext);
             fclose($w);
+            chmod($update_file, 0664);
         }
     }
     else

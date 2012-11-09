@@ -88,8 +88,24 @@
         include_once (SERVDIR.'/cdata/config.php');
 
     // make default config after update from 1.4.x
-    if (!isset($config_useutf8)) $config_useutf8 = 0;
+    if (!isset($config_default_charset))    $config_default_charset = 0;
+    if (!isset($config_useutf8))            $config_useutf8 = 0;
+    if (!isset($config_utf8html))           $config_utf8html = 0;
+    if (!isset($config_use_replacement))    $config_use_replacement = 0;
+    if (!isset($config_ipauth))             $config_ipauth = 0;
+    if (!isset($config_xss_strict))         $config_xss_strict = 0;
+    if (!isset($config_userlogs))           $config_userlogs = 0;
+    if (!isset($config_backup_news))        $config_backup_news = 'yes';
+    if (!isset($config_use_captcha))        $config_use_captcha = 0;
+    if (!isset($config_use_rater))          $config_use_rater = 0;
+    if (!isset($config_use_fbcomments))     $config_use_fbcomments = 'no';
+    if (!isset($config_fb_i18n))            $config_fb_i18n = 'en_US';
+    if (!isset($config_fb_inactive))        $config_fb_inactive = 'yes';
+    if (!isset($config_fb_comments))        $config_fb_comments = '4';
+    if (!isset($config_fb_box_width))       $config_fb_box_width = '470';
+    if (!isset($config_fb_appid))           $config_fb_appid = '';
 
+    // adjust timezone
     if (function_exists('date_default_timezone_set'))
         date_default_timezone_set( empty($config_timezone)?  'Europe/London' : $config_timezone );
 
