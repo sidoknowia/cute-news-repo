@@ -105,11 +105,15 @@ elseif ($action == 'do_update' )
 
             // Write File
             $dn = cwget('https://raw.github.com/CuteNews/cute-news-repo/master/CuteNews/'.$file);
-            $w = fopen($dest, 'w');
-            fwrite($w, $dn);
-            fclose($w);
+            if ($dn)
+            {
+                $w = fopen($dest, 'w');
+                fwrite($w, $dn);
+                fclose($w);
+            }
+            else $upfail++;
         }
-        else $upfail = true;
+        else $upfail++;
     }
     $end = time();
 

@@ -1760,7 +1760,7 @@ function cwget($url)
 
     if ( ini_get('allow_url_fopen') )
     {
-        if (substr(PHP_VERSION, 0, 5) > '4.3.0')
+        if (substr(PHP_VERSION, 0, 5) >= '4.3.0')
         {
             $context = stream_context_create(
                 array('http' => array('method' => 'GET',
