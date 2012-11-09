@@ -53,10 +53,17 @@ if ($action == 'update' )
             list($hash_rec, $file) = explode('|', $files, 2);
             if (empty($file)) continue;
 
-            // New or modified files detection
-            if (file_exists(SERVDIR.'/'.$file))
-                 $hash_my = md5_file(SERVDIR.'/'.$file);
-            else $hash_my = false;
+            $dest = SERVDIR.'/'.$file;
+            if (is_dir($dest))
+            {
+                $hash_rec = $hash_my = true;
+            }
+            else
+            {
+                if (file_exists($dest))
+                     $hash_my = md5_file($dest);
+                else $hash_my = false;
+            }
 
             if ($hash_my != $hash_rec)
             {

@@ -87,6 +87,9 @@
     if (file_exists(SERVDIR.'/cdata/config.php'))
         include_once (SERVDIR.'/cdata/config.php');
 
+    // make default config after update from 1.4.x
+    if (!isset($config_useutf8)) $config_useutf8 = 0;
+
     if (function_exists('date_default_timezone_set'))
         date_default_timezone_set( empty($config_timezone)?  'Europe/London' : $config_timezone );
 
