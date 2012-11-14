@@ -29,7 +29,7 @@
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
 
     <table>
-        <tr><td>{{Upload by url}}</td> <td><input style="width: 480px;" type="text" name="urlpath" value="{$urlpath}" /></td></tr>
+        <tr><td>{{Upload by url}}</td> <td><input style="width: 480px;" type="text" name="urlpath" value="{$urlpath}" /> * Must be extension .plg</td></tr>
         <tr><td>{{Upload by file}}</td> <td><input style="border: 0" type="file" name="file" value="{{Upload new plugin}}" /></td></tr>
         <tr><td>&nbsp;</td> <td><input type="submit" value="{{Submit plugin}}" /></td> </tr>
     </table>

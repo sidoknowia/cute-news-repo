@@ -271,7 +271,7 @@ $msgs['fs'][] = array("<a title='".lang('View all Active News (Edit News)')."' h
 $msgs['fs'][] = array(lang("Active Comments"), $count_comments);
 $msgs['fs'][] = array("<a title='".lang('View all Postponed Articles')."' href='$PHP_SELF?mod=editnews&action=list&source=postponed'>".lang('Postponed News')."</a>", $count_postponed_news);
 $msgs['fs'][] = array("<a title='".lang('View all Unapproved Articles')."' href='$PHP_SELF?mod=editnews&action=list&source=unapproved'>".lang('Unapproved News')."</a>", $count_unapproved_news);
-$msgs['fs'][] = array("<a title='".lang('View all Archives (Archives Manager)')."' href='$PHP_SELF?mod=tools&action=archive'>".lang('Archives')."</a>", $stats_archives);
+$msgs['fs'][] = array("<a title='".lang('View all Archives (Archive Manager)')."' href='$PHP_SELF?mod=tools&action=archive'>".lang('Archives')."</a>", $stats_archives);
 $msgs['fs'][] = array("<a title='".lang('View all Users (Add/Edit Users)')."' href='$PHP_SELF?mod=editusers&action=list'>".lang('Users')."</a>", $stats_users);
 
 echo proc_tpl('main/syscheck', array('exists' => $msgs['e'],

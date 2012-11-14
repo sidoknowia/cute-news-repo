@@ -16,7 +16,7 @@
         </tr>
         <tr>
             <td>&nbsp;Confirm Password</td>
-            <td> <input type="password" name=confirmpassword >&nbsp;&nbsp;&nbsp;Confirm is if you want to change</td>
+            <td> <input type="password" name=confirmpassword >&nbsp;&nbsp;&nbsp;Confirm new password</td>
         </tr>
 
         <tr>

@@ -250,11 +250,19 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
 }
 
 // Return say value of lang if present
-function lang($say, $mod = null)
+// Replaces %1, %2...%n from func_num_args
+function lang($say)
 {
     global $lang;
-    $say = hook('lang_say_before', $say, $mod);
-    return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)], $mod);
+    $say = hook('lang_say_before', $say);
+
+    if (func_num_args() > 1)
+    {
+        for ($i = 1; $i < func_num_args(); $i++)
+            $say = str_replace('%'.$i, func_get_arg($i), $say);
+    }
+
+    return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)]);
 }
 
 function utf8_strtolower($utf8)
@@ -2110,15 +2118,38 @@ function user_decode($user_line)
     return $member_db;
 }
 
-// ---------- Sanitize: get POST vars --------
-function POST_get($var)
+/*  ---------- Sanitize: get POST vars (default) --------
+    POST [def] only POST
+    GET only GET
+    POSTGET -- or POST or GET
+    GETPOST -- or GET or POST
+    REQUEST -- from REQUEST
+    COOKIES -- from COOKIES
+*/
+
+function GET($var, $method = 'POST')
 {
     $result = array();
     $vars   = spsep($var);
     foreach ( $vars as $var )
     {
         $value = false;
-        if (isset($_POST[$var])) $value = $_POST[$var];
+
+        if ($method == 'POST' && isset($_POST[$var])) $value = $_POST[$var];
+        elseif ($method == 'GET' && isset($_GET[$var])) $value = $_GET[$var];
+        elseif ($method == 'POSTGET')
+        {
+            if (isset($_POST[$var])) $value = $_POST[$var];
+            elseif (isset($_GET[$var])) $value = $_GET[$var];
+        }
+        elseif ($method == 'GETPOST')
+        {
+            if (isset($_GET[$var])) $value = $_GET[$var];
+            elseif (isset($_POST[$var])) $value = $_POST[$var];
+        }
+        elseif ($method == 'REQUEST' && isset($_REQUEST[$var])) $value = $_REQUEST[$var];
+        elseif ($method == 'COOKIES' && isset($_COOKIES[$var])) $value = $_COOKIES[$var];
+
         $result[] = $value;
     }
     return $result;

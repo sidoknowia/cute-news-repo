@@ -1,6 +1,6 @@
 <p>
     <b>Note:</b> See more about <a href="http://www.php.net/manual/en/reference.pcre.pattern.syntax.php" target="_blank">regular expressions</a>.
-    Attention! Than more word replacement, then less performance!
+    Attention! the more word replacement, the less performance.
 </p>
 
 <span style="color: green; font-size: 15px;">{$result}</span>
@@ -13,5 +13,5 @@
         <label for="replaces"><b>Replacement (from=to)</b></label>
         <div><textarea id="replaces" name="replaces" style="width: 730px; height:500px;">{$replaces}</textarea></div>
     </p>
-    <div><input type="submit" value="Save replacements" /></div>
+    <div><input type="submit" value="Save" /></div>
 </form>

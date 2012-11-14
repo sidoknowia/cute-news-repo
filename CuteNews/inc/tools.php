@@ -300,16 +300,44 @@ elseif ($action == 'userlog')
 {
     echoheader("options", lang("User log"), make_breadcrumbs('main/options/='.lang('User log')));
 
+    list($year_s, $month_s, $day_s, $hour_s) = GET('year_s,month_s,day_s,hour_s', 'GET');
+    list($year_e, $month_e, $day_e, $hour_e) = GET('year_e,month_e,day_e,hour_e', 'GET');
+    list($per) = GET('per', 'GET');
+
     // make default date filter
-    $year_s     = $year_s?  $year_s : date('Y');
-    $month_s    = $month_s? $month_s : date('m');
-    $day_s      = $day_s?   $day_s : date('d');
-    $hour_s     = $hour_s?  $hour_s : 0;
-    $year_e     = $year_e?  $year_e : date('Y');
-    $month_e    = $month_e? $month_e : date('m');
-    $day_e      = $day_e?   $day_e : date('d');
-    $hour_e     = $hour_e?  $hour_e : 23;
-    $per        = $per?     $per : 25;
+    $year_s     = $year_s?  intval($year_s) : date('Y');
+    $month_s    = $month_s? intval($month_s) : date('m');
+    $day_s      = $day_s?   intval($day_s) : date('d');
+    $hour_s     = $hour_s?  intval($hour_s) : 0;
+    $year_e     = $year_e?  intval($year_e) : date('Y');
+    $month_e    = $month_e? intval($month_e) : date('m');
+    $day_e      = $day_e?   intval($day_e) : date('d');
+    $hour_e     = $hour_e?  intval($hour_e) : 23;
+    $per        = $per?     intval($per) : 25;
+
+    $h_year_s = $year_s; $h_month_s = $month_s; $h_day_s = $h_day_s; $h_hour_s = $hour_s;
+    $h_year_e = $year_e; $h_month_e = $month_e; $h_day_e = $day_e; $h_hour_e = $hour_e;
+
+    // set limits
+    if ($year_s < 2003) $year_s = 2003;
+    if ($month_s < 1) $month_s = 1;
+    if ($day_s < 1) $day_s = 1;
+    if ($hour_s < 0) $hour_s = 0;
+    if ($year_e < 2003) $year_e = 2003;
+    if ($month_e < 1) $month_e = 1;
+    if ($day_e < 0) $day_e = 0;
+    if ($hour_e < 1) $hour_e = 1;
+
+    if ($year_s > 9999) $year_s = 9999;
+    if ($month_s > 12) $month_s = 12;
+    if ($day_s > 31) $day_s = 31;
+    if ($hour_s > 23) $hour_s = 23;
+    if ($year_e > 9999) $year_e = 9999;
+    if ($month_e > 12) $month_e = 12;
+    if ($day_e > 31) $day_e = 31;
+    if ($hour_e > 23) $hour_e = 23;
+
+    if ($per < 0) $per = 25;
 
     // make request files
     $from_time  = mktime($hour_s, 0, 0, $month_s, $day_s, $year_s);
@@ -366,8 +394,14 @@ elseif ($action == 'userlog')
         }
     }
 
+    // in case of incorrect input
+    $message = false;
+    if ($h_year_s != $year_s or $h_month_s != $month_s or $h_day_s != $h_day_s or $h_day_s != $h_day_s or $h_hour_s != $hour_s or
+        $h_year_e != $year_e or $h_month_e != $month_e or $h_day_e != $h_day_e or $h_day_e != $h_day_e or $h_hour_e != $hour_e)
+        $message = lang('Incorrect numbers! Date adjusted to limits');
+
     // show filter
-    echo proc_tpl('tools/userlog/index', array(), array('IFLOG' => $count));
+    echo proc_tpl('tools/userlog/index');
     echofooter();
 }
 elseif ($action == 'replaces')
@@ -398,6 +432,14 @@ elseif ($action == 'xfields')
     if ($do == 'submit')
     {
         CSRFCheck();
+
+        // load post data
+        list($name, $vis, $add_name2, $add_vis) = GET('name,vis,add_name,add_vis');
+
+        // check name
+        $add_name = preg_replace('/[^a-z0-9_]/i', '', $add_name2);
+        if (strlen($add_name) != strlen($add_name2))
+            msg('error', lang('Error!'), lang('Name may consist only letters and digits!'), '#GOBACK');
 
         // set optional flag and refresh vis name
         if (!is_array($name)) $name = array();

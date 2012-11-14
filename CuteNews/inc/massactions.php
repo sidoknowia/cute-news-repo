@@ -158,6 +158,57 @@ elseif ($action == "mass_approve")
     else msg("error", lang("News Approved (with errors)"), str_replace(array('%1','%2'), array($approved_articles, count($selected_news)), lang("%1 of %2 articles that you selected were approved")));
 
 }
+elseif ($action == "mass_unapprove")
+{
+    if ($member_db[UDB_ACL] != ACL_LEVEL_JOURNALIST and $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
+        msg("error", lang('Error!'), lang("You do not have permissions for this action"), "#GOBACK");
+
+    list($id, $source, $selected_news, $returnto) = GET('id,source,selected_news,returnto', 'GET');
+
+    if (!is_array($selected_news))
+        $selected_news = array();
+
+    // detect source for unapprove
+    if (is_integer($source) )
+        $news_file = SERVDIR."/cdata/archives/$source.news.arch";
+    else
+        $news_file = SERVDIR."/cdata/news.txt";
+
+    $old_db = file( $news_file );
+    $new_db = fopen( $news_file, 'w');
+    flock($new_db, LOCK_EX);
+
+    $unapproved_count = 0;
+    foreach ($old_db as $old_db_line)
+    {
+        $old_db_arr = explode("|", $old_db_line);
+        if (!in_array($old_db_arr[0], $selected_news))
+        {
+            fwrite($new_db, $old_db_line);
+        }
+        else
+        {
+            //Move the article to Active News
+            $all_active_db = file(SERVDIR."/cdata/unapproved_news.txt");
+            $active_news_file = fopen(SERVDIR."/cdata/unapproved_news.txt", "w");
+            flock ($active_news_file, LOCK_EX);
+            fwrite($active_news_file, $old_db_line );
+            foreach ($all_active_db as $active_line) fwrite($active_news_file, $active_line);
+            flock ($active_news_file, LOCK_UN);
+            fclose($active_news_file);
+            $unapproved_count++;
+        }
+    }
+
+    flock($new_db, LOCK_UN);
+    fclose($new_db);
+
+    if ($returnto == 'edit' && $id)
+        relocation("$PHP_SELF?mod=editnews&action=editnews&id=$id&source=unapproved&saved=yes");
+
+    msg('info', lang("Well done"), lang('Selected news <b>(%1)</b> were unapproved', $unapproved_count));
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Mass Move to Cat
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

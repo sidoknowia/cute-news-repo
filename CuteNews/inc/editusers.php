@@ -154,7 +154,7 @@ elseif ($action == "doedituser")
 {
     CSRFCheck();
 
-    list($id, $editemail, $editpassword, $editlevel) = POST_get('id,editemail,editpassword,editlevel');
+    list($id, $editemail, $editpassword, $editlevel) = GET('id,editemail,editpassword,editlevel');
 
     if (empty($id))
         die(lang("This is not a valid user"));

@@ -34,7 +34,7 @@ if ($action == "options" or $action == '')
     $options = array
     (
         array(
-               'name'               => lang("Personal Options"),
+               'name'               => lang("Personal Data"),
                'url'                => "$PHP_SELF?mod=options&action=personal",
                'access'             => ACL_LEVEL_COMMENTER,
         ),
@@ -64,7 +64,7 @@ if ($action == "options" or $action == '')
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Archives Manager"),
+               'name'               => lang("Archive Manager"),
                'url'                => "$PHP_SELF?mod=tools&action=archive",
                'access'             => ACL_LEVEL_ADMIN,
         ),
@@ -84,7 +84,7 @@ if ($action == "options" or $action == '')
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("User logs"),
+               'name'               => lang("User log"),
                'url'                => "$PHP_SELF?mod=tools&action=userlog",
                'access'             => ACL_LEVEL_ADMIN,
         ),
@@ -143,15 +143,15 @@ if ($action == "options" or $action == '')
     echofooter();
 }
 // ********************************************************************************
-// Show Personal Options
+// Show Personal Data
 // ********************************************************************************
 elseif ($action == "personal")
 {
     $CSRF = CSRFMake();
 
     if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
-         echoheader("user", "Personal Options");
-    else echoheader("user", "Personal Options", make_breadcrumbs('main/options=options/Personal Options'));
+         echoheader("user", "Personal Data");
+    else echoheader("user", "Personal Data", make_breadcrumbs('main/options=options/Personal Data'));
 
     foreach($member_db as $key => $value)
         $member_db[$key]  = stripslashes(preg_replace(array("'\"'", "'\''"), array("&quot;", "&#039;"), $member_db[$key]));
@@ -178,7 +178,7 @@ elseif ($action == "personal")
     echofooter();
 }
 // ********************************************************************************
-// Save Personal Options
+// Save Personal Data
 // ********************************************************************************
 elseif ($action == "dosavepersonal")
 {
@@ -433,11 +433,11 @@ elseif ($action == "syscon")
     showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
     showRow(lang("Time Adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
     showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
-    showRow(lang("Auto-Archive every Month"),       lang("if yes, evrery month the active news will be archived"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
-    showRow(lang("Allow Self-Registration"),        lang("allow users to auto-register"),                               makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
+    showRow(lang("Automatic archiving every month"), lang("Every month your active news will be archived"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
+    showRow(lang("Allow Self-Registration"),        lang("allow users to register automatically"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
 
     showRow(lang("Custom Rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
-    showRow(lang("Self-Registration Level"),        lang("with what access level are users auto-registred?"),           makeDropDown(array("3"=>"Journalist","4"=>"Commenter"), "save_con[registration_level]", $config_registration_level));
+    showRow(lang("Self-Registration Level"),        lang("choose your status"),                                         makeDropDown(array("3"=>"Journalist","4"=>"Commentator"), "save_con[registration_level]", $config_registration_level));
     showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));
     showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
     showRow(lang("Enable user logs"),               lang("store user logs"),                                            makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[userlogs]", $config_userlogs));
@@ -451,15 +451,15 @@ elseif ($action == "syscon")
     echo "</table></td></tr>";
 
     echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Use Avatars"),                            lang("if not, the avatar URL field wont be shown"),     makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
+    showRow(lang("Use Avatars"),                            lang("if 'No', the avatar URL won't be shown"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
     showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
     showRow(lang("Show Full Story In PopUp"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
     showRow(lang("Settings for Full Story PopUp"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
     showRow(lang("Show Comments When Showing Full Story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
     showRow(lang("Time Format For News"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
-    showRow(lang("Make backup news"),                       lang("when you save a backup of news is done"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
-    showRow(lang("Use captcha"),                            lang("on registration and comments"),                               makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
-    showRow(lang("Use rating"),                             lang("is internal CuteNews rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
+    showRow(lang("Make backup news"),                       lang("news is saved in backup as well"),                    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
+    showRow(lang("Use captcha"),                            lang("on registration and comments"),                       makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
+    showRow(lang("Use rating"),                             lang("is internal CuteNews rating system"),                 makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
     hook('field_options_news');
     echo"</table></td></tr>";
 
@@ -471,7 +471,7 @@ elseif ($action == "syscon")
     showRow(lang("Max. Length of Comments in Characters"),      lang("enter <b>0</b> to disable checking"),                         "<input type=text style=\"text-align: center;\"  name='save_con[comment_max_long]' value='$config_comment_max_long' size=10>");
     showRow(lang("Comments Per Page (Pagination)"),             lang("enter <b>0</b> or leave empty to disable pagination"),        "<input type=text style=\"text-align: center;\"  name='save_con[comments_per_page]' value='$config_comments_per_page' size=10>");
     showRow(lang("Only Registered Users Can Post Comments"),    lang("if yes, only registered users can post comments"),            makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[only_registered_comment]", "$config_only_registered_comment"));
-    showRow(lang("Allow Mail Field to Act and as URL Field"),   lang("visitors will be able to put their site URL insted of mail"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_url_instead_mail]", "$config_allow_url_instead_mail"));
+    showRow(lang("Allow Mail Field to Act and as URL Field"),   lang("visitors will be able to put their site URL instead of mail"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_url_instead_mail]", "$config_allow_url_instead_mail"));
     showRow(lang("Show Comments In PopUp"),                     lang("comments will be opened in PopUp window"),                    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[comments_popup]", $config_comments_popup));
     showRow(lang("Settings for Comments PopUp"),                lang("only if 'Show Comments In PopUp' is enabled"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[comments_popup_string]\" value=\"$config_comments_popup_string\" size=40>");
     showRow(lang("Show Full Story When Showing Comments"),      lang("if yes, comments will be shown under the story"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_full_with_comments]", $config_show_full_with_comments));
@@ -482,7 +482,7 @@ elseif ($action == "syscon")
     // Notifications
     echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
-    showRow(lang("Notify of New Registrations"),            lang("when new user auto-registers"),                          makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
+    showRow(lang("Notify of New Registrations"),            lang("automatic registration of new users"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
     showRow(lang("Notify of New Comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
     showRow(lang("Notify of Unapproved News"),              lang("when unapproved article is posted (by journalists)"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_unapproved]", "$config_notify_unapproved"));
     showRow(lang("Notify of Auto-Archiving"),               lang("when (if) news are auto-archived"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_archive]", "$config_notify_archive"));

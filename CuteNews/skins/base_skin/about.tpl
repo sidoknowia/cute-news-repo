@@ -3,13 +3,9 @@
     <div style="background: #F7F6F4; padding: 4px; font: 15px/1em Arial;  margin: 0 0 4px 0;">Help &amp; Support</div>
     <div style="margin: 0 0 0 32px; font-size: 13px;">
         <p>
-            If you are experiencing any kind of problems, the first thing you should do before asking for  help from us is look
-            at <a style="font-size: 13px;" href="{$PHP_SELF}?mod=help">CuteNews internal Help Documentation</a>.
-
-            If you still can not solve your problem look at the <a style="font-size: 13px;" href="http://cutephp.com/faq/" target="_blank">FAQ section of our site</a>
-            or post your issues in our <a style="font-size: 13px;" href="http://cutephp.com/forum/" target="_blank">support
-            forum</a>, but only after you have read the <a target="_blank" style="font-size: 13px;"  href="README.html">README.html</a> file included in the zip.
-
+            If you face any problem the first thing you should do is to pay your attention to <a style="font-size: 13px;" href="{$PHP_SELF}?mod=help">CuteNews internal Help Documentation</a>.
+            If it doesn't help, look at <a style="font-size: 13px;" href="http://cutephp.com/faq/" target="_blank">FAQ section</a> or visit our <a style="font-size: 13px;" href="http://cutephp.com/forum/" target="_blank">support
+            forum</a>. Read <a target="_blank" style="font-size: 13px;"  href="README.html">README.html</a> file before it.
         </p>
 
         <ol>

@@ -469,6 +469,14 @@ elseif ($action == "editnews")
                     fclose($from);
                     fclose($news_backup);
                 }
+
+                // Journalist Edit --> make news unapproved
+                if ($source != 'unapproved')
+                {
+                    list($id) = GET('id');
+                    relocation("$PHP_SELF?mod=massactions&id={$id}&selected_news[]={$id}&action=mass_unapprove&source=$source&csrf_code={$CSRF}&returnto=edit");
+                }
+
                 relocation("$PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
             }
             else msg("error", lang('Error!'), lang("The news item can not be found or there is an error with the news database file."), '#GOBACK');
@@ -672,6 +680,9 @@ elseif ($action == "editnews")
     $Using_HTML = $options['use_html'];
     $Using_Avat = ($config_use_avatar == 'yes') ? 1 : 0;
     $Unapproved = ($source == 'unapproved')? 1 : 0;
+
+    // Remove "Approve" button from editor
+    if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST) $Unapproved = 0;
 
     echo proc_tpl
     (
