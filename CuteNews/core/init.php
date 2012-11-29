@@ -104,6 +104,7 @@
     if (!isset($config_fb_comments))        $config_fb_comments = '4';
     if (!isset($config_fb_box_width))       $config_fb_box_width = '470';
     if (!isset($config_fb_appid))           $config_fb_appid = '';
+    if (!isset($config_ban_attempts))       $config_ban_attempts = 3;
 
     // adjust timezone
     if (function_exists('date_default_timezone_set'))

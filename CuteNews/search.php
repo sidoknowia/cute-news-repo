@@ -31,7 +31,6 @@
 
     if ( empty($search_form_hide) || isset($search_form_hide) && empty($dosearch) )
     {
-
         // Make parameters -----------------------------------------------------------------------------------------------------
         list($day_from, $month_from, $year_from) = make_postponed_date($date_from);
         list($day_to,   $month_to,   $year_to)   = make_postponed_date($date_to);
@@ -65,13 +64,13 @@
         krsort($listing);
 
         // Init searching
-        $preg_story  = '.*?';
-        $preg_author = '.*?';
-        $preg_title  = '.*?';
+        $preg_story  = '[^\|]*';
+        $preg_author = '[^\|]*';
+        $preg_title  = '[^\|]*';
 
-        if ( !empty($story) ) $preg_story  = '.*?('.preg_replace('/\s/', '|', preg_sanitize($story)).').*?';
-        if ( !empty($user) )  $preg_author = '.*?('.preg_replace('/\s/', '|', preg_sanitize($user)).').*?';
-        if ( !empty($title) ) $preg_title  = '.*?('.preg_replace('/\s/', '|', preg_sanitize($title)).').*?';
+        if ( !empty($user) )  $preg_author = '.*?('.preg_replace('/\s/', '|', preg_sanitize($user)).')[^\|]*';
+        if ( !empty($title) ) $preg_title  = '.*?('.preg_replace('/\s/', '|', preg_sanitize($title)).')[^\|]*';
+        if ( !empty($story) ) $preg_story  = '.*?('.preg_replace('/\s/', '|', preg_sanitize($story)).')[^\|]*';
 
         // Search in files
         $found = array();
@@ -81,7 +80,7 @@
             if ($id && ($id < $date_from) ) break;
 
             $news = join('', file(SERVDIR . $newsfile));
-            $strs = '~^\d+\|'.$preg_author.'\|'.$preg_title.'\|'.$preg_story.'$~im';
+            $strs = '~^\d+\|'.$preg_author.'\|'.$preg_title.'\|'.$preg_story.'\|.*$~im';
 
             if ( preg_match_all($strs, $news, $c, PREG_SET_ORDER) )
             {
@@ -93,6 +92,12 @@
 
                     // Actually in story?
                     if (!preg_match("~$preg_story~i", $item[NEW_SHORT]) and !preg_match("~$preg_story~i", $item[NEW_FULL]))
+                        continue;
+
+                    // Actual search result?
+                    if (preg_match("/$preg_author/", $item[1]) == 0 ||
+                        preg_match("/$preg_title/", $item[2]) == 0 ||
+                        preg_match("/$preg_story/", $item[3]) == 0)
                         continue;
 
                     $found[] = array
