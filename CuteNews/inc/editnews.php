@@ -471,7 +471,7 @@ elseif ($action == "editnews")
                 }
 
                 // Journalist Edit --> make news unapproved
-                if ($source != 'unapproved')
+                if ($source != 'unapproved' && $member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST)
                 {
                     list($id) = GET('id');
                     relocation("$PHP_SELF?mod=massactions&id={$id}&selected_news[]={$id}&action=mass_unapprove&source=$source&csrf_code={$CSRF}&returnto=edit");
