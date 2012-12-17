@@ -28,7 +28,7 @@
             if (number != '') string += '&number=' + number;
         }
 
-        var htmlcode = '<a title="RSS Feed" href="' + string + '>' + '\n<img src="{$config_http_script_dir}/skins/images/rss_icon.gif" border=0/>\n</a>';
+        var htmlcode = '<a title="RSS Feed" href="' + string + '">' + '\n<img src="{$config_http_script_dir}/skins/images/rss_icon.gif" border=0/>\n</a>';
         document.getElementById('result').value = htmlcode;
 
     }
