@@ -259,7 +259,10 @@ function lang($say)
     if (func_num_args() > 1)
     {
         for ($i = 1; $i < func_num_args(); $i++)
-            $say = str_replace('%'.$i, func_get_arg($i), $say);
+        {
+            $axi = func_get_arg($i);
+            $say = str_replace('%'.$i, $axi, $say);
+        }
     }
 
     return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)]);
