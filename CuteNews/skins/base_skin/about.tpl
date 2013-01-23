@@ -14,7 +14,9 @@
             <li><a style="font-size: 12px;" href="http://cutephp.com/forum/" target=_blank>Support Forums</a></li>
         </ol>
 
-        <p><strong>Important note:</strong> no formal official support is provided apart from the support forum found on this website and maintained by other users.</p>
+        <div><strong>License Version:</strong> <script type="text/javascript" src="http://cutephp.com/cutenews/check_version.php?mybid={$config_version_id}"></script></div>
+        <br/>
+        <div><strong>Important note:</strong> no formal official support is provided apart from the support forum found on this website and maintained by other users.</div>
     </div>
 
     <div style="height: 16px;"></div>

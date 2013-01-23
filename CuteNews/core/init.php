@@ -10,8 +10,8 @@
     define('EXEC_TIME',               microtime(true));
 
     // BASE SETTINGS
-    define('VERSION',                 '1.5.0');
-    define('VERSION_ID',              188);
+    define('VERSION',                 '1.5.1');
+    define('VERSION_ID',              189);
 
     define('SERVDIR',                 dirname(dirname(__FILE__).'.html'));
     define('CACHE',                   '/cdata/cache');

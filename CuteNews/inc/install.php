@@ -226,7 +226,7 @@
 
         // auto-login
         setcookie('session', base64_encode( xxtea_encrypt(serialize( array( 'user' => $user )), "$ip@$CryptSalt")), 0, '/');
-        relocation(PHP_SELF);
+        relocation(PHP_SELF.'?installed');
     }
     // step 1
     else

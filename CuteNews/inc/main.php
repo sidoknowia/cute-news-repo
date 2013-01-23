@@ -4,10 +4,15 @@ if (!defined('INIT_INSTANCE')) die('Access restricted');
 
 hook('init_main');
 
-//If member access level is commenter, redirect him to personal options
+// If member access level is commenter, redirect him to personal options
 if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
-{
     relocation($config_http_script_dir."/index.php?mod=options&action=personal");
+
+// Run Once
+if (isset($_GET['installed']) && !file_exists(SERVDIR.'/cdata/installed.mark'))
+{
+    fclose( fopen(SERVDIR.'/cdata/installed.mark', 'w') );
+    relocation("http://www.cutephp.com/thanks.php?referer=".urlencode(base64_encode('http://'.$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'])));
 }
 
 // ----------------------------------------
