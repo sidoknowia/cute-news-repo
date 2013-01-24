@@ -1473,8 +1473,9 @@ function get_skin($skin)
 
     $msn  = bd_config('c2tpbg==');
     $cr   = bd_config('e2NvcHlyaWdodHN9');
-    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3MgMS41LjA8L2E+ICZjb3B5OyAyMDEyIDxhIHN0eWxlPSJmb250LXNpemU6IDlweCIgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGFyZ2V0PSJfYmxhbmsiPkN1dGVQSFA8L2E+Ljxicj57bC1zdGF0dXN9PC9kaXY+');
+    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3Mge2N2ZXJzaW9ufTwvYT4gJmNvcHk7IDIwMTIgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZVBIUDwvYT4uPGJyPntsLXN0YXR1c308L2Rpdj4=');
     $lct  = preg_replace("/{l-status}/", $stts, $lct);
+    $lct  = preg_replace("/{cversion}/", VERSION, $lct);
 
     if ($licensed == true) $lct = false;
     $$msn = preg_replace("/$cr/", $lct, $$msn);
