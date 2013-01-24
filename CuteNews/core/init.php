@@ -14,7 +14,6 @@
     define('VERSION_ID',              189);
 
     define('SERVDIR',                 dirname(dirname(__FILE__).'.html'));
-    define('CACHE',                   '/cdata/cache');
     define('SKINS',                   '/skins');
 
     // DEBUG
@@ -124,8 +123,8 @@
         if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
     // load config
-    if (file_exists(SERVDIR . CACHE.'/conf.php'))
-         $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . CACHE.'/conf.php' ))) );
+    if (file_exists(SERVDIR . '/cdata/conf.php'))
+         $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
     else $cfg = array();
 
     // initialize mod_rewrite if present
@@ -187,7 +186,7 @@
     // save cfg file
     $cfg = hook('init_modify_cfg', $cfg);
 
-    $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+    $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
     fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
     fclose($fx);
 

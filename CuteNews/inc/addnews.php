@@ -252,7 +252,7 @@ if ($action == "addnews")
     {
         $cfg['more_fields'] = array();
 
-        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
         fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
         fclose($fx);
     }

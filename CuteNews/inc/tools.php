@@ -457,7 +457,7 @@ elseif ($action == 'xfields')
         if ($add_name && $add_vis) $cfg['more_fields'][$add_name] = $add_vis;
 
         // save
-        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
         fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
         fclose($fx);
 

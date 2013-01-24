@@ -19,8 +19,8 @@
     function make_salt()
     {
         // Generate unique salt
-        if (file_exists(SERVDIR . '/cdata/cache/conf.php'))
-             $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/cache/conf.php' ))) );
+        if (file_exists(SERVDIR . '/cdata/conf.php'))
+             $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
         else $cfg = array();
 
         $salt = $cfg['crypt_salt'] = false;
@@ -31,7 +31,7 @@
         }
         $CryptSalt = $cfg['crypt_salt'];
 
-        $fx = fopen(SERVDIR.'/cdata/cache/conf.php', 'w');
+        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
         fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
         fclose($fx);
 
@@ -137,7 +137,11 @@
         foreach ($dirs as $v)
         {
             $dir = SERVDIR.'/cdata/'.$v;
-            if (!is_dir($dir)) mkdir($dir, 0775);
+            if (!is_dir($dir))
+            {
+                mkdir($dir, 0775);
+                chmod($dir, 0775);
+            }
         }
 
         // Make files

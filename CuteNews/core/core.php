@@ -53,9 +53,9 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
     if (defined('STORE_ERRORS') && STORE_ERRORS)
     {
         $str = trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out));
-        if (is_writable(SERVDIR.CACHE))
+        if (is_writable(SERVDIR.'/cdata/log'))
         {
-            $log = fopen(SERVDIR.CACHE.'/error_dump.log', 'a');
+            $log = fopen(SERVDIR.'/cdata/log/error_dump.log', 'a');
             fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.$str."\n");
             fclose($log);
         }
@@ -85,9 +85,9 @@ function die_stat($No, $Reason = false)
     // Log stat
     if (defined('STORE_ERRORS') && STORE_ERRORS)
     {
-        if (is_writable(SERVDIR.CACHE))
+        if (is_writable(SERVDIR.'/cdata/log'))
         {
-            $log = fopen(SERVDIR.CACHE.'/error_dump.log', 'a');
+            $log = fopen(SERVDIR.'/cdata/log/error_dump.log', 'a');
             fwrite($log, time().'|'.date('Y-m-d H:i:s').'|DIE_STAT: '.$No.'; '.str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $Reason)."\n");
             fclose($log);
         }
@@ -460,7 +460,7 @@ function send_mail($to, $subject, $message, $hdr = false)
         if ($v)
         {
             $mx = false;
-            $pt = SERVDIR.'/cdata/cache/mail.log';
+            $pt = SERVDIR.'/cdata/log/mail.log';
             $ms = "-------------\n".$headers."Subject: $subject\n\n".$message."\n\n";
             mail($v, $subject, $message, $headers) or $mx = true;
             if (defined('EMAIL_FORCE_LOG') && EMAIL_FORCE_LOG or $mx)
