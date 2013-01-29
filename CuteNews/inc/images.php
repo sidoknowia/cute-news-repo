@@ -14,39 +14,20 @@ if ($action == "preview")
 {
     echo proc_tpl('images/preview', array( 'config_http_script_dir' => $config_http_script_dir, 'image' => $image ) );
 }
+
 // ********************************************************************************
 // Show Images List
 // ********************************************************************************
 elseif ($action != "doimagedelete")
 {
-    if ($subaction != 'upload') $CSRF = CSRFMake();
-
     $CKEditorFuncNum = $_REQUEST['CKEditorFuncNum'];
-    if ($action == "quick")
-    {
-        echo proc_tpl
-        (
-             'images/quick.up',
-             array('area' => $area,
-                   'CKEditorFuncNum' => $CKEditorFuncNum,
-                   'config_http_script_dir' => $config_http_script_dir
-             ),
-             array('WYSYWIG' => $wysiwyg && $_REQUEST['CKEditorFuncNum'])
-        );
-    }
-    else
-    {
-        echoheader("images", "Manage Images", make_breadcrumbs('main/options=options/Manage Images'));
-    }
 
     // ********************************************************************************
     // Upload Image(s)
     // ********************************************************************************
-
     if ($subaction == "upload")
     {
         CSRFCheck();
-        $CSRF = CSRFMake();
         for ($image_i = 1; $image_i < ($images_number+1); $image_i++)
         {
             $current_image  = 'image_'.$image_i;
@@ -56,43 +37,65 @@ elseif ($action != "doimagedelete")
             $img_name_arr   = explode(".",$image_name);
             $type           = end($img_name_arr);
 
-            if (empty($image_name)) $img_result .= "<br><span style='color: red;'>$current_image -> No File Specified For Upload!</span>";
-            elseif( !isset($overwrite) and file_exists(SERVDIR."/uploads/".$image_name)){ $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";}
-            elseif( !(in_array($type, $allowed_extensions) or in_array(strtolower($type), $allowed_extensions)) )
+            // Check file for valid
+            $data = getimagesize($image);
+            list($width, $height) = $data;
+
+            // Only allowed images
+            if ( preg_match('/^image\//i', $data['mime']) && $width && $height )
             {
-                $img_result .= "<br><span style='color:red;'>$image_name ->This type of file is not allowed!</span>";
+                if (empty($image_name))
+                {
+                    $img_result .= "<br><span style='color: red;'>$current_image -> No File Specified For Upload!</span>";
+                }
+                elseif( !isset($overwrite) and file_exists(SERVDIR."/uploads/".$image_name))
+                {
+                    $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";
+                }
+                else
+                {
+                    // Image is OK, upload it
+                    copy($image, SERVDIR."/uploads/".$image_name) or $img_result .= "<br><span style='color: red;'>$image_name -> Couldn't copy image to server</span><br />Check if file_uploads is allowed in the php.ini file of your server";
+                    if (file_exists(SERVDIR."/uploads/".$image_name))
+                    {
+                        $img_result .= "<br><span style='color: green;'>$image_name -> Image was uploaded</span>";
+                        if ($action == "quick")
+                            $img_result .= " <a title=\"Insert this image in the $my_area\" href=\"javascript:insertimage('$image_name');\">[insert it]</a>";
+
+                    }
+                    // if file is uploaded succesfully
+                }
             }
             else
             {
-                // Image is OK, upload it
-                copy($image, SERVDIR."/uploads/".$image_name) or $img_result .= "<br><span style='color: red;'>$image_name -> Couldn't copy image to server</span><br />Check if file_uploads is allowed in the php.ini file of your server";
-                if (file_exists(SERVDIR."/uploads/".$image_name))
-                {
-                    $img_result .= "<br><span style='color: green;'>$image_name -> Image was uploaded</span>";
-                    if ($action == "quick")
-                        $img_result .= " <a title=\"Insert this image in the $my_area\" href=\"javascript:insertimage('$image_name');\">[insert it]</a>";
-
-                }
-                // if file is uploaded succesfully
+                unlink($_FILES[$current_image]['tmp_name']);
+                $img_result .= "<br><span style='color:red;'>$image_name ->This type of file is not allowed!</span>";
             }
         }
     }
 
-    // Add the JS for multiply image upload.
-    echo proc_tpl
-    (
-        'images/multi',
-        array
+    // out html head image content
+    $CSRF = CSRFMake();
+
+    if ($action == "quick")
+    {
+        echo proc_tpl
         (
-            'CSRF'                  => $CSRF,
-            'img_result'            => $img_result,
-            'wysiwyg'               => $wysiwyg,
-            'CKEditorFuncNum'       => $CKEditorFuncNum,
-            'area'                  => $area,
-            'action'                => $action,
-        ),
-        array('QUICK' => ($action == "quick" && $wysiwyg == false)? 1:0)
-    );
+            'images/quick.up',
+            array('area' => $area,
+                'CKEditorFuncNum' => $CKEditorFuncNum,
+                'config_http_script_dir' => $config_http_script_dir
+            ),
+            array('WYSYWIG' => $wysiwyg && $_REQUEST['CKEditorFuncNum'])
+        );
+    }
+    else
+    {
+        echoheader("images", "Manage Images", make_breadcrumbs('main/options=options/Manage Images'));
+    }
+
+    // Add the JS for multiply image upload.
+    echo proc_tpl('images/multi', array(), array('QUICK' => ($action == "quick" && $wysiwyg == false)? 1:0));
 
     $i = 0;
     $img_dir = opendir(SERVDIR."/uploads");
@@ -111,9 +114,10 @@ elseif ($action != "doimagedelete")
         if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/uploads/".$file))
         {
             $i++;
-            $this_size =  filesize(SERVDIR."/uploads/".$file);
+            $this_size  = filesize(SERVDIR."/uploads/".$file);
             $total_size += $this_size;
-            $img_info = getimagesize(SERVDIR."/uploads/".$file);
+            $img_info   = getimagesize(SERVDIR."/uploads/".$file);
+
             if ( $i%2 != 0 ) $bg = "bgcolor=#F7F6F4"; $bg = "";
             if ($action == "quick")
             {
@@ -141,7 +145,7 @@ elseif ($action != "doimagedelete")
     if ($i > 0)
     {
         echo "<tr><td height=16>";
-        if($action != "quick")
+        if ($action != "quick")
         {
             echo "<td colspan=2 align=right><br><input type=submit value='".lang('Delete Selected Images')."'></tr>";
         }
@@ -149,7 +153,7 @@ elseif ($action != "doimagedelete")
         echo "<tr height=1>
                 <td width=14>&nbsp;</td>
                 <td align=right><br/><b>".lang('Total size')."</b></td>
-                <td align=right><br/><b>". formatsize($total_size) .'</b></td>
+                <td align=right><br/><b>".formatsize($total_size) .'</b></td>
                 <td>&nbsp;</td>
             </tr>';
 
@@ -165,13 +169,26 @@ elseif ($action != "doimagedelete")
 // ********************************************************************************
 elseif ($action == "doimagedelete")
 {
-    CSRFCheck();
+    // CSRFCheck();
 
     if(!isset($images))
         msg("info", lang("No Images selected"), lang("You must select images to be deleted"), '#GOBACK');
 
     foreach ($images as $image)
-        unlink(SERVDIR."/uploads/".$image) or print(lang("Could not delete image")." <b>$file</b>");
+    {
+        $image_path = SERVDIR."/uploads/".$image;
+        $real_path = realpath($image_path);
+
+        // Only trusted path
+        if ($image_path == $real_path)
+        {
+            unlink(SERVDIR."/uploads/".$image) or print(lang("Could not delete image")." <b>$image_path</b>");
+        }
+        else
+        {
+            add_to_log($member_db[UDB_NAME], "Try to delete image $image_path");
+        }
+    }
 
     msg("info", lang("Image(s) Deleted"), lang("The image was successfully deleted"), '#GOBACK');
 

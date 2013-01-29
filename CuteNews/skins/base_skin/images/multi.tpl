@@ -1,6 +1,7 @@
 <script type='text/javascript'>
 
-    function AddRowsToTable() {
+    function AddRowsToTable()
+    {
         var tbl = document.getElementById('tblSample');
         var lastRow = tbl.rows.length;
 
@@ -18,10 +19,12 @@
 
         document.getElementById('images_number').value = iteration;
     }
-    function RemoveRowFromTable() {
+    function RemoveRowFromTable()
+    {
         var tbl = document.getElementById('tblSample');
         var lastRow = tbl.rows.length;
-        if (lastRow > 1){
+        if (lastRow > 1)
+        {
             tbl.deleteRow(lastRow - 1);
             document.getElementById('images_number').value =  document.getElementById('images_number').value - 1;
         }

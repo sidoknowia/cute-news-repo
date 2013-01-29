@@ -21,7 +21,7 @@ if ($action == "add" or $action == "quickadd")
 // ********************************************************************************
 elseif($action == "remove")
 {
-    if (empty($remove_ip)) msg("error", lang('Error!'), lang("The IP or nick can not be blank"), '#GOBACK');
+    if (empty($remove_ip)) msg("error", lang('Error!'), lang("The IP or nick cannot be blank"), '#GOBACK');
     user_remove_ban($remove_ip);
 }
 

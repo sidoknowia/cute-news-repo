@@ -9,6 +9,8 @@ function confirmDelete(url)
 </script>
 
 {$error_messages}
+{if $preview_hmtl}<div style="margin: 0 0 0 75px;">{$preview_hmtl}</div>{/if}
+
 <form onSubmit= "return submitForm();" method="POST" name="addnews" action="{$PHP_SELF}">
 
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
@@ -103,9 +105,12 @@ function confirmDelete(url)
             <br/>
             <table border=0 cellspacing=0 cellpadding=2 width=100%>
                 <tr>
-                    <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>
+                    <td align="left">
+                        <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">
+                        <button title="Preview the New Article" name="preview" value="preview" accesskey="p">Preview</button>
+                    </td>
                     <td align="right">
-                        {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved');"> &nbsp;{/if}
+                        {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved&csrf_code={$CSRF}');"> &nbsp;{/if}
                         <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=editnews&subaction=doeditnews&source={$source}&ifdelete=yes&id={$id}')">
                     </td>
               </tr>

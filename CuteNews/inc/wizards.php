@@ -18,7 +18,8 @@ elseif ($action == "news")
 {
     //Gather the Templates
     $templates_list = array();
-    if(!$handle = opendir(SERVDIR."/cdata")) die("Can not open directory ".SERVDIR."/cdata ");
+    if (!$handle = opendir(SERVDIR."/cdata"))
+        die("Cannot open directory ".SERVDIR."/cdata ");
 
     while (false !== ($file = readdir($handle)))
     {
@@ -73,7 +74,7 @@ elseif ($action == "news_step2")
     $include_path = dirname(dirname(__FILE__)) .'/show_news.php';
 
     if ($w_number and $w_number != '')
-        $the_code .= '$number='.$w_number.";\n";
+        $the_code .= '$number="'.$w_number."\";\n";
 
     if ($w_template != 'Default')
         $the_code .= '$template="'.$w_template."\";\n";
@@ -82,23 +83,14 @@ elseif ($action == "news_step2")
     if ($w_allcategory != 'yes' and isset($w_category) and $w_category != '')
     {
         $i = 0;
-        foreach($w_category as $category)
-        {
-            $i++;
-            $my_category .= $category;
-            if (count($w_category) != $i){ $my_category .= ','; }
-        }
-
-        if (count($w_category) > 1)
-             $the_code .= '$category="'.$my_category."\";\n";
-        else $the_code .= '$category='.$my_category.";\n";
+        $my_category = join(',', $w_category);
+        $the_code .= '$category="'.$my_category."\";\n";
     }
-
 
     if ($w_reverse == 'yes')                    $the_code .= "\$reverse=TRUE;\n";
     if ($w_only_active == 'yes')                $the_code .= "\$only_active=TRUE;\n";
     if ($w_static == 'yes')                     $the_code .= "\$static=TRUE;\n";
-    if ($w_start_from and $w_start_from != '')  $the_code .= "\$start_from=$w_start_from;\n";
+    if ($w_start_from and $w_start_from != '')  $the_code .= "\$start_from=\"$w_start_from\";\n";
 
     $the_code .= "include(\"$include_path\");\n?&gt;";
     echo "CuteNews determined your full path to show_news.php to be: '<b>$include_path</b>'<br>
@@ -157,7 +149,7 @@ elseif ($action == "dosaverss")
     if (strpos($rss_news_include_url, 'http://') === false)
         msg("error",  lang('Error!'), lang("The URL where you include your news must start with <b>http://</b>"));
 
-    $handler = fopen(SERVDIR."/cdata/rss_config.php", "w") or msg("error",  lang('Error!'), "Can not open file ./cdata/rss_config.php");
+    $handler = fopen(SERVDIR."/cdata/rss_config.php", "w") or msg("error",  lang('Error!'), "Cannot open file ./cdata/rss_config.php");
     fwrite($handler, "<?PHP \n\n//RSS Configurations (Auto Generated file)\n\n");
 
     fwrite($handler, "\$rss_news_include_url = \"".htmlspecialchars($rss_news_include_url)."\";\n\n");

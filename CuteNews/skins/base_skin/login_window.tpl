@@ -1,18 +1,17 @@
 <form  name="login" id="login_form" action='{$PHP_SELF}' method="post">
 
     <input type="hidden" id="csrf_code" name="csrf_code" value="{$CSRF}">
-    <script src="{$PHP_SELF}?csrfmake=csrfmake"></script>
 
     <input type="hidden" name="action" value="dologin">
     <table width="100%" border=0 cellpadding=1 cellspacing=0>
         <tr>
-            <td width=80>Username: </td>
-            <td width='160'><input tabindex=1 type="text" name="username" id="login_username" value='{$lastusername}' style='width:150;'></td>
-            <td>&nbsp;{ALLOW_REG}<a href='register.php'>(register)</a>{/ALLOW_REG}</td>
+            <td width='80'>Username: </td>
+            <td width='160'><input tabindex=1 type="text" name="username" id="login_username" value="{$lastusername}" style="width: 150px;"></td>
+            <td>&nbsp;{ALLOW_REG}<a href="register.php">(register)</a>{/ALLOW_REG}</td>
         </tr>
         <tr>
             <td>Password: </td>
-            <td><input tabindex=1 type="password" name="password" id="login_password" style='width:150'></td>
+            <td><input tabindex="1" type="password" name="password" id="login_password" style='width: 150px'></td>
             <td>&nbsp;<a href='register.php?action=lostpass'>(lost password)</a> </td>
         </tr>
         <tr>
@@ -26,7 +25,7 @@
         </tr>
         <tr>
             <td>&nbsp;</td>
-            <td align=center colspan=2 style='text-align:left;'>{$result}</td>
+            <td align="center" colspan=2 style='text-align:left;'>{$result}</td>
         </tr>
 
 </table>

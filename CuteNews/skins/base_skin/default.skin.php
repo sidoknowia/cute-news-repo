@@ -156,7 +156,7 @@ td.top_header { padding: 8px; }
             <table border=0 cellpadding=0 cellspacing=0 width="100%" >
             <tr> <td>&nbsp;</td> </tr>
             <tr> <td class="menu-border"> {menu} </td> </tr>
-            <tr> <td style="padding: 20px 0 0 0;">
+            <tr> <td style="padding: 20px;">
 
                 <!--SELF-->
                 <table border=0 cellpadding=0 cellspacing=0 width="100%" >

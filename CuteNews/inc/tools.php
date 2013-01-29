@@ -6,7 +6,9 @@ if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 
 $success = false;
-$backup = preg_replace('~[^a-z0-9_\.]~i', '', $backup);
+
+// Sanitize backup name
+$backup = preg_replace('/[^a-z0-9_\. ]/i', '-', trim($backup));
 
 // ********************************************************************************
 // Archive
@@ -56,7 +58,7 @@ if ($action == "archive")
     echoheader("archives", lang("Archives"), make_breadcrumbs('main/options=options/Archives'));
 
     if(!$handle = opendir(SERVDIR."/cdata/archives"))
-        die_stat(false, lang("Can not open directory")." ".SERVDIR."/cdata/archives ");
+        die_stat(false, lang("Cannot open directory")." ".SERVDIR."/cdata/archives ");
 
     while (false !== ($file = readdir($handle)))
     {
@@ -104,10 +106,10 @@ elseif ($action == "doarchive")
 
     $arch_name = time() + ($config_date_adjust*60);
     if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))
-        msg("error", lang('Error!'), lang("Can not create file")." ./cdata/archives/$arch_name.news.arch", "#GOBACK");
+        msg("error", lang('Error!'), lang("Cannot create file")." ./cdata/archives/$arch_name.news.arch", "#GOBACK");
 
     if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))
-        msg("error", lang('Error!'), lang("Can not create file")." ./cdata/archives/$arch_name.comments.arch", "#GOBACK");
+        msg("error", lang('Error!'), lang("Cannot create file")." ./cdata/archives/$arch_name.comments.arch", "#GOBACK");
 
     $handle = fopen(SERVDIR."/cdata/news.txt","w");
     fclose($handle);
@@ -118,7 +120,7 @@ elseif ($action == "doarchive")
     msg("archives", lang("Archive Saved"), "&nbsp&nbsp; ".lang('All active news were successfully added to archives file with name')." <b>$arch_name.news.arch</b>", "#GOBACK");
 }
 // ********************************************************************************
-// Do Delete Archive
+// Delete Archive
 // ********************************************************************************
 elseif ($action == "dodeletearchive")
 {
@@ -126,7 +128,7 @@ elseif ($action == "dodeletearchive")
 
     $success = 0;
     if(!$handle = opendir(SERVDIR."/cdata/archives"))
-        die_stat(lang("Can not open directory")." ".SERVDIR."/cdata/archive ");
+        die_stat(lang("Cannot open directory")." ".SERVDIR."/cdata/archive ");
 
     while (false !== ($file = readdir($handle)))
     {
@@ -158,7 +160,7 @@ elseif ($action == "backup")
     echoheader("options", "Backup", make_breadcrumbs('main/options=options/Backup'));
 
     if (!is_dir(SERVDIR."/cdata/backup"))
-        die_stat(false, lang("Can not open directory")." ".SERVDIR."/cdata/backup ");
+        die_stat(false, lang("Cannot open directory")." ".SERVDIR."/cdata/backup ");
 
     $handle = opendir(SERVDIR."/cdata/backup");
     while (false !== ($file = readdir($handle)))
@@ -193,7 +195,7 @@ elseif ($action == "backup")
 }
 
 // ********************************************************************************
-// Do Delete Backup
+// Delete Backup
 // ********************************************************************************
 elseif ($action == "dodeletebackup")
 {
@@ -244,7 +246,7 @@ elseif($action == "dorestorebackup")
             if (!is_dir(SERVDIR."/cdata/backup/$backup/archives/$entryname") and $entryname!="." and $entryname!="..")
             {
                if(!copy(SERVDIR."/cdata/backup/$backup/archives/$entryname", SERVDIR."/cdata/archives/$entryname"))
-                   msg("error", lang('Error!'), lang("Can not copy")." ./cdata/backup/$backup/archives/$entryname", "#GOBACK");
+                   msg("error", lang('Error!'), lang("Cannot copy")." ./cdata/backup/$backup/archives/$entryname", "#GOBACK");
             }
         }
     }
@@ -252,18 +254,17 @@ elseif($action == "dorestorebackup")
     msg("info", lang("Backup Restored"), lang("The backup was successfully restored"), "#GOBACK");
 }
 // ********************************************************************************
-// Make The BackUp
+// Make The Backup
 // ********************************************************************************
 elseif($action == "dobackup")
 {
     CSRFCheck();
-    $back_name = str_replace(' ', '-', trim($back_name));
 
     // Check files
     if (filesize(SERVDIR."/cdata/news.txt") == 0)
-        msg("error", lang('Error!'), lang("The news file is empty and can not be backed-up"), "#GOBACK");
+        msg("error", lang('Error!'), lang("The news file is empty and cannot be backed-up"), "#GOBACK");
 
-    if (is_readable(SERVDIR."/cdata/backup/$back_name"))
+    if (is_readable(SERVDIR."/cdata/backup/$backup"))
         msg("error", lang('Error!'), lang("A backup with this name already exist"), "#GOBACK");
 
     if (!is_readable(SERVDIR."/cdata/backup"))
@@ -272,29 +273,29 @@ elseif($action == "dobackup")
     if (!is_writable(SERVDIR."/cdata/backup"))
         msg("error", lang('Error!'), lang("The directory ./cdata/backup is not writable, please chmod it"), "#GOBACK");
 
-    mkdir(SERVDIR."/cdata/backup/$back_name", 0777);
-    mkdir(SERVDIR."/cdata/backup/$back_name/archives", 0777);
+    mkdir(SERVDIR."/cdata/backup/$backup", 0777);
+    mkdir(SERVDIR."/cdata/backup/$backup/archives", 0777);
 
-    if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/backup/$back_name/news.txt"))
-        die_stat(false, lang("Can not copy news.txt file to")." ./cdata/backup/$back_name :(");
+    if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/backup/$backup/news.txt"))
+        die_stat(false, lang("Cannot copy news.txt file to")." ./cdata/backup/$backup :(");
 
-    if(!copy(SERVDIR."/cdata/comments.txt",  SERVDIR."/cdata/backup/$back_name/comments.txt"))
-        die_stat(false, lang("Can not copy comments.txt file to")." ./cdata/backup/$back_name :(");
+    if(!copy(SERVDIR."/cdata/comments.txt",  SERVDIR."/cdata/backup/$backup/comments.txt"))
+        die_stat(false, lang("Cannot copy comments.txt file to")." ./cdata/backup/$backup :(");
 
     if(!$handle = opendir(SERVDIR."/cdata/archives"))
-        die_stat(false, lang("Can not create file"));
+        die_stat(false, lang("Cannot create file"));
 
     while(false !== ($file = readdir($handle)))
     {
         if($file != "." and $file != "..")
         {
-            if(!copy(SERVDIR."/cdata/archives/$file", SERVDIR."/cdata/backup/$back_name/archives/$file"))
-                die_stat(false, lang("Can not copy archive file to")." ./cdata/backup/$back_name/archives/$file :(");
+            if(!copy(SERVDIR."/cdata/archives/$file", SERVDIR."/cdata/backup/$backup/archives/$file"))
+                die_stat(false, lang("Cannot copy archive file to")." ./cdata/backup/$backup/archives/$file :(");
         }
     }
     closedir($handle);
 
-    msg("info", lang("Backup"), lang("All news and archives were successfully backed up under directory")." './cdata/backup/$back_name'", "#GOBACK");
+    msg("info", lang("Backup"), lang("All news and archives were successfully backed up under directory")." './cdata/backup/$backup'", "#GOBACK");
 }
 elseif ($action == 'userlog')
 {
@@ -315,7 +316,7 @@ elseif ($action == 'userlog')
     $hour_e     = $hour_e?  intval($hour_e) : 23;
     $per        = $per?     intval($per) : 25;
 
-    $h_year_s = $year_s; $h_month_s = $month_s; $h_day_s = $h_day_s; $h_hour_s = $hour_s;
+    $h_year_s = $year_s; $h_month_s = $month_s; $h_day_s = $day_s; $h_hour_s = $hour_s;
     $h_year_e = $year_e; $h_month_e = $month_e; $h_day_e = $day_e; $h_hour_e = $hour_e;
 
     // set limits
@@ -434,19 +435,23 @@ elseif ($action == 'xfields')
         CSRFCheck();
 
         // load post data
-        list($name, $vis, $add_name2, $add_vis) = GET('name,vis,add_name,add_vis');
+        list($name, $vis, $add_name, $add_vis) = GET('name,vis,add_name,add_vis');
 
         // check name
-        $add_name = preg_replace('/[^a-z0-9_]/i', '', $add_name2);
-        if (strlen($add_name) != strlen($add_name2))
+        if (preg_match('/^[a-z0-9_]+$/i', '', $add_name) == false)
             msg('error', lang('Error!'), lang('Name may consist only letters and digits!'), '#GOBACK');
+
+        if (empty($add_vis))
+            msg('error', lang('Error!'), lang('Please enter field "name for admin panel"'), '#GOBACK');
 
         // set optional flag and refresh vis name
         if (!is_array($name)) $name = array();
         foreach ($name as $v)
+        {
             if ( isset($optional[$v]) && $optional[$v] == 'Y')
                  $cfg['more_fields'][$v] = '&'.$vis[$v];
             else $cfg['more_fields'][$v] = $vis[$v];
+        }
 
         // delete from config
         foreach ($name as $v)

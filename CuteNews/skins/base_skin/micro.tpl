@@ -5,7 +5,7 @@ editnews_order|     <a href="%1">&uarr;</a> <a href="%2">&darr;</a>
 edn_link4cat|       <a href="{$PHP_SELF}%1">%2</a>
 remember_me|        <input type=checkbox name=CNremember id=CNremember value=1><label for=CNremember>Remember Me</label>
 forget_me|          <a href="javascript:CNforget();">Forget Me</a>
-logged_as_member|   <span style="color: green;">You logged as member</span>
+logged_as_member|   <span style="color: green;">You are logged in as a member</span>
 align_center|       <div style="text-align: center;">%1</div>
 forget_me_script|   <script type="text/javascript">CNforget();</script>
 addnews_err|        <div style="margin: 4px 0 4px 75px; color: red; ">&bull; %1</div>

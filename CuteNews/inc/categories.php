@@ -106,7 +106,7 @@ elseif($action == "doedit")
     $cat_name   = htmlspecialchars(stripslashes($cat_name));
 
     if (!$catid) msg("error", lang('Error!'), lang("No category ID"), '#GOBACK');
-    if ($cat_name == "") msg("error", lang('Error!'), lang("Category name can not be blank"), "#GOBACK");
+    if ($cat_name == "") msg("error", lang('Error!'), lang("Category name cannot be blank"), "#GOBACK");
 
     $old_cats = file(SERVDIR."/cdata/category.db.php");
     $new_cats = fopen(SERVDIR."/cdata/category.db.php", "w");

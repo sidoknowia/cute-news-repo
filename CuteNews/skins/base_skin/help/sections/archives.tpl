@@ -1,4 +1,4 @@
-<h1>Explaining Archives and Their Usage</h1>
+<h1>Explaining archives and their Usage</h1>
 When you send your news to the archive, CuteNews will automatically create a new archive file under the archives/ folder with extension .arch .
 Then all news that you selected for archiving will be moved from news.txt (where only the active news are hold) to the newly created file in archives/
 Therefore the news you have archived won't be visible from show_news.php but from show_archives.php where all available archives are nicely listed.<br>

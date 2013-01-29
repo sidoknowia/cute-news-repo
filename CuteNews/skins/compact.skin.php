@@ -22,6 +22,7 @@ $skin_header = <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+<meta name="robots" content="noindex" />
 <link rel="shortcut icon" type="image/ico" href="skins/images/favicon.ico"/>
 <script type="text/javascript" src="skins/cute.js"></script>
 <style type="text/css">

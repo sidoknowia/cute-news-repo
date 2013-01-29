@@ -13,4 +13,4 @@ After creating more templates you must use specific code when including news to 
 example code:<div class="code">&lt;?PHP<br>
     $template = "my_test_template";<br>include("path/to/show_news.php");<br>
     ?&gt;</div>With the above code, all news will be showed using the my_test_template that you have created yourself.
-if you don't specify what template to use, all news will use Default template which can not be deleted.
+if you don't specify what template to use, all news will use Default template which cannot be deleted.

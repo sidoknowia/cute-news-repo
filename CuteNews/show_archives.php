@@ -46,7 +46,7 @@
         $user_query = cute_query_string($QUERY_STRING, array("start_from", "archive", "subaction", "id", "ucat"));
 
         if(!$handle = opendir(SERVDIR."/cdata/archives"))
-            die_stat(false, "Can not open directory ".SERVDIR."/cdata/archives ");
+            die_stat(false, "Cannot open directory ".SERVDIR."/cdata/archives ");
 
         while (false !== ($file = readdir($handle)))
         {
@@ -107,7 +107,7 @@
 
     }
     unset($template, $requested_cats, $reverse, $in_use, $archive, $archives_arr, $number, $no_prev, $no_next, $i, $showed, $prev, $used_archives);
-    unset($QUERY_STRING, $user, $user_member);
+    unset($PHP_SELF, $QUERY_STRING, $user, $user_member);
 
 ?>
 <!-- News Powered by CuteNews: http://cutephp.com/ -->

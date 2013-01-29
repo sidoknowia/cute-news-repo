@@ -30,7 +30,7 @@
             $all_archives   = false;
             $hope_archive   = false;
 
-            if (!$handle = opendir(SERVDIR."/cdata/archives")) echo ("<!-- ".lang('Can not open directory')." ".SERVDIR."/cdata/archives --> ");
+            if (!$handle = opendir(SERVDIR."/cdata/archives")) echo ("<!-- ".lang('cannot open directory')." ".SERVDIR."/cdata/archives --> ");
 
             while (false !== ($file = readdir($handle)))
             {
@@ -65,7 +65,7 @@
         }
         else
         {
-            echo '<div style="text-align: center;">'.lang('Can not find an article with id').': <strong>'. (int)htmlspecialchars($id).'</strong></div>';
+            echo '<div style="text-align: center;">'.lang('Cannot find an article with id').': <strong>'. (int)htmlspecialchars($id).'</strong></div>';
         }
         return FALSE;
     }

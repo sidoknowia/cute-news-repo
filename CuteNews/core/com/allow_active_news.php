@@ -118,7 +118,7 @@
         if ($i < $number and empty($only_active))
         {
             // get archives ids
-            if (!$handle = opendir(SERVDIR . "/cdata/archives")) die_stat(false, '<div class="cutenews-warning">'.lang('Can not open directory').' '.SERVDIR.'/cdata/archives</div>');
+            if (!$handle = opendir(SERVDIR . "/cdata/archives")) die_stat(false, '<div class="cutenews-warning">'.lang('cannot open directory').' '.SERVDIR.'/cdata/archives</div>');
             while (false !== ($file = readdir($handle)))
             {
                 if ($file != "." and $file != ".." and substr($file, -9) == 'news.arch')

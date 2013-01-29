@@ -12,13 +12,7 @@ if ( hook('fork_register', false) ) return;
 $fp = fopen(SERVDIR."/cdata/users.db.php", 'r'); fgets($fp); $user = trim(fgets($fp)); fclose($fp);
 
 if ($user == false)
-{
-    if ( !file_exists(SERVDIR."/inc/install.php"))
-        die_stat(false, '<h2>Error!</h2>CuteNews detected that you do not have users in your users.db.php file and wants to run the install module.<br>However, the install module (<b>./inc/install.php</b>) can not be located, please reupload this file and make sure you set the proper permissions so the installation can continue.');
-
-    require (SERVDIR."/inc/install.php");
-    die();
-}
+    die("Install Cutenews first");
 
 $register_level = $config_registration_level;
 $user_arr       = user_search($regusername);
@@ -27,9 +21,9 @@ $user_arr       = user_search($regusername);
 if ($action == "doregister")
 {
     if ($config_allow_registration != "yes")     msg("error", lang('Error!'), lang("User registration is disabled"), '#GOBACK');
-    if (!$regusername)                           msg("error", lang('Error!'), lang("Username can not be blank"), '#GOBACK');
-    if (!$regpassword)                           msg("error", lang('Error!'), lang("Password can not be blank"), '#GOBACK');
-    if (!$regemail)                              msg("error", lang('Error!'), lang("Email can not be blank"), '#GOBACK');
+    if (!$regusername)                           msg("error", lang('Error!'), lang("Username cannot be blank"), '#GOBACK');
+    if (!$regpassword)                           msg("error", lang('Error!'), lang("Password cannot be blank"), '#GOBACK');
+    if (!$regemail)                              msg("error", lang('Error!'), lang("Email cannot be blank"), '#GOBACK');
     if ($confirm != $regpassword)                msg("error", lang('Error!'), lang("Confirm password don't match"), '#GOBACK');
     if (!$captcha || $captcha != $_SESS['CSW'])  msg("error", lang('Error!'), lang("Captcha code not valid"), '#GOBACK');
 
@@ -54,7 +48,7 @@ if ($action == "doregister")
         msg("error", lang('Error!'), lang("Your nickname must only contain valid characters, numbers and the symbol '_'"), '#GOBACK');
 
     elseif(!preg_match('/^[\.A-z0-9_\-]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/', $regemail))
-        msg("error", lang('Error!'), lang("Not valid Email"), '#GOBACK');
+        msg("error", lang('Error!'), lang("The e-mail you've entered is not valid"), '#GOBACK');
 
     elseif(!preg_match('/^[\.A-z0-9_\-]{1,15}$/i', $regpassword))
         msg("error", lang('Error!'), lang("Your password must contain only valid characters and numbers"), '#GOBACK');
@@ -66,7 +60,7 @@ if ($action == "doregister")
     $regpassword = $hmet[ count($hmet)-1 ];
 
     // add to database
-    user_add( array(UDB_ID => $add_time, $register_level, $regusername, $regpassword, $regnickname, $regemail, 0, 0 ));
+    user_add( array(UDB_ID => $add_time, $register_level, $regusername, $regpassword, $regnickname, $regemail, 0, 1 ));
 
     // send email
     if ($config_notify_registration == "yes" and $config_notify_status == "active")

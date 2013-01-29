@@ -34,7 +34,7 @@ if ($action == "options" or $action == '')
     $options = array
     (
         array(
-               'name'               => lang("Personal Data"),
+               'name'               => lang("Personal data"),
                'url'                => "$PHP_SELF?mod=options&action=personal",
                'access'             => ACL_LEVEL_COMMENTER,
         ),
@@ -44,42 +44,42 @@ if ($action == "options" or $action == '')
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("System Configurations"),
+               'name'               => lang("System configurations"),
                'url'                => "$PHP_SELF?mod=options&action=syscon&rand=".time(),
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Integration and Migration Wizards"),
+               'name'               => lang("Integration and migration Wizards"),
                'url'                => "$PHP_SELF?mod=wizards",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Edit Templates"),
+               'name'               => lang("Edit templates"),
                'url'                => "$PHP_SELF?mod=options&action=templates",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Add/Edit Users"),
+               'name'               => lang("Add/Edit users"),
                'url'                => "$PHP_SELF?mod=editusers&action=list",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Archive Manager"),
+               'name'               => lang("Archive manager"),
                'url'                => "$PHP_SELF?mod=tools&action=archive",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Manage Uploaded Images"),
+               'name'               => lang("Manage uploaded images"),
                'url'                => "$PHP_SELF?mod=images",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Backup Tool"),
+               'name'               => lang("Backup tool"),
                'url'                => "$PHP_SELF?mod=tools&action=backup",
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Edit Categories"),
+               'name'               => lang("Edit categories"),
                'url'                => "$PHP_SELF?mod=categories",
                'access'             => ACL_LEVEL_ADMIN,
         ),
@@ -99,7 +99,7 @@ if ($action == "options" or $action == '')
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang('Update Cutenews', 'options'),
+               'name'               => lang('Update cutenews', 'options'),
                'url'                => "$PHP_SELF?mod=update&action=update",
                'access'             => ACL_LEVEL_ADMIN,
         ),
@@ -213,6 +213,7 @@ elseif ($action == "dosavepersonal")
     $pack[UDB_AVATAR]       = $change_avatar;
 
     user_update($username, $pack);
+    add_to_log($username, lang('Update personal data'));
 
     msg("info", lang("Changes Saved"), lang("Your personal information was saved"), "#GOBACK");
     
@@ -229,7 +230,7 @@ elseif ($action == "templates")
     Detect all template packs we have
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     $templates_list = array();
-    if (!$handle = opendir(SERVDIR."/cdata")) die("Can not open directory ".SERVDIR."/cdata ");
+    if (!$handle = opendir(SERVDIR."/cdata")) die("Cannot open directory ".SERVDIR."/cdata ");
     while (false !== ($file = readdir($handle)))
     {
         if(preg_replace('/^.*\.(.*?)$/', '\\1', $file) == 'tpl')
@@ -256,7 +257,7 @@ elseif ($action == "templates")
     if ($subaction == "donew")
     {
         if (!preg_match('/^[a-z0-9_-]+$/i', $template_name))
-            msg("error", lang('Error!'), lang("The name of the template must be only with letters and numbers"), '#GOBACK');
+            msg("error", lang('Error!'), lang("The name of the template may only contain letters and numbers"), '#GOBACK');
 
         if (file_exists(SERVDIR."/cdata/$template_name.tpl"))
             msg("error", lang('Error!'), lang("Template with this name already exists"), '#GOBACK');
@@ -264,7 +265,7 @@ elseif ($action == "templates")
         // Make file
         if ( !file_exists(SERVDIR."/cdata/$base_template.tpl")) $base_template = 'Default';
         if ( !copy(SERVDIR."/cdata/$base_template.tpl", SERVDIR."/cdata/$template_name.tpl") )
-             msg("error", lang('Error!'), str_replace('%1', $base_template, lang("Can not copy file %1 to ./cdata/ folder with name "))."$template_name.tpl", '#GOBACK');
+             msg("error", lang('Error!'), str_replace('%1', $base_template, lang("Cannot copy file %1 to ./cdata/ folder with name "))."$template_name.tpl", '#GOBACK');
 
         chmod(SERVDIR."/cdata/$template_name.tpl", 0666);
 
@@ -276,10 +277,10 @@ elseif ($action == "templates")
     if ($subaction == "delete")
     {
         if (strtolower($do_template) == "default")
-            msg("Error",  lang('Error!'), lang("You can not delete the default template"), '#GOBACK');
+            msg("Error",  lang('Error!'), lang("You cannot delete the default template"), '#GOBACK');
 
         if (strtolower($do_template) == "rss")
-            msg("Error", lang('Error!'), lang("You can not delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
+            msg("Error", lang('Error!'), lang("You cannot delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
 
         $msg = proc_tpl('options/sure_delete');
         msg("info", lang("Deleting Template"), $msg);
@@ -290,11 +291,11 @@ elseif ($action == "templates")
     if ($subaction == "dodelete")
     {
         if(strtolower($do_template) == "default")
-            msg("Error", lang('Error!'), lang("You can not delete the default template"), '#GOBACK');
+            msg("Error", lang('Error!'), lang("You cannot delete the default template"), '#GOBACK');
 
         $unlink = unlink(SERVDIR."/cdata/$do_template.tpl");
         if ( !$unlink )
-             msg("error", lang('Error!'), "Can not delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
+             msg("error", lang('Error!'), "Cannot delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
         else msg("info",  lang("Template Deleted"), str_replace('%1', $do_template, lang("The template <b>%1</b> was deleted.")));
     }
 
@@ -352,12 +353,14 @@ elseif($action == "dosavetemplates")
     {
         $name  = $parts['name'];
         $value = $_REQUEST['edit_'.$name];
+        $value = str_replace('HTML;', '', $value);
         $value = (ini_get('magic_quotes_gpc')) ? stripslashes($value) : $value;
         fwrite($handle, "\${$name} = <<<HTML\n{$value}\nHTML;\n\n\n");
     }
     fwrite($handle, "?>");
     fclose($handle);
 
+    add_to_log($member_db[UDB_NAME], lang('Update templates'));
     relocation($PHP_SELF.'?action=templates&mod=options&do_template='.$do_template.'&save=success');
 }
 
@@ -394,13 +397,15 @@ elseif ($action == "syscon")
         return $output;
     }
 
+    $csrf_code = CSRFMake();
+
     // ---------- show options
     echoheader("options", lang("System Configuration"), make_breadcrumbs($bc));
     echo proc_tpl('options/syscon.top', array('add_fields' => hook('field_options_buttons')));
 
     if (!$handle = opendir(SERVDIR."/skins"))
     {
-        die_stat(false, "Can not open directory ./skins ");
+        die_stat(false, "Cannot open directory ./skins ");
     }
 
     while (false !== ($file = readdir($handle)))
@@ -425,22 +430,22 @@ elseif ($action == "syscon")
     // General
     echo "<tr style='' id=general><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
 
-    showRow(lang("Full URL to CuteNews Directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
+    showRow(lang("Full URL to CuteNews directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
     showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
-    showRow(lang("CuteNews Skin"),                  lang("you can download more from our website"),                     makeDropDown($sys_con_skins_arr, "save_con[skin]", $config_skin));
+    showRow(lang("CuteNews skin"),                  lang("you can download more from our website"),                     makeDropDown($sys_con_skins_arr, "save_con[skin]", $config_skin));
     showRow(lang("Use UTF-8"),                      lang("with this option, admin panel uses utf-8 charset"),           makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[useutf8]", $config_useutf8));
     showRow(lang("Don't convert UTF8 symbols to HTML entities"), lang("no conversion, e.g. &aring; to &amp;aring;"),    makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[utf8html]", $config_utf8html));
     showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
-    showRow(lang("Time Adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
+    showRow(lang("Time adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
     showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
     showRow(lang("Automatic archiving every month"), lang("Every month your active news will be archived"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
-    showRow(lang("Allow Self-Registration"),        lang("allow users to register automatically"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
+    showRow(lang("Allow self-Registration"),        lang("allow users to register automatically"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
 
     showRow(lang("Number of login attempts"),       lang("Specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour."), "<input type=text style=\"text-align: center;\" name='save_con[ban_attempts]' value=\"$config_ban_attempts\" size=10>");
-    showRow(lang("Custom Rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
-    showRow(lang("Self-Registration Level"),        lang("choose your status"),                                         makeDropDown(array("3"=>"Journalist","4"=>"Commentator"), "save_con[registration_level]", $config_registration_level));
+    showRow(lang("Custom rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
+    showRow(lang("Self-registration level"),        lang("choose your status"),                                         makeDropDown(array("3"=>"Journalist","4"=>"Commentator"), "save_con[registration_level]", $config_registration_level));
     showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));
-    showRow(lang("XSS Strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
+    showRow(lang("XSS strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
     showRow(lang("Enable user logs"),               lang("store user logs"),                                            makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[userlogs]", $config_userlogs));
 
     if ($config_use_rater)
@@ -452,42 +457,42 @@ elseif ($action == "syscon")
     echo "</table></td></tr>";
 
     echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Use Avatars"),                            lang("if 'No', the avatar URL won't be shown"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
+    showRow(lang("Use avatars"),                            lang("if 'No', the avatar URL won't be shown"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
     showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
-    showRow(lang("Show Full Story In PopUp"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
-    showRow(lang("Settings for Full Story PopUp"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
-    showRow(lang("Show Comments When Showing Full Story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
-    showRow(lang("Time Format For News"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
-    showRow(lang("Make backup news"),                       lang("news is saved in backup as well"),                    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
-    showRow(lang("Use captcha"),                            lang("on registration and comments"),                       makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
-    showRow(lang("Use rating"),                             lang("is internal CuteNews rating system"),                 makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
+    showRow(lang("Show full story in popup"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
+    showRow(lang("Settings for full story popup"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
+    showRow(lang("Show comments when showing full story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
+    showRow(lang("Time format for news"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
+    showRow(lang("Make backup news"),                       lang("when you add or edit news, a backup is made"),        makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
+    showRow(lang("Use CAPTCHA"),                            lang("on registration and comments"),                       makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
+    showRow(lang("Use rating"),                             lang("use internal rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
     hook('field_options_news');
     echo"</table></td></tr>";
 
     // Comments
     echo "<tr style='display:none' id=comments><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Auto Wrap Comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
-    showRow(lang("Reverse Comments"),                           lang("if yes, newest comments will be shown on the top"),           makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
-    showRow(lang("Comments Flood Protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
-    showRow(lang("Max. Length of Comments in Characters"),      lang("enter <b>0</b> to disable checking"),                         "<input type=text style=\"text-align: center;\"  name='save_con[comment_max_long]' value='$config_comment_max_long' size=10>");
-    showRow(lang("Comments Per Page (Pagination)"),             lang("enter <b>0</b> or leave empty to disable pagination"),        "<input type=text style=\"text-align: center;\"  name='save_con[comments_per_page]' value='$config_comments_per_page' size=10>");
-    showRow(lang("Only Registered Users Can Post Comments"),    lang("if yes, only registered users can post comments"),            makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[only_registered_comment]", "$config_only_registered_comment"));
-    showRow(lang("Allow Mail Field to Act and as URL Field"),   lang("visitors will be able to put their site URL instead of mail"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_url_instead_mail]", "$config_allow_url_instead_mail"));
-    showRow(lang("Show Comments In PopUp"),                     lang("comments will be opened in PopUp window"),                    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[comments_popup]", $config_comments_popup));
-    showRow(lang("Settings for Comments PopUp"),                lang("only if 'Show Comments In PopUp' is enabled"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[comments_popup_string]\" value=\"$config_comments_popup_string\" size=40>");
-    showRow(lang("Show Full Story When Showing Comments"),      lang("if yes, comments will be shown under the story"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_full_with_comments]", $config_show_full_with_comments));
-    showRow(lang("Time Format For Comments"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_comment]' value='$config_timestamp_comment' size=40>");
+    showRow(lang("Auto wrap comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
+    showRow(lang("Reverse comments"),                           lang("newest comments will be shown at the top"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
+    showRow(lang("Comments flood protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
+    showRow(lang("Max. Length of comments in characters"),      lang("enter <b>0</b> to disable checking"),                         "<input type=text style=\"text-align: center;\"  name='save_con[comment_max_long]' value='$config_comment_max_long' size=10>");
+    showRow(lang("Comments per page (pagination)"),             lang("enter <b>0</b> or leave empty to disable pagination"),        "<input type=text style=\"text-align: center;\"  name='save_con[comments_per_page]' value='$config_comments_per_page' size=10>");
+    showRow(lang("Only registered users can post comments"),    lang("if yes, only registered users can post comments"),            makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[only_registered_comment]", "$config_only_registered_comment"));
+    showRow(lang("Allow mail field to act as URL field"),       lang("visitors will be able to put their site URL instead of an email"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_url_instead_mail]", "$config_allow_url_instead_mail"));
+    showRow(lang("Show comments in popup"),                     lang("comments will be opened in PopUp window"),                         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[comments_popup]", $config_comments_popup));
+    showRow(lang("Settings for comments popup"),                lang("only if 'Show Comments In PopUp' is enabled"),                     "<input type=text style=\"text-align: center;\"  name=\"save_con[comments_popup_string]\" value=\"$config_comments_popup_string\" size=40>");
+    showRow(lang("Show full story when showing comments"),      lang("if yes, comments will be shown under the story"),                  makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_full_with_comments]", $config_show_full_with_comments));
+    showRow(lang("Time format for comments"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_comment]' value='$config_timestamp_comment' size=40>");
     hook('field_options_comments');
     echo"</table></td></tr>";
 
     // Notifications
     echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
     showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
-    showRow(lang("Notify of New Registrations"),            lang("automatic registration of new users"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
-    showRow(lang("Notify of New Comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
-    showRow(lang("Notify of Unapproved News"),              lang("when unapproved article is posted (by journalists)"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_unapproved]", "$config_notify_unapproved"));
-    showRow(lang("Notify of Auto-Archiving"),               lang("when (if) news are auto-archived"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_archive]", "$config_notify_archive"));
-    showRow(lang("Notify of Activated Postponed Articles"), lang("when postponed article is activated"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_postponed]", "$config_notify_postponed"));
+    showRow(lang("Notify of new registrations"),            lang("automatic registration of new users"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
+    showRow(lang("Notify of new comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
+    showRow(lang("Notify of unapproved news"),              lang("when unapproved article is posted (by journalists)"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_unapproved]", "$config_notify_unapproved"));
+    showRow(lang("Notify of auto-archiving"),               lang("when (if) news are auto-archived"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_archive]", "$config_notify_archive"));
+    showRow(lang("Notify of activated postponed articles"), lang("when postponed article is activated"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_postponed]", "$config_notify_postponed"));
     showRow(lang("Email(s)"),                               lang("Where the notification will be send, separate multyple emails by comma"), "<input type=text style=\"text-align: center;\"  name='save_con[notify_email]' value=\"$config_notify_email\" size=40>");
     hook('field_options_notifications');
     echo "</table></td></tr>";
@@ -531,6 +536,8 @@ HTML;
 // ********************************************************************************
 elseif ($action == "dosavesyscon")
 {
+    CSRFCheck();
+
     // Sanitize skin var
     $save_con["skin"] = preg_replace('~[^a-z0-9_.]~i', '', $save_con["skin"]);
     if (!file_exists(SERVDIR."/skins/".$save_con["skin"].".skin.php")) $save_con['skin'] = 'default';
@@ -546,6 +553,8 @@ elseif ($action == "dosavesyscon")
     }
     fwrite($handler, "?>");
     fclose($handler);
+
+    add_to_log($member_db[UDB_NAME], lang('Update system configurations'));
 
     relocation(PHP_SELF.'?mod=options&action=syscon&message=1#'.$_REQUEST['current']);
     include (SERVDIR."/skins/".$save_con["skin"].".skin.php");

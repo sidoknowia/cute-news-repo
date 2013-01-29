@@ -8,24 +8,17 @@ hook('init_main');
 if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
     relocation($config_http_script_dir."/index.php?mod=options&action=personal");
 
-// Run Once
-if (isset($_GET['installed']) && !file_exists(SERVDIR.'/cdata/installed.mark'))
-{
-    fclose( fopen(SERVDIR.'/cdata/installed.mark', 'w') );
-    relocation("http://www.cutephp.com/thanks.php?referer=".urlencode(base64_encode('http://'.$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'])));
-}
-
 // ----------------------------------------
 echoheader("home", lang("Welcome"));
 
 if (!is_readable(SERVDIR."/cdata/archives"))
-    die_stat(false, lang("Can not open directory `archives` for reading, check if it exists or is properly CHMOD'ed"));
+    die_stat(false, lang("Cannot open directory `archives` for reading, check if it exists or is properly CHMOD'ed"));
 
 if (!is_readable(SERVDIR."/cdata/news.txt"))
-    die_stat(false, lang("Can not open file news.txt for reading, check if it exists or is properly CHMOD'ed"));
+    die_stat(false, lang("Cannot open file news.txt for reading, check if it exists or is properly CHMOD'ed"));
 
 if (!is_readable(SERVDIR."/cdata/comments.txt"))
-    die_stat(false, lang("Can not open file comments.txt for reading, check if it exists or is properly CHMOD'ed"));
+    die_stat(false, lang("Cannot open file comments.txt for reading, check if it exists or is properly CHMOD'ed"));
 
 // Some Stats
 $count_postponed_news   = 0;
@@ -148,21 +141,21 @@ if ((int)$last_login_month < (int)$last_archived['month'] and $last_login_year <
     $warn .= proc_tpl('main/auto_archive', array('date' => date("d M Y H:i:s", $member_db[UDB_LAST])));
 
 //----------------------------------
+// First Login
+//----------------------------------
+if ($enter_without_login)
+    $warn .= proc_tpl('main/firstlogin', array());
+
+//----------------------------------
 // Do we have enough free space ?
 //----------------------------------
 if (function_exists('disk_free_space')) $dfs = disk_free_space( SERVDIR ); else $dfs = 0;
 if ($dfs and $dfs < 1024 * 10) $warn .= proc_tpl('main/disk_space', array('freespace' => formatsize($dfs)));
 
 //----------------------------------
-// Install script still exists ?
-//----------------------------------
-if ($action == 'delete-install') unlink(SERVDIR.'/inc/install.php');
-if (file_exists(SERVDIR.'/inc/install.php')) $warn .= proc_tpl('main/install_exists');
-
-//----------------------------------
 // Is our PHP version old ?
 //----------------------------------
-if($phpversion and $phpversion < '4.1.0') $warn .= proc_tpl('main/php_old', array('phpversion' => $phpversion));
+if ($phpversion and $phpversion < '4.1.0') $warn .= proc_tpl('main/php_old', array('phpversion' => $phpversion));
 
 //----------------------------------
 // Are we using SafeSkin ?

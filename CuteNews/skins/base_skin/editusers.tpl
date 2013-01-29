@@ -27,7 +27,6 @@
 <form method=post action="{$PHP_SELF}" name="usersform">
 
     <input type="hidden" id="csrf_code" name="csrf_code" value="{$CSRF}" />
-    <script src="{$PHP_SELF}?csrfmake=csrfmake"></script>
 
     <table border=0 cellpadding=3 cellspacing=0 width=100%>
         <tr>
@@ -144,6 +143,6 @@
                 <td align="center"><input type="checkbox" name="userdel[{$userlist.title}]" value="Y" /></td>
             </tr>
         {/foreach}
-        <tr><td colspan="7" align="right"><button onclick="document.usersform.submit()">Do Delete</button></td> </tr>
+        <tr><td colspan="7" align="right"><button onclick="document.usersform.submit()">Delete</button></td> </tr>
     </table>
 </form>

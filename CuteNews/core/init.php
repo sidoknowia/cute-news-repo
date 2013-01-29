@@ -10,8 +10,8 @@
     define('EXEC_TIME',               microtime(true));
 
     // BASE SETTINGS
-    define('VERSION',                 '1.5.1');
-    define('VERSION_ID',              189);
+    define('VERSION',                 '1.5.2');
+    define('VERSION_ID',              190);
 
     define('SERVDIR',                 dirname(dirname(__FILE__).'.html'));
     define('SKINS',                   '/skins');
@@ -156,7 +156,10 @@
 
     // Definity PHPSELF
     if ( !isset($PHP_SELF) && empty($PHP_SELF) )
-         define('PHP_SELF', $_SERVER["PHP_SELF"]);
+    {
+         $PHP_SELF = $_SERVER["SCRIPT_NAME"];
+         define('PHP_SELF', $PHP_SELF);
+    }
     else define('PHP_SELF', $PHP_SELF);
 
     // CRYPT_SALT consist an IP?

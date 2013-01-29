@@ -7,7 +7,7 @@ if (!defined('INIT_INSTANCE')) die('Access restricted');
 // ********************************************************************************
 if ($action == "cutecode")
 {
-    $read = proc_tpl('about.ccode', array('target' => $target));
+    $read = proc_tpl('about/cutecode', array('target' => $target));
     echo $read;
 }
 else
@@ -23,7 +23,7 @@ else
 
     $read = proc_tpl
     (
-        'about',
+        'about/index',
         array(  'config_version_name'   => $config_version_name,
                 'config_version_id'     => $config_version_id,
                 'config_http_script_dir'=> $config_http_script_dir,

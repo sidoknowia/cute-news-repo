@@ -26,8 +26,8 @@ $skin_header = <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+<meta name="robots" content="noindex" />
 <link rel="shortcut icon" type="image/ico" href="skins/images/favicon.ico"/>
-
 <script type="text/javascript" src="skins/cute.js"></script>
 <style type="text/css">
 <!--
@@ -156,7 +156,7 @@ td.top_header { padding: 8px; }
             <table border=0 cellpadding=0 cellspacing=0 width="100%" >
             <tr> <td>&nbsp;</td> </tr>
             <tr> <td class="menu-border"> {menu} </td> </tr>
-            <tr> <td style="padding: 20px 0 0 0;">
+            <tr> <td style="padding: 20px;">
 
                 <!--SELF-->
                 <table border=0 cellpadding=0 cellspacing=0 width="100%" >

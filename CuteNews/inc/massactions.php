@@ -119,7 +119,7 @@ elseif ($action == "mass_approve")
     if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $member_db[UDB_ACL] != ACL_LEVEL_EDITOR)
         msg("error", lang('Error!'), lang("You do not have permissions for this action"), "#GOBACK");
 
-    if (!$selected_news)
+    if (empty($selected_news))
         msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
 
     $news_file = SERVDIR."/cdata/unapproved_news.txt";
@@ -350,7 +350,7 @@ elseif ($action == "do_mass_archive")
     CSRFCheck();
 
     if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-         msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
+         msg("error", lang("Access Denied"), lang("You cannot perform this action if you are not admin"), "#GOBACK");
 
     if ( !$selected_news )
          msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");
@@ -454,7 +454,7 @@ elseif ($action == "do_mass_archive")
 elseif ($action == 'mass_change_pubdate')
 {
     if ( $member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
-         msg("error", lang("Access Denied"), lang("You can not perform this action if you are not admin"), "#GOBACK");
+         msg("error", lang("Access Denied"), lang("You cannot perform this action if you are not admin"), "#GOBACK");
 
     if ( !$selected_news )
          msg("error", lang('Error!'), lang("You have not specified any articles"), "#GOBACK");

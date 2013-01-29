@@ -134,7 +134,7 @@
                 echo "<div class='cutenews_search_item'>$itemid <b><a href='$url'>$title</a></b> (". date("d F, Y", $id) .")</div>";
             }
 
-            echo "<p class='cutenews_founded'><b>".lang('Founded news articles')." [". count($found)."]</b> ";
+            echo "<p class='cutenews_founded'><b>".lang('News articles found')." [". count($found)."]</b> ";
             echo str_replace(array('%1','%2'), array( date("d F Y", $date_from), date("d F Y", $date_to)), lang("from <b>%1</b> to <b>%2</b></p>", 'search'));
         }
         else echo "<div class='cutenews_not_match'>".lang('There are no news matching your search criteria')."</div>";

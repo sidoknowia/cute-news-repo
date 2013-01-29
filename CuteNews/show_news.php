@@ -119,7 +119,7 @@
 
     // Unset all used variables
     unset ($static, $template, $requested_cats, $category, $cat, $reverse, $in_use, $archives_arr, $number, $no_prev, $no_next);
-    unset ($QUERY_STRING, $i, $showed, $prev, $used_archives, $only_active, $user, $user_member, $user_by);
+    unset ($PHP_SELF, $QUERY_STRING, $i, $showed, $prev, $used_archives, $only_active, $user, $user_member, $user_by);
 
     echo '<!-- News Powered by CuteNews: http://cutephp.com/ -->';
 ?>

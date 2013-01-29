@@ -15,7 +15,6 @@ if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor') ) $us
 // ---------------------------------------------------------------------------------------------------------------------
 if ($action == "addnews")
 {
-
     $error_messages = false;
 
     // ********************************************************************************
@@ -98,13 +97,13 @@ if ($action == "addnews")
 
         // Replace code ----------------------------------------------------------------------------------------------------
         if (count($optfields))
-            $error_messages .= getpart('addnews_err', array( lang('Some fields can not be blank').': '.implode(', ', $optfields) ));
+            $error_messages .= getpart('addnews_err', array( lang('Some fields cannot be blank').': '.implode(', ', $optfields) ));
 
         if (trim($title) == false)
-            $error_messages .= getpart('addnews_err', array( lang("The title can not be blank") ));
+            $error_messages .= getpart('addnews_err', array( lang("The title cannot be blank") ));
 
         if (trim($short_story) == false)
-            $error_messages .= getpart('addnews_err', array( lang("The story can not be blank") ));
+            $error_messages .= getpart('addnews_err', array( lang("The story cannot be blank") ));
 
         if ( $member_db[UDB_CBYEMAIL] == 1)
             $added_by_email = $member_db[UDB_EMAIL];
@@ -137,11 +136,13 @@ if ($action == "addnews")
 
             $preview_hmtl  = getpart('addnews_preview', array( lang('Preview active news'), template_replacer_news($new, $template_active) ));
             $preview_hmtl .= getpart('addnews_preview', array( lang('Preview full story'),  template_replacer_news($new, $template_full) ));
+            $preview_hmtl = preg_replace('/<a .*?>(.*?)<\/a>/i', '<u>\\1</u>', $preview_hmtl);
+
             $error_messages = false;
         }
 
         // ---------------------------------------------------------------------------------------------------- SAVE ---
-        if ($error_messages == false && empty($preview_hmtl))
+        if ($error_messages == false && $preview == false)
         {
             // Make unique time, just for draft/normal: not postponed
             if ($postpone == false)
@@ -228,7 +229,7 @@ if ($action == "addnews")
                 $source = '';
                 if (strpos($decide_news_file, 'unapproved')) $source = '&source=unapproved';
                 if (strpos($decide_news_file, 'postponed')) $source = '&source=postponed';
-                relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=yes$source");
+                relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=add$source");
             }
         }
     }

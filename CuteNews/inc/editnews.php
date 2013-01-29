@@ -185,7 +185,7 @@ if ($action == "list")
     }
 
     if (!$handle = opendir(SERVDIR."/cdata/archives"))
-        msg('error', lang('Error!'), lang("Can not open directory cdata/archives"), "#GOBACK");
+        msg('error', lang('Error!'), lang("Cannot open directory cdata/archives"), "#GOBACK");
 
     // Source: archives
     $opt_source = false;
@@ -291,9 +291,19 @@ elseif ($action == "editnews")
 {
     $error_messages = false;
 
+    // Detect
+    if (REQ('saved','GETPOST') == 'yes') $saved_yes = 1;
+    elseif (REQ('saved','GETPOST') == 'add') $saved_new = 1;
+
     // Do Edit News
     if ($subaction == "doeditnews")
     {
+        CSRFCheck();
+
+        // default values
+        $nice_category = '';
+        $options = array();
+
         // Format our categories variable
         if (is_array($category))
         {
@@ -331,13 +341,13 @@ elseif ($action == "editnews")
         }
 
         if (count($optfields))
-            $error_messages .= getpart('addnews_err', array( lang('Some fields can not be blank').': '.implode(', ', $optfields) ));
+            $error_messages .= getpart('addnews_err', array( lang('Some fields cannot be blank').': '.implode(', ', $optfields) ));
 
         if (trim($title) == "" and $ifdelete != "yes")
-            $error_messages .= getpart('addnews_err', array( lang("The title can not be blank"), "#GOBACK") );
+            $error_messages .= getpart('addnews_err', array( lang("The title cannot be blank"), "#GOBACK") );
 
         if ($short_story == "" and $ifdelete != "yes")
-            $error_messages .= getpart('addnews_err', array( lang("The story can not be blank"), "#GOBACK") );
+            $error_messages .= getpart('addnews_err', array( lang("The story cannot be blank"), "#GOBACK") );
 
         // Some replaces
         $use_html       = ($if_use_html == "yes" || $use_wysiwyg)? 1 : 0;
@@ -347,6 +357,13 @@ elseif ($action == "editnews")
         $title          = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $title) );
         $avatar         = stripslashes( preg_replace(array("'\|'", "'\n'", "''"), array("I", "<br />", ""), $avatar) );
 
+        // HTML saved if force or use wysiwig
+        if ($if_use_html == "yes" || $use_wysiwyg)
+        {
+            $use_html = true;
+            $options = edit_option($options, 'use_html', true);
+        }
+
         // Check avatar
         if ($editavatar)
         {
@@ -355,10 +372,31 @@ elseif ($action == "editnews")
                 $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded'), '#GOBACK')  );
         }
 
+        // Preview tool
+        $preview_hmtl = false;
+        if (isset($preview) && $preview == 'preview')
+        {
+            $new[NEW_ID]        = time();
+            $new[NEW_USER]      = $member_db[2];
+            $new[NEW_TITLE]     = $title;
+            $new[NEW_SHORT]     = $short_story;
+            $new[NEW_FULL]      = $full_story;
+            $new[NEW_AVATAR]    = $manual_avatar;
+            $new[NEW_CAT]       = $nice_category;
+            $new[NEW_MF]        = $pack;
+            $new[NEW_OPT]       = $options;
+
+            $preview_hmtl  = getpart('addnews_preview', array( lang('Preview active news'), template_replacer_news($new, $template_active) ));
+            $preview_hmtl .= getpart('addnews_preview', array( lang('Preview full story'),  template_replacer_news($new, $template_full) ));
+            $preview_hmtl = preg_replace('/<a .*?>(.*?)<\/a>/i', '<u>\\1</u>', $preview_hmtl);
+
+            $error_messages = false;
+        }
+
         // *************************************************
         // EDIT ONLY IF ALL CORRECT!
         // *************************************************
-        if ($error_messages == false)
+        if ($error_messages == false && $preview == false)
         {
             // select news and comment files
             if ($source == "")
@@ -457,7 +495,7 @@ elseif ($action == "editnews")
                     msg("info", lang("News Deleted"), lang("The news item successfully was deleted").'.<br />'.lang("If there were comments for this article they are also deleted."));
                 else msg("info", lang("News Deleted"), lang("The news item successfully was deleted").'.<br />'.
                     lang("If there were comments for this article they are also deleted.").'<br /><span style="color:red;">'.
-                    lang("But can not delete comments of this article!")."</span>");
+                    lang("But cannot delete comments of this article!")."</span>");
             }
             elseif ($okchanges)
             {
@@ -479,7 +517,7 @@ elseif ($action == "editnews")
 
                 relocation("$PHP_SELF?mod=editnews&action=editnews&id=$id&source=$source&saved=yes");
             }
-            else msg("error", lang('Error!'), lang("The news item can not be found or there is an error with the news database file."), '#GOBACK');
+            else msg("error", lang('Error!'), lang("The news item cannot be found or there is an error with the news database file."), '#GOBACK');
         }
     }
 
@@ -503,7 +541,7 @@ elseif ($action == "editnews")
     }
 
     if (!$found)
-        msg("error", lang('Error!'), lang("The selected news item can not be found"), '#GOBACK');
+        msg("error", lang('Error!'), lang("The selected news item cannot be found"), '#GOBACK');
 
     // Check permission to edit news
     $have_perm = 0;

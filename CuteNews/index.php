@@ -1,7 +1,7 @@
 <?php
 /***************************************************************************
  CuteNews CutePHP.com
- Copyright (с) 2012 Cutenews Team
+ Copyright (с) 2012-2013 Cutenews Team
 ****************************************************************************/
 header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
@@ -23,20 +23,11 @@ deprecated_check();
 
 // Check if CuteNews is not installed
 $fp = fopen(SERVDIR."/cdata/users.db.php", 'r'); fgets($fp); $user = trim(fgets($fp)); fclose($fp);
-if ($user == false)
-{
-    if ( !file_exists(SERVDIR."/inc/install.php"))
-        die_stat(false, '<h2>Error!</h2>CuteNews detected that you do not have users in your users.db.php file and wants to run the install module.<br>
-                         However, the install module (<b>./inc/install.php</b>) can not be located, please reupload this file and make sure you set
-                         the proper permissions so the installation can continue.');
-
-    require (SERVDIR."/inc/install.php");
-    die();
-}
+$enter_without_login = ($user == false) ? true : false;
 
 hook('index_init');
-
 b64dck();
+
 if ($action == "logout")
 {
     add_to_log( $_SESS['user'], 'logout');
@@ -49,17 +40,6 @@ if ($action == "logout")
 
 // sanitize
 $is_loged_in = false;
-if ($csrfmake == 'csrfmake')
-{
-    $CSRF = CSRFMake();
-
-    if (empty($cs)) $cs = false; else $cs = intval($cs);
-    header("Content-Type: text/javascript");
-    send_cookie();
-
-    echo "document.getElementById('csrf_code{$cs}').value = '{$CSRF}';";
-    die();
-}
 
 // Check the User is Identified -------------------------------------------------------------------------------------
 $result      = false;
@@ -78,9 +58,6 @@ if ( empty($_SESS['user']))
     /* Login Authorization using COOKIES */
     if ($action == 'dologin')
     {
-        // Check referer
-        RereferCheck();
-
         // Do we have correct username and password ?
         $member_db      = user_search($username);
         $cmd5_password  = hash_generate($password);
@@ -135,6 +112,54 @@ else
 // ---------------------------------------------------------------------------------------------------------------------
 // If User is Not Logged In, Display The Login Page
 
+// First RUN
+if ($enter_without_login )
+{
+    $is_loged_in = TRUE;
+
+    // Initial
+    $member_db = array
+    (
+        UDB_ID => 1,
+        UDB_ACL => ACL_LEVEL_ADMIN,
+        UDB_NAME => 'Administrator',
+        UDB_PASS => md5('123456'),
+        UDB_NICK => '',
+        UDB_EMAIL => 'your-email@example.com',
+        UDB_COUNT => 0,
+        UDB_CBYEMAIL => 1,
+        UDB_AVATAR => '',
+        UDB_LAST => time(),
+    );
+
+    if (REQ('section') == 'main_area')
+    {
+        $ht = hash_generate(REQ('admin_passwd'));
+        $member_db[UDB_NAME]  = REQ('admin_name');
+        $member_db[UDB_EMAIL] = REQ('admin_email');
+        $member_db[UDB_PASS]  = $ht[ count($ht)-1 ];
+
+        if (REQ('admin_name') == false) msg('error', 'error', 'Enter name', '#GOBACK');
+        if (REQ('admin_email') == false) msg('error', 'error', 'Enter email', '#GOBACK');
+        if (REQ('admin_passwd') == false) msg('error', 'error', 'Enter password', '#GOBACK');
+
+        // add user
+        user_add($member_db);
+        make_crypt_salt();
+
+        // Run Once
+        if (!file_exists(SERVDIR.'/cdata/installed.mark'))
+        {
+            fclose( fopen(SERVDIR.'/cdata/installed.mark', 'w') );
+            relocation("http://www.cutephp.com/thanks.php?referer=".urlencode(base64_encode('http://'.$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'])));
+        }
+        else
+        {
+            msg('info', 'Notification', lang('You have successfully installed Cutenews! Refresh page to login.'));
+        }
+    }
+}
+
 if (empty($is_loged_in))
 {
     echoheader("user", lang("Please Login"));
@@ -146,6 +171,16 @@ if (empty($is_loged_in))
 }
 elseif ($is_loged_in)
 {
+
+    // User banned
+    if ( 'blocked' == user_getban($member_db[UDB_NAME], true) )
+    {
+        $_SESS['user'] = false;
+        send_cookie();
+
+        msg('error', lang('Error!'), lang('You\'re banned!'));
+    }
+
     // ********************************************************************************
     // Include System Module
     // ********************************************************************************

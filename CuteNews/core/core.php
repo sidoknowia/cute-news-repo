@@ -1142,13 +1142,13 @@ function ResynchronizeAutoArchive()
                 $error = FALSE;
                 $arch_name = time();
 
-                if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))          { $error = lang("Can not copy news.txt from cdata/ to cdata/archives"); }
-                if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))  { $error = lang("Can not copy comments.txt from cdata/ to cdata/archives"); }
+                if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))          { $error = lang("Cannot copy news.txt from cdata/ to cdata/archives"); }
+                if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))  { $error = lang("Cannot copy comments.txt from cdata/ to cdata/archives"); }
 
-                $handle = fopen(SERVDIR."/cdata/news.txt","w") or $error = lang("Can not open news.txt");
+                $handle = fopen(SERVDIR."/cdata/news.txt","w") or $error = lang("Cannot open news.txt");
                 fclose($handle);
 
-                $handle = fopen(SERVDIR."/cdata/comments.txt","w") or $error = lang("Can not open comments.txt");
+                $handle = fopen(SERVDIR."/cdata/comments.txt","w") or $error = lang("Cannot open comments.txt");
                 fclose($handle);
 
                 $fp = fopen(SERVDIR."/cdata/auto_archive.db.php", "w");
@@ -1284,6 +1284,17 @@ function flooder($ip, $comid)
     return $result;
 }
 
+// nocache string by referer
+function make_nocache()
+{
+    $referer = $_SERVER['HTTP_REFERER'];
+    $referer = preg_replace('/[\&\?]nocache\=\d+/i', '', $_SERVER['HTTP_REFERER']);
+    $cacheId = mt_rand(1000,9999).mt_rand(1000,9999);
+    if (strpos($referer, '?')) $referer .= '&nocache='.$cacheId; else $referer .= '?nocache='.$cacheId;
+
+    return htmlspecialchars($referer);
+}
+
 // Displays message to user
 function msg($type, $title, $text, $back = false, $bc = false)
 {
@@ -1291,7 +1302,7 @@ function msg($type, $title, $text, $back = false, $bc = false)
 
     // Back By Referef
     if ($back == '#GOBACK')
-        $back = '| <a href="'.htmlspecialchars($_SERVER['HTTP_REFERER']).'">'.lang('Go back').'</a>';
+        $back = '| <a href="'.make_nocache().'">'.lang('Go back').'</a>';
 
     echo proc_tpl('msg', array('text' => $text, 'back' => $back));
     echofooter();
@@ -1552,8 +1563,8 @@ function replace_news($way, $sourse, $use_html = true)
     }
     elseif ($way == "add")
     {
-        $find       = array("~\|~", "~\r~", );
-        $replace    = array("&#124;", "", );
+        $find       = array("~\|~", "~\r~" );
+        $replace    = array("&#124;", "" );
 
         // With using HTML don't convert
         if ($use_html != true)
@@ -2080,6 +2091,7 @@ function user_getban($ip, $stat = true)
 
 function user_addban($ip, $expire = false)
 {
+    $ip = str_replace(array('|', '"'), '', $ip);
     if (empty($ip)) return false;
 
     $users_ban = load_database('users_ban', 'ipban.db');
@@ -2096,8 +2108,8 @@ function user_addban($ip, $expire = false)
     else
     {
         $users_ban = load_database('users_ban', 'ipban.db', true);
-        $users_ban .= "$ip|1|$expire|\n";
-        $bandata = array($ip, 1, $expire);
+        $users_ban .= "$ip|0|$expire|\n";
+        $bandata = array($ip, 0, $expire);
     }
 
     rewritefile('/cdata/ipban.db.php', $users_ban );
@@ -2106,6 +2118,7 @@ function user_addban($ip, $expire = false)
 
 function user_remove_ban($ip)
 {
+    $ip = str_replace(array('|', '"'), '', $ip);
     if (empty($ip)) return false;
 
     $users_ban = load_database('users_ban', 'ipban.db');
@@ -2159,38 +2172,63 @@ function GET($var, $method = 'POST')
     return $result;
 }
 
-// ------------- CSRF value -------------
-function CSRFMake($Name = 'U:CSRF') /* Make CSRF in Cookies */
+// GET Helper for single value
+function REQ($var, $method = 'POST')
 {
-    global $_SESS;
-    $_SESS[ $Name ] = md5(mt_rand() . mt_rand());
-    send_cookie();
-    return $_SESS[ $Name ];
+    list($value) = GET($var, $method);
+    return $value;
 }
 
-function CSRFCheck($Name = 'U:CSRF', $token = 'csrf_code') /* Check CSRF code  */
+// Create blank PHP file
+function make_php($phpfile)
 {
-    global $_SESS;
-
-    if ($_SESS[ $Name ] != $_REQUEST[$token])
+    $file = SERVDIR.'/cdata/'.$phpfile;
+    if (file_exists($file))
     {
-        add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
-        msg("error", lang('Error!'), "<script type='text/javascript'> document.location = '".$_SERVER['HTTP_REFERER']."#csrf_is_missing';</script>");
+        $w = fopen($file, 'w');
+        fwrite($w, '<'.'?php die("Access restricted"); ?>'."\n");
+        fclose($w);
     }
 }
 
-function RereferCheck($pattern = false)
+function make_crypt_salt()
 {
-    if ($pattern == false)
-        $pattern = $_SERVER['HTTP_HOST'] . preg_replace('~index.php.*$~i', '', $_SERVER['REQUEST_URI']);
+    $cfg = array();
 
-    $referer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : false;
-    if ($referer == false) die("Restricted Area");
+    $salt = $cfg['crypt_salt'] = '';
+    for ($j = 0; $j < 4; $j++)
+    {
+        for ($i = 0; $i < 64; $i++) $salt .= md5(mt_rand().uniqid(mt_rand()));
+        $cfg['crypt_salt'] .= md5($salt);
+    }
 
-    if (strpos($referer, $pattern ) === false)
-        msg("error", lang('Error!'), lang("Restricted Area"));
+    $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
+    fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+    fclose($fx);
 
-    return true;
+    return TRUE;
+}
+
+// ------------- CSRF value -------------
+function CSRFMake()
+{
+    global $_SESS;
+
+    $_SESS[ 'CSRF' ] = md5(mt_rand() . mt_rand());
+    send_cookie();
+
+    return $_SESS[ 'CSRF' ];
+}
+
+function CSRFCheck()
+{
+    global $_SESS;
+
+    if ($_SESS[ 'CSRF' ] != $_REQUEST['csrf_code'])
+    {
+        add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
+        msg("error", lang('Error!'), '<div>CSRF fail <a href="'.make_nocache().'">Go back</div>');
+    }
 }
 
 ?>

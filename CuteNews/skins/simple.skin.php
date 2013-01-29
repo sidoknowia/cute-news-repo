@@ -33,6 +33,7 @@ $skin_header = <<<HTML
 <html>
 <head>
 <title>CuteNews</title>
+<meta name="robots" content="noindex" />
 <link rel="shortcut icon" type="image/ico" href="skins/images/favicon.ico"/>
 <script type="text/javascript" src="skins/cute.js"></script>
 <style type='text/css'>

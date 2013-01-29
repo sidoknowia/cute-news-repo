@@ -210,10 +210,10 @@
     {
         $ok = false;
 
-        if (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/", $mail))
+        if (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/i", $mail))
             $ok = true;
 
-        elseif ($config_allow_url_instead_mail == "yes" and preg_match("/((http(s?):\/\/)|(www\.))([\w\.]+)([\/\w+\.-?]+)/", $mail))
+        elseif ($config_allow_url_instead_mail == "yes" and preg_match("/((http(s?):\/\/)|(www\.))([\w\.]+)([\/\w+\.-?]+)/i", $mail))
             $ok = true;
 
         elseif ($config_allow_url_instead_mail != "yes")
@@ -230,7 +230,7 @@
 
     if (empty($comments))
     {
-        echo '<div class="blocking_posting_comment">'.lang('Sorry but the comment can not be blank').'<br /><a href="javascript:history.go(-1)">'.lang('go back').'</a></div>';
+        echo '<div class="blocking_posting_comment">'.lang('Sorry but the comment cannot be blank').'<br /><a href="javascript:history.go(-1)">'.lang('go back').'</a></div>';
         return FALSE;
     }
 

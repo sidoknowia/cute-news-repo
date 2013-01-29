@@ -8,6 +8,8 @@
 </script>
 
 {$error_messages}
+{if $preview_hmtl}<div style="margin: 0 0 0 75px;">{$preview_hmtl}</div>{/if}
+
 <form method="POST" name="addnews" action="{$PHP_SELF}">
 
     <input type="hidden" name="csrf_code" value="{$CSRF}" />
@@ -19,7 +21,8 @@
 
     <table border=0 cellpadding=1 cellspacing=0 width="750" >
         {if $postpone_date}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/if}
-        {if $saved}<tr><td>&nbsp;</td><td><h3 style="color: green;">The changes were successfully saved</h3></td></tr>{/if}
+        {if $saved_yes}<tr><td>&nbsp;</td><td><h3 style="color: green;">The changes were successfully saved</h3></td></tr>{/if}
+        {if $saved_new}<tr><td>&nbsp;</td><td><h3 style="color: green;">The new article has successfully added</h3></td></tr>{/if}
         <tr>
             <td width="75">&nbsp;</td>
             <td colspan="2"> Posted on {$newstime} by {$item_db1} </td>
@@ -113,7 +116,10 @@
             <td>
                 <table border=0 cellspacing=0 cellpadding=2 width=100%>
                     <tr>
-                        <td align="left"> <input type="submit" style='font-weight:bold' value="Save Changes" accesskey="s">&nbsp; </td>
+                        <td align="left">
+                            <input type="submit" style="font-weight: bold" value="Save Changes" accesskey="s">&nbsp;
+                            <button title="Preview the New Article" name="preview" value="preview" accesskey="p">Preview</button>
+                        </td>
                         <td align="right">
                             {if $Unapproved}<input type=button value="Approve" onclick="javascript:document.location=('{$PHP_SELF}?mod=massactions&selected_news[]={$id}&action=mass_approve&source=unapproved&csrf_code={$CSRF}');"> &nbsp;{/if}
                             <input type="button" value="Delete" onClick="confirmDelete('{$PHP_SELF}?mod=editnews&action=editnews&subaction=doeditnews&source={$source}&ifdelete=yes&id={$id}')"> &nbsp;

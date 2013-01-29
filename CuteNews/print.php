@@ -47,7 +47,7 @@ PRINTABLE;
     }
     else
     {
-        echo lang("The news you what to print was not found", 'print');
+        echo lang("The news you want to print was not found", 'print');
     }
 
 }

@@ -14,17 +14,17 @@
     }
 </script>
 
-<h3>Create BackUp</h3>
+<h3>Create Backup</h3>
 <form method=post action="{$PHP_SELF}">
     <input type=hidden name="csrf_code" value="{$CSRF}" />
     <input type=hidden name=action value=dobackup>
     <input type=hidden name=mod value=tools>
     <table border=0 cellpadding=0 cellspacing=0 class="panel" width="390" >
-    <tr> <td height="25" width="366">Name of the BackUp: <input type=text name=back_name>&nbsp; <input type=submit value=" Proceed "></td> </tr>
+    <tr> <td height="25" width="366">Name of the Backup: <input type=text name="backup">&nbsp; <input type=submit value=" Proceed "></td> </tr>
     </table>
 </form>
 
-<div><b>Available BackUps</b></div>
+<div><b>Available Backups</b></div>
 <table width=100% cellspacing=0 cellpadding=4>
 <tr bgcolor=#F7F6F4>
     <td width=2%>&nbsp;</td>

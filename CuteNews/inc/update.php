@@ -6,6 +6,9 @@ if (!defined('INIT_INSTANCE')) die('Access restricted');
 if ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN)
     msg("error", lang("Access Denied"), lang("You don't have permission for this section"));
 
+if (ini_get('allow_url_fopen') == 0)
+    msg("error", lang("Access Denied"), lang("Please check 'allow_url_fopen' option in php.ini file."));
+
 // --------------------- STAT ---------------------
 $update_file = SERVDIR.'/cdata/log/revision.file.log';
 

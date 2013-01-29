@@ -44,7 +44,7 @@ function CNSubmitComment()
     }
     else if (cbox == "")
     {
-        alert('Sorry but the comment can not be blank');
+        alert('Sorry but the comment cannot be blank');
         return false;
     }
 
