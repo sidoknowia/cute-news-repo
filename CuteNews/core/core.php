@@ -529,6 +529,8 @@ function read_dir($dir_name, $cdir = array(), $rec = true)
 function add_hook($hook, $func)
 {
     global $_HOOKS;
+
+    if (!isset($_HOOKS[$hook])) $_HOOKS[$hook] = array();
     $_HOOKS[$hook][] = $func;
 }
 
@@ -740,7 +742,7 @@ function template_replacer_news($news_arr, $output)
         else
         {
             if ($template == 'Default') $template = false;
-            $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull',$news_arr[0],$archive,$my_start_from,$news_arr[NEW_CAT],$template)) . "&amp;$user_query" );
+            $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull', $news_arr[0], $archive, $my_start_from, $news_arr[NEW_CAT], $template)) . "&amp;$user_query" );
             $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
         }
 
@@ -943,7 +945,7 @@ function build_uri($left, $right, $html = 1)
     foreach ( spsep($QUERY_STRING, '&') as $qs )
     {
         list($k, $v) = explode('=', $qs, 2);
-        if ($k && $v) $URI[$v] = $v;
+        if ($k && $v) $URI[$k] = $v;
     }
 
     // Encode new query
@@ -1241,7 +1243,7 @@ function cute_query_string($q_string, $strips, $type="get")
     $my_q = false;
     $var_value = explode("&", $q_string);
 
-    foreach($var_value as $var_peace)
+    foreach ($var_value as $var_peace)
     {
         $parts = explode("=", $var_peace);
         if($strips[$parts[0]] != true and $parts[0] != "")
@@ -1252,7 +1254,7 @@ function cute_query_string($q_string, $strips, $type="get")
         }
     }
 
-    if( substr($my_q, -5) == "&amp;" ) $my_q = substr($my_q, 0, -5);
+    if ( substr($my_q, -5) == "&amp;" ) $my_q = substr($my_q, 0, -5);
     return $my_q;
 }
 
@@ -1484,7 +1486,7 @@ function get_skin($skin)
 
     $msn  = bd_config('c2tpbg==');
     $cr   = bd_config('e2NvcHlyaWdodHN9');
-    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3Mge2N2ZXJzaW9ufTwvYT4gJmNvcHk7IDIwMTIgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZVBIUDwvYT4uPGJyPntsLXN0YXR1c308L2Rpdj4=');
+    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3Mge2N2ZXJzaW9ufTwvYT4gJmNvcHk7IDIwMDImbmRhc2g7MjAxMyA8YSBzdHlsZT0iZm9udC1zaXplOiA5cHgiIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbS8iIHRhcmdldD0iX2JsYW5rIj5DdXRlUEhQPC9hPi48YnI+e2wtc3RhdHVzfTwvZGl2Pg==');
     $lct  = preg_replace("/{l-status}/", $stts, $lct);
     $lct  = preg_replace("/{cversion}/", VERSION, $lct);
 
