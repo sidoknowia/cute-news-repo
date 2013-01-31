@@ -120,7 +120,6 @@ if ($action == "options" or $action == '')
         );
     }
 
-
     $options = hook('more_options', $options);
 
     //------------------------------------------------
@@ -441,7 +440,7 @@ elseif ($action == "syscon")
     showRow(lang("Automatic archiving every month"), lang("Every month your active news will be archived"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
     showRow(lang("Allow self-Registration"),        lang("allow users to register automatically"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
 
-    showRow(lang("Number of login attempts"),       lang("Specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour."), "<input type=text style=\"text-align: center;\" name='save_con[ban_attempts]' value=\"$config_ban_attempts\" size=10>");
+    showRow(lang("Number of login attempts"),       lang("specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour."), "<input type=text style=\"text-align: center;\" name='save_con[ban_attempts]' value=\"$config_ban_attempts\" size=10>");
     showRow(lang("Custom rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
     showRow(lang("Self-registration level"),        lang("choose your status"),                                         makeDropDown(array("3"=>"Journalist","4"=>"Commentator"), "save_con[registration_level]", $config_registration_level));
     showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));

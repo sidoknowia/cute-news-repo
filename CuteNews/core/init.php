@@ -119,18 +119,18 @@
     // loading plugins
     $_HOOKS = array();
     if (is_dir(SERVDIR.'/cdata/plugins'))
-    foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
-        if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
+        foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
+            if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
     // load config
+    $cfg = array();
     if (file_exists(SERVDIR . '/cdata/conf.php'))
-         $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
+        $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
     else $cfg = array();
 
     // initialize mod_rewrite if present
     if  ($config_use_replacement && file_exists(SERVDIR.'/cdata/conf_rw.php'))
          include ( SERVDIR.'/cdata/conf_rw.php' );
-    else $config_use_replacement = 0;
 
     // check skin if exists
     $config_skin = preg_replace('~[^a-z]~i','', $config_skin);
