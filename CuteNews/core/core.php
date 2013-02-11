@@ -270,10 +270,13 @@ function lang($say)
 
 function utf8_strtolower($utf8)
 {
-    global $HTML_SPECIAL_CHARS;
+    global $HTML_SPECIAL_CHARS, $config_utf8html;
 
-    // European languages to lower
-    $utf8 = strtolower( str_replace( array_keys($HTML_SPECIAL_CHARS), array_values($HTML_SPECIAL_CHARS), $utf8) );
+    // European languages to htmlentities
+    if ($config_utf8html == 0)
+    {
+        $utf8 = strtolower( str_replace( array_keys($HTML_SPECIAL_CHARS), array_values($HTML_SPECIAL_CHARS), $utf8) );
+    }
 
     // Rus Language translation
     $SPEC_TRANSLATE = explode('|', "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ|абвгдеёжзийклмнопрстуфхцчшщьыъэюя");
@@ -493,19 +496,34 @@ function send_cookie()
 }
 
 // hash type MD5 and SHA256
-function hash_generate($password)
+function hash_generate($password, $md5hash = false)
 {
     $try = array
     (
         0 => md5($password),
-        1 => SHA256_hash($password),
+        1 => utf8decrypt($password, $md5hash),
+        2 => SHA256_hash($password),
     );
 
     return $try;
 }
 
+// UTF8-Cutenews compliant
+function utf8decrypt($str, $oldhash)
+{
+    $len = strlen($str) * 3;
+    while($len >= 16) $len -= 16;
+    $len = floor($len / 2);
+
+    $salt = substr($oldhash, $len, 10);
+    $pass = SHA256_hash($salt.$str.'`>,');
+    $pass = substr($pass, 0, $len).$salt.substr($pass, $len);
+
+    return $pass;
+}
+
 // $rec = recursive scan
-function read_dir($dir_name, $cdir = array(), $rec = true)
+function read_dir($dir_name, $cdir = array(), $rec = true, $replacement = SERVDIR)
 {
     $dir = opendir($dir_name);
     if (is_resource($dir))
@@ -516,8 +534,8 @@ function read_dir($dir_name, $cdir = array(), $rec = true)
             $path = $dir_name.'/'.$file;
             if ( is_readable($path) )
             {
-                if ( is_dir($path) && $rec) $cdir = read_dir($path, $cdir);
-                elseif (is_file($path)) $cdir[] = str_replace(SERVDIR, '', $path);
+                if ( is_dir($path) && $rec) $cdir = read_dir($path, $cdir, true, $replacement);
+                elseif (is_file($path)) $cdir[] = str_replace($replacement, '', $path);
             }
         }
         closedir($dir);
@@ -690,6 +708,8 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{category-icon}",   caticon( $news_arr[NEW_CAT], $cat_icon, $cat ), $output);
     $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;" />' : '', $output);
 
+    $output      = preg_replace('/\[loggedin\](.*?)\[\/loggedin\]/is', empty($_SESS['user']) ? '' : '\\1', $output);
+
     // in RSS we need the date in specific format
     if ($template == 'rss')
     {
@@ -761,8 +781,8 @@ function template_replacer_news($news_arr, $output)
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
             $url    = build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
-            $output = str_ireplace('[edit]', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
-            $output = str_ireplace('[/edit]', '</a>', $output);
+            $output = preg_replace('/\[edit\]/i', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
+            $output = preg_replace('/\[\/edit\]/i', '</a>', $output);
             $DREdit = true;
         }
     }
@@ -1416,18 +1436,17 @@ function insertSmilies($insert_location, $break_location = FALSE, $admincp = FAL
 // Replaces comments charactars
 function replace_comment($way, $sourse)
 {
-    global $HTML_SPECIAL_CHARS, $config_http_script_dir, $config_smilies;
+    global $HTML_SPECIAL_CHARS, $config_http_script_dir, $config_smilies, $config_utf8html;
 
     $sourse = stripslashes(trim($sourse));
 
-    if($way == "add")
+    if ($way == "add")
     {
         $find = array( "'\"'", "'\''", "'<'", "'>'", "'\|'", "'\n'", "'\r'", );
         $replace = array( "&quot;", "&#039;", "&lt;", "&gt;", "&#124;", " <br />", "", );
     }
-    elseif($way == "show")
+    elseif ($way == "show")
     {
-
         $find = array
         (
             '~\[b\](.*?)\[/b\]~i',
@@ -1453,13 +1472,20 @@ function replace_comment($way, $sourse)
             $find[]     = "':$smile:'";
             $replace[]  = "<img style=\"border: none;\" alt=\"$smile\" src=\"$config_http_script_dir/skins/emoticons/$smile.gif\" />";
         }
-
+    }
+    else
+    {
+        $find = $replace = array();
     }
 
     $sourse  = preg_replace($find, $replace, $sourse);
 
-    foreach ($HTML_SPECIAL_CHARS as $key => $value)
-        $sourse = str_replace($key,$value,$sourse);
+    // UTF8 to HTML entity
+    if ($config_utf8html == 0)
+    {
+        foreach ($HTML_SPECIAL_CHARS as $key => $value)
+            $sourse = str_replace($key,$value,$sourse);
+    }
 
     return $sourse;
 }
@@ -1499,7 +1525,7 @@ function get_skin($skin)
 // Replaces news charactars
 function replace_news($way, $sourse, $use_html = true)
 {
-    global $HTML_SPECIAL_CHARS, $config_allow_html_in_news, $config_allow_html_in_comments, $config_http_script_dir, $config_smilies, $config_use_wysiwyg;
+    global $HTML_SPECIAL_CHARS, $config_allow_html_in_news, $config_allow_html_in_comments, $config_http_script_dir, $config_smilies, $config_use_wysiwyg, $config_utf8html;
 
     $sourse = trim(stripslashes($sourse));
 
@@ -1589,7 +1615,12 @@ function replace_news($way, $sourse, $use_html = true)
 
     // Replace all
     $sourse  = preg_replace($find, $replace, $sourse);
-    foreach ( $HTML_SPECIAL_CHARS as $key => $value) $sourse = str_replace($key, $value, $sourse);
+
+    if ($config_utf8html == 0)
+    {
+        foreach ( $HTML_SPECIAL_CHARS as $key => $value)
+            $sourse = str_replace($key, $value, $sourse);
+    }
 
     // Truncate text
     $sourse = preg_replace_callback('~\[truncate=(.*?)\](.*?)\[/truncate\]~i', 'clbTruncate', $sourse);
@@ -1959,7 +1990,7 @@ function RWU($type = 'readmore', $url, $html = true)
         if (empty($c)) continue;
 
         /* If in template is %var template, replace it */
-        if (stripos($tpl, '%'.$c) !== false) $tpl = str_ireplace('%'.$c, $s, $tpl);
+        if (strpos($tpl, '%'.$c) !== false) $tpl = str_replace('%'.$c, $s, $tpl);
 
         /* If in layout variable present key, skip */
         elseif (!preg_match('~'.$c.'\='.$s.'~i', $layout)) $adds[] = "$c=$s";
@@ -2150,6 +2181,8 @@ function GET($var, $method = 'POST')
 {
     $result = array();
     $vars   = spsep($var);
+    $method = strtoupper($method);
+
     foreach ( $vars as $var )
     {
         $value = false;
@@ -2167,7 +2200,7 @@ function GET($var, $method = 'POST')
             elseif (isset($_POST[$var])) $value = $_POST[$var];
         }
         elseif ($method == 'REQUEST' && isset($_REQUEST[$var])) $value = $_REQUEST[$var];
-        elseif ($method == 'COOKIES' && isset($_COOKIES[$var])) $value = $_COOKIES[$var];
+        elseif ($method == 'COOKIE' && isset($_COOKIE[$var])) $value = $_COOKIE[$var];
 
         $result[] = $value;
     }
@@ -2175,10 +2208,19 @@ function GET($var, $method = 'POST')
 }
 
 // GET Helper for single value
+// $method[0] = * ---> htmlspecialchars ON
 function REQ($var, $method = 'POST')
 {
-    list($value) = GET($var, $method);
-    return $value;
+    if ($method[0] == '*')
+    {
+        list($value) = ( GET($var, substr($method, 1)) );
+        return htmlspecialchars($value);
+    }
+    else
+    {
+        list($value) = GET($var, $method);
+        return $value;
+    }
 }
 
 // Create blank PHP file

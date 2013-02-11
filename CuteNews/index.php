@@ -60,7 +60,8 @@ if ( empty($_SESS['user']))
     {
         // Do we have correct username and password ?
         $member_db      = user_search($username);
-        $cmd5_password  = hash_generate($password);
+        $md5_hash       = $member_db[UDB_PASS];
+        $cmd5_password  = hash_generate($password, $md5_hash);
 
         if ( in_array($member_db[UDB_PASS], $cmd5_password))
         {
@@ -120,7 +121,7 @@ if ($enter_without_login )
     // Initial
     $member_db = array
     (
-        UDB_ID => 1,
+        UDB_ID => time(),
         UDB_ACL => ACL_LEVEL_ADMIN,
         UDB_NAME => 'Administrator',
         UDB_PASS => md5('123456'),

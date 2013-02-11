@@ -16,6 +16,7 @@ if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor') ) $us
 if ($action == "addnews")
 {
     $error_messages = false;
+    $preview = (REQ('preview') == 'preview') ? 'preview' : false;
 
     // ********************************************************************************
     // Do add News to news.txt
@@ -224,11 +225,12 @@ if ($action == "addnews")
             {
                  msg("info", lang("News added (Postponed)"), lang("The news item was successfully added to the database as postponed. It will be activated at").date(" Y-m-d H:i:s", $added_time), '#GOBACK');
             }
-            elseif (empty($preview_hmtl))
+            else
             {
                 $source = '';
                 if (strpos($decide_news_file, 'unapproved')) $source = '&source=unapproved';
-                if (strpos($decide_news_file, 'postponed')) $source = '&source=postponed';
+                if (strpos($decide_news_file, 'postponed'))  $source = '&source=postponed';
+
                 relocation($PHP_SELF."?mod=editnews&action=editnews&id=$added_time&saved=add$source");
             }
         }
