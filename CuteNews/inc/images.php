@@ -50,7 +50,7 @@ elseif ($action != "doimagedelete")
                 }
                 elseif( !isset($overwrite) and file_exists(SERVDIR."/uploads/".$image_name))
                 {
-                    $img_result .= "<br><span style='color: red;'>$image_name -> Image already exist!</span>";
+                    $img_result .= "<br><span style='color: red;'>$image_name -> Image already exists!</span>";
                 }
                 else
                 {

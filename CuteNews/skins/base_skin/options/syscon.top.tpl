@@ -6,7 +6,7 @@
         document.getElementById('news').style.display = "none";
         document.getElementById('comments').style.display = "none";
         document.getElementById('notifications').style.display = "none";
-        document.getElementById('facebook').style.display = "none";
+        document.getElementById('social').style.display = "none";
         document.getElementById('button1').style.backgroundColor = "";
         document.getElementById('button2').style.backgroundColor = "";
         document.getElementById('button3').style.backgroundColor = "";
@@ -19,7 +19,7 @@
         if(selectedOption == 'news')            { document.getElementById('news').style.display = "";           SelectedButton = 'button2'; }
         if(selectedOption == 'comments')        { document.getElementById('comments').style.display = "";       SelectedButton = 'button3'; }
         if(selectedOption == 'notifications')   { document.getElementById('notifications').style.display = "";  SelectedButton = 'button4'; }
-        if(selectedOption == 'facebook')        { document.getElementById('facebook').style.display = "";       SelectedButton = 'button5'; }
+        if(selectedOption == 'social')          { document.getElementById('social').style.display = "";         SelectedButton = 'button5'; }
 
         document.getElementById(SelectedButton).style.backgroundColor = "#EBE8E2";
     }
@@ -37,7 +37,7 @@
                 <td id="button2" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('news');">News</a>
                 <td id="button3" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('comments');">Comments</a>
                 <td id="button4" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('notifications');">Notifications</a>
-                <td id="button5" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('facebook');">Facebook</a>
+                <td id="button5" style="border:1px solid black; border-radius: .7em .7em .0em .0em" width="20%"><a style="display:block; font-size:150%; font-weight:bold; height:100%; padding-top:10px;" href="javascript:ChangeOption('social');">Social</a>
                 {$add_fields}
             </tr>
         </table>

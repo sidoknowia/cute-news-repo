@@ -140,9 +140,9 @@ if ($enter_without_login )
         $member_db[UDB_EMAIL] = REQ('admin_email');
         $member_db[UDB_PASS]  = $ht[ count($ht)-1 ];
 
-        if (REQ('admin_name') == false) msg('error', 'error', 'Enter name', '#GOBACK');
-        if (REQ('admin_email') == false) msg('error', 'error', 'Enter email', '#GOBACK');
-        if (REQ('admin_passwd') == false) msg('error', 'error', 'Enter password', '#GOBACK');
+        if (REQ('admin_name')   == false) msg('error', lang('error'), lang('Enter name'), '#GOBACK');
+        if (REQ('admin_email')  == false) msg('error', lang('error'), lang('Enter email'), '#GOBACK');
+        if (REQ('admin_passwd') == false) msg('error', lang('error'), lang('Enter password'), '#GOBACK');
 
         // add user
         user_add($member_db);

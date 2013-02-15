@@ -279,7 +279,7 @@ elseif ($action == "templates")
             msg("Error",  lang('Error!'), lang("You cannot delete the default template"), '#GOBACK');
 
         if (strtolower($do_template) == "rss")
-            msg("Error", lang('Error!'), lang("You cannot delete the RSS template, it is not even supposed you to edit it"), '#GOBACK');
+            msg("Error", lang('Error!'), lang("You cannot delete the RSS template, you are not even supposed to edit it"), '#GOBACK');
 
         $msg = proc_tpl('options/sure_delete');
         msg("info", lang("Deleting Template"), $msg);
@@ -294,7 +294,7 @@ elseif ($action == "templates")
 
         $unlink = unlink(SERVDIR."/cdata/$do_template.tpl");
         if ( !$unlink )
-             msg("error", lang('Error!'), "Cannot delete file ./cdata/$do_template.tpl <br>maybe the is no permission from the server", '#GOBACK');
+             msg("error", lang('Error!'), "Cannot delete file ./cdata/$do_template.tpl <br>maybe there is no permission from the server", '#GOBACK');
         else msg("info",  lang("Template Deleted"), str_replace('%1', $do_template, lang("The template <b>%1</b> was deleted.")));
     }
 
@@ -383,6 +383,54 @@ elseif ($action == "syscon")
         $i++;
     }
 
+    // Make syscon row
+    function syscon($config_name, $title, $options = null)
+    {
+        global $counter;
+
+        list($title, $desc) = explode('|', $title, 2);
+        list($config_name, $opt) = explode('=', $config_name, 2);
+
+        $out = '';
+        $var = $GLOBALS['config_'.$config_name];
+
+        // Is digits or empty - INPUT
+        if (!is_array($options))
+        {
+            $opt = $opt ? intval($opt) : 40;
+
+            if ($options == 'Y/N')
+            {
+                $checked = $var? 'checked="checked"': '';
+                $out = '<input type="checkbox" name="save_con['.$config_name.']" value="1" '.$checked.' />';
+            }
+            elseif ($options == 'y/n')
+            {
+                $out  = '<input type="radio" name="save_con['.$config_name.']" value="no" '.(($var == 'no')? 'checked="checked"' : '').' /> No ';
+                $out .= '<input type="radio" name="save_con['.$config_name.']" value="yes" '.(($var != 'no')? 'checked="checked"' : '').' /> Yes';
+            }
+            else
+            {
+                $out = '<input type="text" class="cn" name="save_con['.$config_name.']" value="'.$var.'" size="'.$opt.'" />';
+            }
+        }
+        // Is array - SELECT
+        elseif (is_array($options))
+        {
+            $out = '<select name="save_con['.$config_name.']">';
+            foreach ($options as $key => $value)
+            {
+                if ($var == $key) $selected = ' selected="selected" '; else $selected = '';
+                $out .= '<option value="'.$key.'"'.$selected.'>'.htmlspecialchars($value).'</option>';
+            }
+            $out .= '</select>';
+        }
+
+        // --- make line ---
+        if ( ($counter++)%2 == 0) $bg = "bgcolor=#F7F6F4"; else $bg = "";
+        return proc_tpl("options/syscon.row", array('bg' => $bg, 'title' => $title, 'field' => $out, 'description' => $desc));
+    }
+
     function makeDropDown($options, $name, $selected)
     {
         $output = "<select size=1 name=\"$name\">\r\n";
@@ -402,113 +450,105 @@ elseif ($action == "syscon")
     echoheader("options", lang("System Configuration"), make_breadcrumbs($bc));
     echo proc_tpl('options/syscon.top', array('add_fields' => hook('field_options_buttons')));
 
-    if (!$handle = opendir(SERVDIR."/skins"))
-    {
-        die_stat(false, "Cannot open directory ./skins ");
-    }
-
-    while (false !== ($file = readdir($handle)))
-    {
-        $file_arr = explode(".",$file);
-        if ($file_arr[1] == "skin")
-        {
-            $sys_con_skins_arr[$file_arr[0]] = $file_arr[0];
-        }
-        elseif ($file_arr[1] == "lang")
-        {
-            $sys_con_langs_arr[$file_arr[0]] = $file_arr[0];
-        }
-    }
-    closedir($handle);
-
-    // News
-    if ( is_dir(SERVDIR.'/core/ckeditor') )
-         $ckeditorEnabled = makeDropDown(array("no"=>"No", 'ckeditor'=>'CKEditor'), "save_con[use_wysiwyg]", $config_use_wysiwyg);
-    else $ckeditorEnabled = makeDropDown(array("no"=>"No"), "save_con[use_wysiwyg]", $config_use_wysiwyg);
+    $skins = array();
+    $dirs  = read_dir(SERVDIR."/skins", array(), false);
+    foreach ($dirs as $skin_file) if (preg_match('/([^\/]+)\.skin\.php$/i', $skin_file, $c)) $skins[$c[1]] = $c[1];
 
     // General
     echo "<tr style='' id=general><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
 
-    showRow(lang("Full URL to CuteNews directory"), lang("example: http://yoursite.com/cutenews"),                      "<input type=text style=\"text-align: center;\" name='save_con[http_script_dir]' value='$config_http_script_dir' size=40>");
-    showRow(lang("Frontend default codepage"),      lang("for example: windows-1251, utf-8, koi8-r etc"),               "<input type=text style=\"text-align: center;\" name='save_con[default_charset]' value='$config_default_charset' size=40>");
-    showRow(lang("CuteNews skin"),                  lang("you can download more from our website"),                     makeDropDown($sys_con_skins_arr, "save_con[skin]", $config_skin));
-    showRow(lang("Use UTF-8"),                      lang("with this option, admin panel uses utf-8 charset"),           makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[useutf8]", $config_useutf8));
-    showRow(lang("Don't convert UTF8 symbols to HTML entities"), lang("no conversion, e.g. &aring; to &amp;aring;"),    makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[utf8html]", $config_utf8html));
-    showRow(lang("Use WYSIWYG Editor"),             lang("use (or not) the advanced editor"),                           $ckeditorEnabled);
-    showRow(lang("Time adjustment"),                lang("in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours"),"<input type=text style=\"text-align: center;\" name='save_con[date_adjust]' value=\"$config_date_adjust\" size=10>");
-    showRow(lang("Smilies"),                        lang("Separate them with commas (<b>,</b>)"),                       "<input type=text style=\"text-align: center;\" name='save_con[smilies]' value=\"$config_smilies\" size=40>");
-    showRow(lang("Automatic archiving every month"), lang("Every month your active news will be archived"),             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[auto_archive]", $config_auto_archive));
-    showRow(lang("Allow self-Registration"),        lang("allow users to register automatically"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_registration]", $config_allow_registration));
+    echo syscon('http_script_dir',  'Full URL to CuteNews directory|example: http://yoursite.com/cutenews');
+    echo syscon('default_charset',  'Frontend default codepage|for example: windows-1251, utf-8, koi8-r etc');
+    echo syscon('skin',             'CuteNews skin|you can download more from our website', $skins);
+    echo syscon('useutf8',          'Use UTF-8|with this option, admin panel uses utf-8 charset', 'Y/N');
+    echo syscon('utf8html',         "Don't convert UTF8 symbols to HTML entities|no conversion, e.g. &aring; to &amp;aring;", 'Y/N');
+    echo syscon('use_wysiwyg',      "Use WYSIWYG Editor|use (or not) the advanced editor", array('no'=>'No', 'ckeditor'=>'CKEditor'));
 
-    showRow(lang("Number of login attempts"),       lang("specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour."), "<input type=text style=\"text-align: center;\" name='save_con[ban_attempts]' value=\"$config_ban_attempts\" size=10>");
-    showRow(lang("Custom rewrite"),                 lang("allow rewrite news url path"),                                makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_replacement]", $config_use_replacement));
-    showRow(lang("Self-registration level"),        lang("choose your status"),                                         makeDropDown(array("3"=>"Journalist","4"=>"Commentator"), "save_con[registration_level]", $config_registration_level));
-    showRow(lang("Check IP"),                       lang("stronger authenticate (by changing this setting, you will be logged out)"), makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[ipauth]", $config_ipauth));
-    showRow(lang("XSS strict"),                     lang("if strong, remove all suspicious parameters in tags"),        makeDropDown(array("0"=>"No","1"=>"Strong","2"=>"Total Filter"), "save_con[xss_strict]", $config_xss_strict));
-    showRow(lang("Enable user logs"),               lang("store user logs"),                                            makeDropDown(array("1"=>"Yes","0"=>"No"), "save_con[userlogs]", $config_userlogs));
+    echo syscon('date_adjust',      'Time adjustment|in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours');
+    echo syscon('smilies',          'Smilies|Separate them with commas (<b>,</b>)');
+    echo syscon('auto_archive',         'Automatic archiving every month|Every month your active news will be archived', array('no'=>'No','yes'=>'Yes'));
+    echo syscon('allow_registration',   'Allow self-Registration|allow users to register automatically', 'Y/N');
+    echo syscon('registration_level',   'Self-registration level|choose your status', array(ACL_LEVEL_JOURNALIST=>"Journalist", ACL_LEVEL_COMMENTER=>"Commentator"));
+    echo syscon('ban_attempts=5',       'Number of login attempts|specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour.');
+    echo syscon('xss_strict',       'XSS strict|if "strong", remove all suspicious parameters in tags', array(0=>"No", 1=>"Strong", 2=>"Total Filter"));
+    echo syscon('use_replacement',  'Custom rewrite|allow rewrite news url path', 'Y/N');
+    echo syscon('ipauth',           'Check IP|stronger authenticate (by changing this setting, you will be logged out)', 'Y/N');
+    echo syscon('userlogs',         'Enable user logs|store user logs', 'Y/N');
+
+    hook('field_options_general');
+    echo "</table></td></tr>";
+    echo "<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
+
+    echo syscon('use_avatar',           "Use avatars|if 'No', the avatar URL won't be shown", 'y/n');
+    echo syscon('reverse_active',       'Reverse News|if yes, older news will be shown on the top', 'y/n');
+    echo syscon('full_popup',           'Show full story in popup|full Story will be opened in PopUp window', 'y/n');
+    echo syscon('full_popup_string',    "Settings for full story popup|only if 'Show Full Story In PopUp' is enabled");
+    echo syscon('show_comments_with_full', 'Show comments when showing full story|if yes, comments will be shown under the story','y/n');
+    echo syscon('timestamp_active',     'Time format for news|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
+    echo syscon('backup_news',          'Make backup news|when you add or edit news, a backup is made', 'y/n');
+    echo syscon('use_captcha',          'Use CAPTCHA|on registration and comments', 'Y/N');
+    echo syscon('use_rater',            'Use rating|use internal rating system', 'Y/N');
 
     if ($config_use_rater)
     {
-        showRow(lang("Rate symbol 1"), lang("rate full symbol"),   "<input type=text style=\"text-align: center;\"  name='save_con[ratey]' value=\"$config_ratey\" size=10>", "save_con[ratey]", $config_ratey);
-        showRow(lang("Rate symbol 2"), lang("rate empty symbol"),  "<input type=text style=\"text-align: center;\"  name='save_con[raten]' value=\"$config_raten\" size=10>", "save_con[raten]", $config_raten);
+        echo syscon('ratey=10', 'Rate symbol 1|rate full symbol');
+        echo syscon('raten=10', 'Rate symbol 2|rate empty symbol');
     }
-    hook('field_options_general');
-    echo "</table></td></tr>";
-
-    echo"<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Use avatars"),                            lang("if 'No', the avatar URL won't be shown"),         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[use_avatar]", $config_use_avatar));
-    showRow(lang("Reverse News"),                           lang("if yes, older news will be shown on the top"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_active]", $config_reverse_active));
-    showRow(lang("Show full story in popup"),               lang("full Story will be opened in PopUp window"),      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[full_popup]", "$config_full_popup"));
-    showRow(lang("Settings for full story popup"),          lang("only if 'Show Full Story In PopUp' is enabled"),  "<input type=text style=\"text-align: center;\"  name='save_con[full_popup_string]' value=\"$config_full_popup_string\" size=40>");
-    showRow(lang("Show comments when showing full story"),  lang("if yes, comments will be shown under the story"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_comments_with_full]", "$config_show_comments_with_full"));
-    showRow(lang("Time format for news"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_active]' value='$config_timestamp_active' size=40>");
-    showRow(lang("Make backup news"),                       lang("when you add or edit news, a backup is made"),        makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[backup_news]", $config_backup_news));
-    showRow(lang("Use CAPTCHA"),                            lang("on registration and comments"),                       makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_captcha]", $config_use_captcha));
-    showRow(lang("Use rating"),                             lang("use internal rating system"),                         makeDropDown(array("0"=>"No","1"=>"Yes"), "save_con[use_rater]", $config_use_rater));
     hook('field_options_news');
+
     echo"</table></td></tr>";
 
     // Comments
-    echo "<tr style='display:none' id=comments><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Auto wrap comments"),                         lang("any word that is longer than this will be wrapped"),          "<input type=text style=\"text-align: center;\"  name='save_con[auto_wrap]' value=\"$config_auto_wrap\" size=10>");
-    showRow(lang("Reverse comments"),                           lang("newest comments will be shown at the top"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[reverse_comments]", "$config_reverse_comments"));
-    showRow(lang("Comments flood protection"),                  lang("in seconds; 0 = no protection"),                              "<input type=text style=\"text-align: center;\"  name='save_con[flood_time]' value=\"$config_flood_time\" size=10>");
-    showRow(lang("Max. Length of comments in characters"),      lang("enter <b>0</b> to disable checking"),                         "<input type=text style=\"text-align: center;\"  name='save_con[comment_max_long]' value='$config_comment_max_long' size=10>");
-    showRow(lang("Comments per page (pagination)"),             lang("enter <b>0</b> or leave empty to disable pagination"),        "<input type=text style=\"text-align: center;\"  name='save_con[comments_per_page]' value='$config_comments_per_page' size=10>");
-    showRow(lang("Only registered users can post comments"),    lang("if yes, only registered users can post comments"),            makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[only_registered_comment]", "$config_only_registered_comment"));
-    showRow(lang("Allow mail field to act as URL field"),       lang("visitors will be able to put their site URL instead of an email"), makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[allow_url_instead_mail]", "$config_allow_url_instead_mail"));
-    showRow(lang("Show comments in popup"),                     lang("comments will be opened in PopUp window"),                         makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[comments_popup]", $config_comments_popup));
-    showRow(lang("Settings for comments popup"),                lang("only if 'Show Comments In PopUp' is enabled"),                     "<input type=text style=\"text-align: center;\"  name=\"save_con[comments_popup_string]\" value=\"$config_comments_popup_string\" size=40>");
-    showRow(lang("Show full story when showing comments"),      lang("if yes, comments will be shown under the story"),                  makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[show_full_with_comments]", $config_show_full_with_comments));
-    showRow(lang("Time format for comments"),                   lang("view help for time formatting <a href=\"http://www.php.net/manual/en/function.date.php\" target=\"_blank\">here</a>"), "<input type=text style=\"text-align: center;\"  name='save_con[timestamp_comment]' value='$config_timestamp_comment' size=40>");
+    echo "<tr style='display: none' id=comments>";
+    echo "<td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
+
+    echo syscon('auto_wrap=10', 'Auto wrap comments|any word that is longer than this will be wrapped');
+    echo syscon('reverse_comments=10', 'Reverse comments|newest comments will be shown at the top','y/n');
+    echo syscon('flood_time=10', 'Comments flood protection|in seconds; 0 = no protection');
+    echo syscon('comment_max_long=10', 'Max. Length of comments in characters|enter <b>0</b> to disable checking');
+    echo syscon('comments_per_page=10', 'Comments per page (pagination)|enter <b>0</b> or leave empty to disable pagination');
+    echo syscon('only_registered_comment', 'Only registered users can post comments|if yes, only registered users can post comments','y/n');
+    echo syscon('allow_url_instead_mail', 'Allow mail field to act as URL field|visitors will be able to put their site URL instead of an email','y/n');
+    echo syscon('comments_popup', 'Show comments in popup|comments will be opened in PopUp window','y/n');
+    echo syscon('comments_popup_string', "Settings for comments popup|only if 'Show Comments In PopUp' is enabled");
+    echo syscon('show_full_with_comments', 'Show full story when showing comments|if yes, comments will be shown under the story','y/n');
+    echo syscon('timestamp_comment', 'Time format for comments|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
+
     hook('field_options_comments');
+
     echo"</table></td></tr>";
 
     // Notifications
     echo "<tr style='display:none' id=notifications><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Notifications - Active/Disabled"),        lang("global status of notifications"),                        makeDropDown(array("active"=>"Active","disabled"=>"Disabled"), "save_con[notify_status]", "$config_notify_status"));
-    showRow(lang("Notify of new registrations"),            lang("automatic registration of new users"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_registration]", "$config_notify_registration"));
-    showRow(lang("Notify of new comments"),                 lang("when new comment is added"),                             makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_comment]", "$config_notify_comment"));
-    showRow(lang("Notify of unapproved news"),              lang("when unapproved article is posted (by journalists)"),    makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_unapproved]", "$config_notify_unapproved"));
-    showRow(lang("Notify of auto-archiving"),               lang("when (if) news are auto-archived"),                      makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_archive]", "$config_notify_archive"));
-    showRow(lang("Notify of activated postponed articles"), lang("when postponed article is activated"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[notify_postponed]", "$config_notify_postponed"));
-    showRow(lang("Email(s)"),                               lang("Where the notification will be send, separate multyple emails by comma"), "<input type=text style=\"text-align: center;\"  name='save_con[notify_email]' value=\"$config_notify_email\" size=40>");
+
+    echo syscon('notify_status', 'Notifications - Active/Disabled|global status of notifications', array("active"=>"Active","disabled"=>"Disabled"));
+    echo syscon('notify_registration', 'Notify of new registrations|automatic registration of new users','y/n');
+    echo syscon('notify_comment', 'Notify of new comments|when new comment is added','y/n');
+    echo syscon('notify_unapproved', 'Notify of unapproved news|when unapproved article is posted (by journalists)','y/n');
+    echo syscon('notify_archive', 'Notify of auto-archiving|when (if) news are auto-archived','y/n');
+    echo syscon('notify_postponed', 'Notify of activated postponed articles|when postponed article is activated','y/n');
+    echo syscon('notify_email', 'Email(s)|where the notification will be send, separate multyple emails by comma');
+
     hook('field_options_notifications');
     echo "</table></td></tr>";
 
     // Facebook preferences
-    $config_fb_comments = $config_fb_comments ? $config_fb_comments : 4;
-    $config_fb_box_width = $config_fb_box_width ? $config_fb_box_width : 470;
-    $config_fb_i18n = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
+    $config_fb_comments     = $config_fb_comments ? $config_fb_comments : 4;
+    $config_fb_box_width    = $config_fb_box_width ? $config_fb_box_width : 470;
+    $config_fb_i18n         = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
 
-    echo "<tr style='display:none' id='facebook'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-    showRow(lang("Use facebook comments for post"), lang("if yes, facebook comments will be shown"),    makeDropDown(array("no"=>"No","yes"=>"Yes"), "save_con[use_fbcomments]", $config_use_fbcomments));
-    showRow(lang("Facebook i18n code"),             lang("by default en_US"),                           "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_i18n]\" value=\"$config_fb_i18n\" size=8>", "save_con[fb_i18n]", $config_fb_i18n);
-    showRow(lang("In active news"),                 lang("Show in active news list"),                   makeDropDown(array("yes"=>"Yes","no"=>"No"), "save_con[fb_inactive]", $config_fb_inactive));
-    showRow(lang("Comments number"),                lang("Count comment under top box"),                "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_comments]\" value=\"$config_fb_comments\" size=8>", "save_con[fb_comments]", $config_fb_comments);
-    showRow(lang("Box width"),                      lang("In pixels"),                                  "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_box_width]\" value=\"$config_fb_box_width\" size=8>", "save_con[fb_box_width]", $config_fb_box_width);
-    showRow(lang("Facebook appID"),                 lang("Get your AppId <a href='https://developers.facebook.com/apps'>there</a>"), "<input type=text style=\"text-align: center;\"  name=\"save_con[fb_appid]\" value=\"$config_fb_appid\" size=40>", "save_con[fb_appid]", $config_fb_appid);
-    hook('field_options_facebook');
+    echo "<tr style='display:none' id='social'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
+
+    echo syscon('use_fbcomments', 'Use facebook comments for post|if yes, facebook comments will be shown','y/n');
+    echo syscon('fb_i18n', 'Facebook i18n code|by default en_US');
+    echo syscon('fb_inactive', 'In active news|Show in active news list');
+    echo syscon('fb_comments', 'Comments number|Count comment under top box');
+    echo syscon('fb_box_width', 'Box width|In pixels');
+    echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps'>there</a>");
+    echo syscon('fb_like_code', 'Facebook Like code|Get your like code there');
+
+    hook('field_options_social');
+
     echo "</table></td></tr>";
 
     hook('field_options_additional');

@@ -440,22 +440,21 @@ function xxtea_decrypt($str, $key)
 // Mail function -------------------------------------------------------------------------------------------------------
 function send_mail($to, $subject, $message, $hdr = false)
 {
-
     if (!isset($to)) return false;
     if (!$to) return false;
 
     $tos = spsep($to);
-    $from = 'CuteNews@' . $_SERVER['SERVER_NAME'];
+    $from = 'Cutenews <cutenews@'.$_SERVER['SERVER_NAME'].'>';
 
     $headers = '';
+    $headers .= "MIME-Version: 1.0\n";
+    $headers .= "Content-type: text/plain;\n";
     $headers .= 'From: '.$from."\n";
     $headers .= 'Reply-to: '.$from."\n";
     $headers .= 'Return-Path: '.$from."\n";
     $headers .= 'Message-ID: <' . md5(uniqid(time())) . '@' . $_SERVER['SERVER_NAME'] . ">\n";
-    $headers .= "MIME-Version: 1.0\n";
-    $headers .= "Content-type: text/plain;\n";
-    $headers .= "Date: " . date('r', time()) . "\n";
     $headers .= "X-Mailer: PHP/" . phpversion()."\n";
+    $headers .= "Date: " . date('r', time()) . "\n";
     $headers .= $hdr;
 
     foreach ($tos as $v)
@@ -487,7 +486,8 @@ function send_cookie()
 {
     global $_SESS;
 
-    $cookie = base64_encode( xxtea_encrypt(serialize($_SESS), CRYPT_SALT) );
+    // String serialize
+    $cookie = strtr(base64_encode( xxtea_encrypt(serialize($_SESS), CRYPT_SALT) ), '=/+', '-_.');
 
     // if remember flag exists
     if ( isset($_SESS['@']) && $_SESS['@'])
@@ -969,7 +969,10 @@ function build_uri($left, $right, $html = 1)
     }
 
     // Encode new query
-    foreach ($URI as $i => $v) $DDR[] = urlencode($i)."=".str_replace('%2C', ',', urlencode($v));
+    foreach ($URI as $i => $v)
+    {
+        $DDR[] = urlencode($i)."=".str_replace('%2C', ',', urlencode($v));
+    }
 
     $DDU = implode(($html?'&amp;':'&'), $DDR);
     if ($DDU == false) return '?c';
@@ -1147,7 +1150,7 @@ function ResynchronizeAutoArchive()
     $count_news = count(file(SERVDIR."/cdata/news.txt"));
     if($count_news > 1)
     {
-        if($config_auto_archive == "yes")
+        if ($config_auto_archive == "yes")
         {
 
             $now['year'] = date("Y");
@@ -1439,6 +1442,7 @@ function replace_comment($way, $sourse)
     global $HTML_SPECIAL_CHARS, $config_http_script_dir, $config_smilies, $config_utf8html;
 
     $sourse = stripslashes(trim($sourse));
+    $find = $replace = array();
 
     if ($way == "add")
     {
@@ -1473,11 +1477,11 @@ function replace_comment($way, $sourse)
             $replace[]  = "<img style=\"border: none;\" alt=\"$smile\" src=\"$config_http_script_dir/skins/emoticons/$smile.gif\" />";
         }
     }
-    else
-    {
-        $find = $replace = array();
-    }
 
+    // Replace hook
+    list($find, $replace) = hook('core:replace_comment', array($find, $replace));
+
+    // Replace action
     $sourse  = preg_replace($find, $replace, $sourse);
 
     // UTF8 to HTML entity
@@ -1528,6 +1532,7 @@ function replace_news($way, $sourse, $use_html = true)
     global $HTML_SPECIAL_CHARS, $config_allow_html_in_news, $config_allow_html_in_comments, $config_http_script_dir, $config_smilies, $config_use_wysiwyg, $config_utf8html;
 
     $sourse = trim(stripslashes($sourse));
+    $find = $replace = array();
 
     if ($way == "show")
     {
@@ -1613,17 +1618,22 @@ function replace_news($way, $sourse, $use_html = true)
             $sourse = str_replace('<br />', "\n", $sourse);
     }
 
+    // Replace hook
+    list($find, $replace) = hook('core:replace_news', array($find, $replace));
+
     // Replace all
     $sourse  = preg_replace($find, $replace, $sourse);
 
+    // Convert UTF-8 to HTML Entities --> admin/save/show
     if ($config_utf8html == 0)
     {
-        foreach ( $HTML_SPECIAL_CHARS as $key => $value)
+        foreach ($HTML_SPECIAL_CHARS as $key => $value)
             $sourse = str_replace($key, $value, $sourse);
     }
 
     // Truncate text
     $sourse = preg_replace_callback('~\[truncate=(.*?)\](.*?)\[/truncate\]~i', 'clbTruncate', $sourse);
+
     return $sourse;
 }
 
@@ -2253,25 +2263,155 @@ function make_crypt_salt()
     return TRUE;
 }
 
+// Cutenews Self-Checking
+function cn_selfcheck()
+{
+    $errors = array();
+
+    $check_dirs = array
+    (
+        'cdata',
+        'uploads',
+        'cdata/archives',
+        'cdata/backup',
+        'cdata/cache',
+        'cdata/log',
+        'cdata/plugins',
+        'cdata/skins',
+    );
+
+    // Check dirs
+    foreach ($check_dirs as $dir)
+    {
+        // Try create file in cdata
+        $test_file = SERVDIR.'/'.$dir.'/.test.html';
+        fclose( fopen($test_file, 'w+') );
+
+        // File exists?
+        if (file_exists($test_file))
+        {
+            unlink($test_file);
+        }
+        else
+        {
+            $errors[] = array('perm' => '---', 'file' => SERVDIR.'/'.$dir, 'msg' => lang('<b>Directory not writable</b>'));
+        }
+    }
+
+    // Check files
+    if (empty($errors))
+    {
+        $check_files  = array
+        (
+            '/cdata/auto_archive.db.php',
+            '/cdata/category.db.php',
+            '/cdata/cat.num.php',
+            '/cdata/comments.txt',
+            '/cdata/confirmations.php',
+            '/cdata/db.ban.php',
+            '/cdata/users.db.php',
+            '/cdata/replaces.php',
+            '/cdata/flood.db.php',
+
+            '/cdata/newsid.txt',
+            '/cdata/news.txt',
+            '/cdata/postponed_news.txt',
+            '/cdata/unapproved_news.txt',
+
+            '/cdata/rss_config.php',
+            '/cdata/config.php',
+            '/cdata/conf.php',
+
+            '/cdata/Default.tpl',
+            '/cdata/Headlines.tpl',
+            '/cdata/rss.tpl',
+        );
+
+        foreach ($check_files as $file)
+        {
+            $the_file = SERVDIR . $file;
+
+            // Check exists
+            if (file_exists($the_file))
+            {
+                // Check readable
+                if (is_readable($the_file))
+                {
+                    // FS. BEFORE
+                    clearstatcache($the_file);
+                    $fs0 = filesize($the_file);
+
+                    $af = fopen($the_file, 'a+');
+                    fwrite($af, "\n");
+                    fclose($af);
+
+                    // FS. AFTER
+                    clearstatcache($the_file);
+                    $fs1 = filesize($the_file);
+
+                    // REVERT
+                    $aw = fopen($the_file, 'a+');
+                    ftruncate($aw, $fs0);
+                    fclose($aw);
+
+                    // Check writable status: no change in filesize
+                    if ($fs0 == $fs1)
+                    {
+                        $errors[] = array('perm' => decoct(fileperms($the_file)), 'file' => $the_file, 'msg' => lang('File not writable'));
+                    }
+                }
+                else
+                {
+                    $errors[] = array('perm' => decoct(fileperms($the_file)), 'file' => $the_file, 'msg' => lang('File not writable'));
+                }
+            }
+            else
+            {
+                $errors[] = array('perm' => '---', 'file' => $the_file, 'msg' => lang('Not exists'));
+            }
+        }
+    }
+
+    return $errors;
+}
+
 // ------------- CSRF value -------------
+// CSRF - 4 possible session vars
+
 function CSRFMake()
 {
     global $_SESS;
 
-    $_SESS[ 'CSRF' ] = md5(mt_rand() . mt_rand());
-    send_cookie();
+    // Make new section if not exists
+    if (!is_array($_SESS['CSRF'])) $_SESS['CSRF'] = array();
 
-    return $_SESS[ 'CSRF' ];
+    // New CSRF value
+    $csrf = substr( md5(mt_rand() . mt_rand() . mt_rand() ), 0, 16);
+
+    array_unshift($_SESS['CSRF'], $csrf);
+    $_SESS['CSRF'] = array_slice($_SESS['CSRF'], 0, 4);
+
+    // Set new CSRF by session
+    send_cookie();
+    return $csrf;
 }
 
 function CSRFCheck()
 {
     global $_SESS;
 
-    if ($_SESS[ 'CSRF' ] != $_REQUEST['csrf_code'])
+    // Search in CSRF-table
+    $csid = array_search($_REQUEST['csrf_code'], $_SESS[ 'CSRF' ]);
+
+    if ($csid === false)
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
         msg("error", lang('Error!'), '<div>CSRF fail <a href="'.make_nocache().'">Go back</div>');
+    }
+    else
+    {
+        // CSRF used
+        unset($_SESS['CSRF'][$csid]);
     }
 }
 

@@ -26,8 +26,8 @@ $skin_header = <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+<meta name="robots" content="noindex" />
 <link rel="shortcut icon" type="image/ico" href="skins/images/favicon.ico"/>
-
 <script type="text/javascript" src="skins/cute.js"></script>
 <style type="text/css">
 <!--
@@ -37,11 +37,11 @@ html, body
 }
 select, textarea, input, button
 {
-    border: #808080 1px solid;
+    border: #c0c0c0 1px solid;
     color: #000000;
     font-size: 12px;
     margin: 2px;
-    padding: 3px;
+    padding: 4px;
     background-color: #ffffff;
 }
 .menu-border, input[type=submit], input[type=button], button {
@@ -63,7 +63,7 @@ input[type=submit]:hover, input[type=button]:hover, button:hover
 }
 a:active,a:visited,a:link
 {
-    color: #446488;
+    color: #446688;
     text-decoration: none;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 12px;
@@ -141,6 +141,27 @@ td.top_header { padding: 8px; }
     font-family: Helvetica, Arial, Verdana, sans-serif;
 }
 .hover:hover { background: #fff4e8; }
+
+/* Improved table styles */
+table.std-table {
+    border-collapse: collapse;
+}
+
+table.std-table td, table.std-table th {
+    padding: 4px;
+    margin: 0;
+    border: 1px solid #eeeeee;
+}
+
+table.std-table td.le { text-align: left; }
+table.std-table td.cn { text-align: center; }
+table.std-table td.ri { text-align: right; }
+
+table.std-table th {
+    background: #4e4e4e;
+    border: 1px solid #8e8e8e;
+    color: white;
+}
 -->
 </style>
 <title>{title}</title>

@@ -36,6 +36,7 @@
         list($day_to,   $month_to,   $year_to)   = make_postponed_date($date_to);
 
         $selected_search_arch = empty($archives) ? false : "checked='checked'";
+
         $story  = htmlspecialchars( urldecode($story) );
         $title  = htmlspecialchars( urldecode($title) );
         $author = htmlspecialchars( urldecode($author) );
@@ -137,7 +138,7 @@
             echo "<p class='cutenews_founded'><b>".lang('News articles found')." [". count($found)."]</b> ";
             echo str_replace(array('%1','%2'), array( date("d F Y", $date_from), date("d F Y", $date_to)), lang("from <b>%1</b> to <b>%2</b></p>", 'search'));
         }
-        else echo "<div class='cutenews_not_match'>".lang('There are no news matching your search criteria')."</div>";
+        else echo "<div class='cutenews_not_match'>".lang('There are no news articles matching your search criteria')."</div>";
 
         echo '<div class="cutenews_search_results"><i>'.lang('Search performed for').' '.round(microtime(true) - $mc_start, 4).' s.</i></div>';
     }

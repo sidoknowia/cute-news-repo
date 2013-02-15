@@ -170,18 +170,26 @@
     $template_form = str_replace('{usermail}', (isset($member_db[UDB_EMAIL]) ? $member_db[UDB_EMAIL] : false), $template_form);
 
     // Remember and Forget for unregistered only
+    $remember_user = '';
     $remember_form = getpart('remember_me');
-    if ($member_db) $remember_form = getpart('logged_as_member');
-    elseif ($_COOKIE['CNname']) $remember_form = getpart('forget_me');
+
+    if ($member_db)
+    {
+        $remember_form = getpart('logged_as_member');
+        $remember_user = getpart('logger_as_membersp', htmlspecialchars( $member_db[UDB_NAME] ), htmlspecialchars($member_db[UDB_EMAIL]));
+    }
+    elseif ($_COOKIE['CNname'])
+    {
+        $remember_form = getpart('forget_me');
+    }
 
     $gduse         = function_exists('imagecreatetruecolor')? 0 : 1;
-    $captcha_form  = $config_use_captcha && $captcha_enabled ? ( proc_tpl('captcha_comments', array('cutepath' => $config_http_script_dir ), array('TEXTCAPTCHA' => $gduse) ) ) : false;
-
-    $smilies_form  = proc_tpl('remember_js') . insertSmilies('short', FALSE) . $captcha_form;
+    $captcha_form  = $config_use_captcha && $captcha_enabled ? proc_tpl('captcha_comments') : false;
+    $smilies_form  = proc_tpl('remember_js') . insertSmilies('short', false);
     $template_form = str_replace("{smilies}", $smilies_form, $template_form);
     $template_form = str_replace('{remember_me}', $remember_form, $template_form);
     $template_form = hook('comment_template_form', $template_form);
-    $remember_js   = read_tpl('remember');
+    $remember_js   = read_tpl('remember') . $remember_user;
 
     echo proc_tpl('comment_form');
 

@@ -9,6 +9,21 @@ if ($member_db[UDB_ACL] == ACL_LEVEL_COMMENTER)
     relocation($config_http_script_dir."/index.php?mod=options&action=personal");
 
 // ----------------------------------------
+if (REQ('action','GET') == 'permissions')
+{
+    $errors = cn_selfcheck();
+
+    if (empty($errors))
+    {
+        msg('info', lang('Everything is OK'), lang('All the files are writable'), '#GOBACK');
+    }
+    else
+    {
+        msg('info', lang('Permissions error'), proc_tpl('main/perms'));
+    }
+}
+
+// ----------------------------------------
 echoheader("home", lang("Welcome"));
 
 if (!is_readable(SERVDIR."/cdata/archives"))
@@ -168,81 +183,11 @@ echo str_replace(array('{member}','{greet}', '{warn}'),
                  array($member_db[UDB_NAME], $rand_msg[rand(0, count($rand_msg)-1)], $warn),
                  proc_tpl('main/greet'));
 
-// SYSTEM CHECK
-
-$msgs = array();
-// $readables  = array();
-
-$exists     = array('/rss.php',
-                    '/register.php',
-                    '/captcha.php',
-                    '/LICENSE.txt',
-                    '/README.html',
-                    '/cdata/log',
-                    '/cdata/cache',
-                    '/cdata/backup',
-);
-
-$executabes = array();
-
-$readables  = array('/cdata',
-                    '/cdata/log',
-                    '/cdata/cache',
-                    '/cdata/backup',
-                    '/cdata/archives',
-);
-
-$writables  = array('/cdata/comments.txt',
-                    '/cdata/archives',
-                    '/cdata/backup',
-                    '/cdata/cache',
-                    '/cdata/log',
-                    '/cdata/config.php',
-                    '/cdata/users.db.php',
-                    '/cdata/replaces.php',
-                    '/cdata/flood.db.php',
-                    '/cdata/cat.num.php',
-                    '/cdata/category.db.php',
-                    '/cdata/auto_archive.db.php',
-                    '/cdata/postponed_news.txt',
-                    '/cdata/rss_config.php',
-                    '/cdata/unapproved_news.txt',
-);
-
 $filesize   = array(
                     '/cdata/news.txt' => 'News size',
                     '/cdata/users.db.php' => 'Users size',
                     '/cdata/cache/error_dump.log' => 'Error dump size',
 );
-
-$SHOW = false;
-foreach ($exists as $v)
-{
-    $fc = file_exists(SERVDIR.$v);
-    $msgs['e'][] = array(SERVDIR.$v, $fc? 'green' : 'red', substr( decoct(fileperms(SERVDIR.$v)), -3, 3) );
-    if (!$fc) $SHOW = true;
-}
-
-foreach ($readables as $v)
-{
-    $fc = is_readable(SERVDIR.$v);
-    $msgs['r'][] = array(SERVDIR.$v, $fc? 'green' : 'red', substr( decoct(fileperms(SERVDIR.$v)), -3, 3) );
-    if (!$fc) $SHOW = true;
-}
-
-foreach ($executabes as $v)
-{
-    $fc = is_executable(SERVDIR.$v);
-    $msgs['x'][] = array(SERVDIR.$v, $fc? 'green' : 'red', substr( decoct(fileperms(SERVDIR.$v)), -3, 3) );
-    if (!$fc) $SHOW = true;
-}
-
-foreach ($writables as $v)
-{
-    $fc = is_writable(SERVDIR.$v);
-    $msgs['w'][] = array(SERVDIR.$v, $fc? 'green' : 'red', substr( decoct(fileperms(SERVDIR.$v)), -3, 3) );
-    if (!$fc) $SHOW = true;
-}
 
 // Common statistics
 $fs = 0;
@@ -272,15 +217,7 @@ $msgs['fs'][] = array("<a title='".lang('View all Unapproved Articles')."' href=
 $msgs['fs'][] = array("<a title='".lang('View all Archives (Archive Manager)')."' href='$PHP_SELF?mod=tools&action=archive'>".lang('Archives')."</a>", $stats_archives);
 $msgs['fs'][] = array("<a title='".lang('View all Users (Add/Edit Users)')."' href='$PHP_SELF?mod=editusers&action=list'>".lang('Users')."</a>", $stats_users);
 
-echo proc_tpl('main/syscheck', array('exists' => $msgs['e'],
-                                       'x' => $msgs['x'],
-                                       'r' => $msgs['r'],
-                                       'w' => $msgs['w'],
-                                       'fs' => $msgs['fs'],
-                                       'free' => $factor,
-                                 ), array('FREE' => $factor, 'SHOW' => $SHOW));
-
-
+echo proc_tpl('main/syscheck', array('fs' => $msgs['fs'], 'free' => $factor));
 echofooter();
 
 hook('destroy_main');

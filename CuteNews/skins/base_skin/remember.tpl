@@ -108,5 +108,15 @@ function CNSetCookie (name, value)
     ((domain == null) ? "" : ("; domain=" + domain)) +
     ((secure == true) ? "; secure" : "");
 }
+
+function FillMemberName(member_name, member_email)
+{
+    document.comment.name.value = member_name;
+    document.comment.mail.value = member_email;
+
+    document.comment.name.disabled = 'disabled';
+    document.comment.mail.disabled = 'disabled';
+}
+
 </script>
 <script type="text/javascript">CNreadCookie();</script>

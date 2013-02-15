@@ -141,6 +141,27 @@ td.top_header { padding: 8px; }
     font-family: Helvetica, Arial, Verdana, sans-serif;
 }
 .hover:hover { background: #fff4e8; }
+
+/* Improved table styles */
+table.std-table {
+    border-collapse: collapse;
+}
+
+table.std-table td, table.std-table th {
+    padding: 4px;
+    margin: 0;
+    border: 1px solid #eeeeee;
+}
+
+.left { text-align: left; }
+.cn { text-align: center; }
+.right { text-align: right; }
+
+table.std-table th {
+    background: #4e4e4e;
+    border: 1px solid #8e8e8e;
+    color: white;
+}
 -->
 </style>
 <title>{title}</title>

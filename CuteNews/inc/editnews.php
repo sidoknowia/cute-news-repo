@@ -93,7 +93,7 @@ if ($action == "list")
 
             // It's prospect article
             $prosrev = false;
-            if ($item_db[NEW_ID] > (time() + $config_date_adjust) && $source != 'postponed') $prosrev = getpart('post_rev');
+            if ($item_db[NEW_ID] > (time() + $config_date_adjust*60) && $source != 'postponed') $prosrev = getpart('post_rev');
 
             // Enable Up/Down without sorting
             if ( !isset($_REQUEST['ord_title']) and !isset($_REQUEST['ord_date']) )
@@ -573,7 +573,7 @@ elseif ($action == "editnews")
     $short_story_id = 'short_story';
     $full_story_id = 'full_story';
 
-    $newstime = date("D, d F Y h:i:s", $item_db[0] + $config_date_adjust);
+    $newstime = date("D, d F Y h:i:s", $item_db[0] + $config_date_adjust*60);
     $item_db[NEW_TITLE] = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $item_db[NEW_TITLE]) );
 
     // Are we using the WYSIWYG ?

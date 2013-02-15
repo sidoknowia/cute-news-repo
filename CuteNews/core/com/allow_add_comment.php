@@ -2,12 +2,25 @@
 
     if (!defined('INIT_INSTANCE')) die('Access restricted');
 
+    // User is authorized
+    if ( !empty($_SESS['user']))
+    {
+        $member_db = user_search($_SESS['user']);
+        if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) $captcha_enabled = false;
+    }
+
     // Get only POST or COOKIE vars
     $id         = intval($id);
-    $mail       = isset($_POST['mail']) ? trim($_POST['mail']) : false;
-    $name       = isset($_POST['name']) ? $_POST['name'] : false;
-    $name       = ($name == false && isset($_COOKIE['CNname']) && $_COOKIE['CNname'] ) ? $_COOKIE['CNname'] : $name;
-    $captcha    = isset($_POST['captcha']) ? $_POST['captcha'] : false;
+
+    $name       = isset($_POST['name']) ? $_POST['name'] : '';
+    $name       = ($name == '' && isset($_COOKIE['CNname']) && $_COOKIE['CNname'] ) ? $_COOKIE['CNname'] : $name;
+    $mail       = isset($_POST['mail']) ? trim($_POST['mail']) : '';
+
+    $captcha    = isset($_POST['captcha']) ? $_POST['captcha'] : '';
+
+    // Logged user
+    if ($member_db[UDB_NAME])  $name = $member_db[UDB_NAME];
+    if ($member_db[UDB_EMAIL]) $mail = $member_db[UDB_EMAIL];
 
     //----------------------------------
     // Check the lenght of comment, include name + mail
@@ -151,13 +164,6 @@
         $comments  = iconv($hac, 'utf-8', $comments);
     }
 
-    // User is authorized
-    if ( !empty($_SESS['user']))
-    {
-        $member_db = user_search($_SESS['user']);
-        if ($member_db[UDB_ACL] == ACL_LEVEL_ADMIN) $captcha_enabled = false;
-    }
-
     // Captcha test (if not disabled force)
     if ($captcha != $_SESS['CSW'] && $config_use_captcha && $captcha_enabled)
     {
@@ -294,12 +300,17 @@
     //----------------------------------
     // Notify for New Comment ?
     //----------------------------------
-    if($config_notify_comment == "yes" and $config_notify_status == "active")
+    if ($config_notify_comment == "yes" and $config_notify_status == "active")
     {
-        send_mail($config_notify_email, lang("CuteNews - New Comment Added"), lang("New Comment was added by")." $name:\n--------------------------$comments");
+        $date    = date($config_timestamp_active, time() + $config_date_adjust*60);
+        $url     = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+        $subject = lang("CuteNews - New Comment Added");
+        $message = lang("New Comment was added by %1 on %3 at %4\n\n%2 ", $name, $comments, $date, $url);
+
+        send_mail($config_notify_email, $subject, $message);
     }
 
-    $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from', array('showfull',$id,$ucat,$archive,$start_from), false);
+    $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from', array('showfull', $id ,$ucat, $archive, $start_from), false);
     echo '<script type="text/javascript">window.location="'.$URL.'";</script>';
 
     // ------------ ALL OK ----------------
