@@ -9,7 +9,7 @@ if ( hook('fork_rss', false) ) return;
 
 if (!isset($rss_news_include_url) or !$rss_news_include_url or $rss_news_include_url == '')
 {
-	die("The RSS is not configured.<br>Please do this in: <b>CuteNews &gt; Options &gt; Integration and Migration Wizards &gt; Rss Setup and Integration</b>");
+	die("The RSS is not configured.<br>Please do this in: <b>CuteNews &gt; Options &gt; Integration Wizard &gt; Rss Setup and Integration</b>");
 }
 
 header("Content-type: text/xml", true);

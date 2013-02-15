@@ -49,7 +49,7 @@ if ($action == "options" or $action == '')
                'access'             => ACL_LEVEL_ADMIN,
         ),
         array(
-               'name'               => lang("Integration and migration Wizards"),
+               'name'               => lang("Integration wizard"),
                'url'                => "$PHP_SELF?mod=wizards",
                'access'             => ACL_LEVEL_ADMIN,
         ),
@@ -374,6 +374,8 @@ elseif ($action == "syscon")
     $bc = 'main/options/options:syscon=config';
     if (isset($_REQUEST['message'])) $bc .= '/='.lang('Your Configuration Saved');
 
+    $csrf_code = CSRFMake();
+
     function showRow($title="", $description="", $field="")
     {
         global $i;
@@ -430,21 +432,6 @@ elseif ($action == "syscon")
         if ( ($counter++)%2 == 0) $bg = "bgcolor=#F7F6F4"; else $bg = "";
         return proc_tpl("options/syscon.row", array('bg' => $bg, 'title' => $title, 'field' => $out, 'description' => $desc));
     }
-
-    function makeDropDown($options, $name, $selected)
-    {
-        $output = "<select size=1 name=\"$name\">\r\n";
-        foreach($options as $value=>$description)
-        {
-            $output .= "<option value=\"$value\"";
-            if ($selected == $value) $output .= " selected ";
-            $output .= ">$description</option>\n";
-        }
-        $output .= "</select>";
-        return $output;
-    }
-
-    $csrf_code = CSRFMake();
 
     // ---------- show options
     echoheader("options", lang("System Configuration"), make_breadcrumbs($bc));
@@ -541,11 +528,11 @@ elseif ($action == "syscon")
 
     echo syscon('use_fbcomments', 'Use facebook comments for post|if yes, facebook comments will be shown','y/n');
     echo syscon('fb_i18n', 'Facebook i18n code|by default en_US');
-    echo syscon('fb_inactive', 'In active news|Show in active news list');
-    echo syscon('fb_comments', 'Comments number|Count comment under top box');
-    echo syscon('fb_box_width', 'Box width|In pixels');
-    echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps'>there</a>");
-    echo syscon('fb_like_code', 'Facebook Like code|Get your like code there');
+    echo syscon('fb_inactive', 'In active news|Show in active news list','y/n');
+    echo syscon('fb_comments=5', 'Comments number|Count comment under top box');
+    echo syscon('fb_box_width=5', 'Box width|In pixels');
+    echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps' target='_blank'>there</a>");
+    // echo syscon('fb_like_code', 'Facebook Like code|Get your like code there');
 
     hook('field_options_social');
 
