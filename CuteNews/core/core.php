@@ -873,7 +873,7 @@ function template_replacer_news($news_arr, $output)
                                      '</a>'), $output);
     }
     else
-    {//RWU( 'readcomm', $PHP_SELF . build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $my_start_from)) );
+    {
         if($archive)
             $URL = RWU( 'archreadcomm', $PHP_SELF . build_uri('subaction,id,ucat,title,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], titleToUrl($news_arr[NEW_TITLE]))) );
         else
@@ -895,12 +895,12 @@ function template_replacer_news($news_arr, $output)
              $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
         }
         else
-        {//RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull', $news_arr[0], $archive, $my_start_from, $news_arr[NEW_CAT], $template)) . "&amp;$user_query" );
+        {
             if ($template == 'Default') $template = false;
             if($archive)
-                $URL  = RWU( 'archreadmore', $PHP_SELF . build_uri('subaction,id,archive,ucat,title,template', array('showfull', $news_arr[0], $archive, $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );//-start_from, -$my_start_from,
+                $URL  = RWU( 'archreadmore', $PHP_SELF . build_uri('subaction,id,archive,ucat,title,template', array('showfull', $news_arr[0], $archive, $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );
             else
-                $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,ucat,title,template', array('showfull', $news_arr[0], $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );//-start_from, -$my_start_from,
+                $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,ucat,title,template', array('showfull', $news_arr[0], $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );
             $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
         }
 
@@ -918,7 +918,7 @@ function template_replacer_news($news_arr, $output)
         $member_db = user_search($_SESS['user']);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
-            $url    = '/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
+            $url    = $config_http_script_dir.'/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
             $output = preg_replace('/\[edit\]/i', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = preg_replace('/\[\/edit\]/i', '</a>', $output);
             $DREdit = true;

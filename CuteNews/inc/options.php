@@ -471,7 +471,7 @@ elseif ($action == "syscon")
     echo syscon('full_popup',           'Show full story in popup|full Story will be opened in PopUp window', 'y/n');
     echo syscon('full_popup_string',    "Settings for full story popup|only if 'Show Full Story In PopUp' is enabled");
     echo syscon('show_comments_with_full', 'Show comments when showing full story|if yes, comments will be shown under the story','y/n');
-    echo syscon('timestamp_active',     'Time format for news|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
+    echo syscon('timestamp_active=15',  'Time format for news|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
     echo syscon('backup_news',          'Make backup news|when you add or edit news, a backup is made', 'y/n');
     echo syscon('use_captcha',          'Use CAPTCHA|on registration and comments', 'Y/N');
     echo syscon('use_rater',            'Use rating|use internal rating system', 'Y/N');
@@ -499,7 +499,7 @@ elseif ($action == "syscon")
     echo syscon('comments_popup', 'Show comments in popup|comments will be opened in PopUp window','y/n');
     echo syscon('comments_popup_string', "Settings for comments popup|only if 'Show Comments In PopUp' is enabled");
     echo syscon('show_full_with_comments', 'Show full story when showing comments|if yes, comments will be shown under the story','y/n');
-    echo syscon('timestamp_comment', 'Time format for comments|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
+    echo syscon('timestamp_comment=15', 'Time format for comments|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
 
     hook('field_options_comments');
 
@@ -525,14 +525,14 @@ elseif ($action == "syscon")
     $config_fb_i18n         = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
 
     echo "<tr style='display:none' id='social'><td colspan=10 width=100%>";
-    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook:</p>";
+    echo "<div class='consys_sub'>Facebook:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('fb_i18n', 'Facebook i18n code|by default en_US');
     echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps' target='_blank'>there</a>");
     echo "</table>";
 
-    //Facebook comments
-    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook comments:</p>";
+    // Facebook comments
+    echo "<div class='consys_sub'>Facebook comments:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('use_fbcomments', 'Use facebook comments for post|if yes, facebook comments will be shown','y/n');
     echo syscon('fb_inactive', 'In active news|Show in active news list','y/n');
@@ -541,8 +541,8 @@ elseif ($action == "syscon")
     echo syscon('fbcomments_color', 'Color scheme|The color scheme of the plugin', array("light"=>"Light","dark"=>"Dark"));
     echo "</table>";
 
-    //Facebook like button
-    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook like button:</p>";
+    // Facebook like button
+    echo "<div class='consys_sub'>Facebook like button:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('use_fblike', 'Use facebook like button|if yes, facebook button will be shown','y/n');
     echo syscon('fblike_send_btn', 'Send Button|include a send button','y/n');
@@ -554,8 +554,8 @@ elseif ($action == "syscon")
     echo syscon('fblike_verb', 'Verb to display|The verb to display in the button', array("like"=>"Like","recommend"=>"Recommend"));
     echo "</table>";
 
-    //Twitter share button
-    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Twitter button:</p>";
+    // Twitter share button
+    echo "<div class='consys_sub'>Twitter button:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('use_twitter', 'Use twitter button|if yes, twitter button will be shown','y/n');
     echo syscon('tw_url=15', 'Share URL|if empty, use the page URL');
