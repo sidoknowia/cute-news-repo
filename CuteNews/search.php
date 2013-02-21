@@ -123,7 +123,7 @@
                 if ($start_from > $itemid) continue;
 
                 $id    = $resline['id'];
-                $title = htmlspecialchars( $resline['title'] );
+                $title = $resline['title'];
                 $title = $config_useutf8? UTF8ToEntities( $title ) : $title;
                 $ucat  = $resline['cat'];
                 $archive = 0;

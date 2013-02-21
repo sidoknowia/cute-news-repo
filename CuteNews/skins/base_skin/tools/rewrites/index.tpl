@@ -1,6 +1,8 @@
 <div  style="margin: 0 0 0 62px;">
 
-    <p><b>Note:</b> put %some_name_key in replacement. </p>
+    <p><b>Note:</b> put %some_name_key in replacement.</p>
+    <p>The .htaccess file will be changed.</p>
+    <p>The Rewrite module requires <a href="http://www.php.net/manual/en/book.mbstring.php" target="_blank">mbstring<a/>.</p>
 
 
     <form action="{$PHP_SELF}" method="post">
@@ -32,13 +34,12 @@
                  <td><input type="text" name="conf_readmore_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_readmore_layout}"/></td>
             </tr>
 
-            <!--
             <tr>
                 <td>Archive ID</td>
-                <td><input type="text" name="conf_readarch" style="width: 200px;"  value="{$conf_rw_readarch}"/></td>
-                <td><input type="text" name="conf_readarch_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_readarch_layout}"/></td>
+                <td><input type="text" name="conf_archread" style="width: 200px;"  value="{$conf_rw_archread}"/></td>
+                <td><input type="text" name="conf_archread_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_archread_layout}"/></td>
             </tr>
-            -->
+
             <tr>
                 <td>Comment</td>
                 <td><input type="text" name="conf_readcomm" style="width: 200px;"  value="{$conf_rw_readcomm}"/></td>
@@ -51,13 +52,29 @@
                 <td><input type="text" name="conf_newspage_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_newspage_layout}"/></td>
             </tr>
 
-            <!--
             <tr>
                 <td>Comment pagination</td>
                 <td><input type="text" name="conf_commpage" style="width: 200px;"  value="{$conf_rw_commpage}"/></td>
                 <td><input type="text" name="conf_commpage_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_commpage_layout}"/></td>
             </tr>
-            -->
+
+            <tr>
+                <td>Read Full Story archive</td>
+                <td><input type="text" name="conf_archreadmore" style="width: 200px;"  value="{$conf_rw_archreadmore}"/></td>
+                <td><input type="text" name="conf_archreadmore_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_archreadmore_layout}"/></td>
+            </tr>
+
+            <tr>
+                <td>Archive comment</td>
+                <td><input type="text" name="conf_archreadcomm" style="width: 200px;"  value="{$conf_rw_archreadcomm}"/></td>
+                <td><input type="text" name="conf_archreadcomm_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_archreadcomm_layout}"/></td>
+            </tr>
+
+            <tr>
+                <td>Archive comment pagination</td>
+                <td><input type="text" name="conf_archcommpage" style="width: 200px;"  value="{$conf_rw_archcommpage}"/></td>
+                <td><input type="text" name="conf_archcommpage_layout" style="width: 200px; border: 1px solid #cccccc;" value="{$conf_rw_archcommpage_layout}"/></td>
+            </tr>
 
             <tr>
                 <td>&nbsp;</td>

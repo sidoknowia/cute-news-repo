@@ -524,17 +524,51 @@ elseif ($action == "syscon")
     $config_fb_box_width    = $config_fb_box_width ? $config_fb_box_width : 470;
     $config_fb_i18n         = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
 
-    echo "<tr style='display:none' id='social'><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
-
-    echo syscon('use_fbcomments', 'Use facebook comments for post|if yes, facebook comments will be shown','y/n');
+    echo "<tr style='display:none' id='social'><td colspan=10 width=100%>";
+    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook:</p>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('fb_i18n', 'Facebook i18n code|by default en_US');
+    echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps' target='_blank'>there</a>");
+    echo "</table>";
+
+    //Facebook comments
+    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook comments:</p>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
+    echo syscon('use_fbcomments', 'Use facebook comments for post|if yes, facebook comments will be shown','y/n');
     echo syscon('fb_inactive', 'In active news|Show in active news list','y/n');
     echo syscon('fb_comments=5', 'Comments number|Count comment under top box');
     echo syscon('fb_box_width=5', 'Box width|In pixels');
-    echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps' target='_blank'>there</a>");
-    // echo syscon('fb_like_code', 'Facebook Like code|Get your like code there');
+    echo syscon('fbcomments_color', 'Color scheme|The color scheme of the plugin', array("light"=>"Light","dark"=>"Dark"));
+    echo "</table>";
+
+    //Facebook like button
+    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Facebook like button:</p>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
+    echo syscon('use_fblike', 'Use facebook like button|if yes, facebook button will be shown','y/n');
+    echo syscon('fblike_send_btn', 'Send Button|include a send button','y/n');
+    echo syscon('fblike_style', 'Layout style|determines the size and amount of social context next to the button', array("standard"=>"standard","button_count"=>"button_count", "box_count"=>"box_count"));
+    echo syscon('fblike_width=5', 'Box width|In pixels');
+    echo syscon('fblike_show_faces', 'Show faces|if yes, profile pictures below the button will be shown','y/n');
+    echo syscon('fblike_font', 'Font|The font of the plugin', array("arial"=>"Arial","lucida grande"=>"Lucida grande", "segoe ui"=>"Segoe ui", "tahoma"=>"Tahoma", "trebuchet ms"=>"Trebuchet ms", "verdana"=>"Verdana"));
+    echo syscon('fblike_color', 'Color scheme|The color scheme of the plugin', array("light"=>"Light","dark"=>"Dark"));
+    echo syscon('fblike_verb', 'Verb to display|The verb to display in the button', array("like"=>"Like","recommend"=>"Recommend"));
+    echo "</table>";
+
+    //Twitter share button
+    echo "<p style='font-size: 17px;font-weight: bold;background: #FFE0C0'>Twitter button:</p>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
+    echo syscon('use_twitter', 'Use twitter button|if yes, twitter button will be shown','y/n');
+    echo syscon('tw_url=15', 'Share URL|if empty, use the page URL');
+    echo syscon('tw_text=15', 'Tweet text|if empty, use the title of the page');
+    echo syscon('tw_show_count', 'Show count|if yes, count of tweets will be shown near button', array("horisontal"=>"Horisontal", "vertical"=>"Vertical", "none"=>"None"));
+    echo syscon('tw_via=10', 'Via @|Screen name of the user to attribute the Tweet to');
+    echo syscon('tw_recommended=10', 'Recommended @|Accounts suggested to the user after tweeting, comma-separated.');
+    echo syscon('tw_hashtag=10', 'Hashtag #|Comma-separated hashtags appended to the tweet text');
+    echo syscon('tw_large', 'Large button|if yes, the twitter button will be large', 'y/n');
+    echo syscon('tw_lang', 'Language|The language of button text', array("en"=>"English", "fr"=>"French", "ar"=>"Arabic","ja"=>"Japanese","es"=>"Spanish","de"=>"German","it"=>"Italian","id"=>"Indonesian","pt"=>"Portuguese","ko"=>"Korean","tr"=>"Turkish","ru"=>"Russian","nl"=>"Dutch","fil"=>"Filipino","msa"=>"Malay","zh-tw"=>"Traditional Chinese","zh-cn"=>"Simplified Chinese","hi"=>"Hindi","no"=>"Norwegian","sv"=>"Swedish","fi"=>"Finnish","da"=>"Danish","pl"=>"Polish","hu"=>"Hungarian","fa"=>"Farsi","he"=>"Hebrew","ur"=>"Urdu","th"=>"Thai","uk"=>"Ukrainian","ca"=>"Catalan","el"=>"Greek","eu"=>"Basque","cs"=>"Czech","gl"=>"Galician","ro"=>"Romanian"));
 
     hook('field_options_social');
+
 
     echo "</table></td></tr>";
 

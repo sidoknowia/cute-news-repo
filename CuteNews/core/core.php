@@ -666,6 +666,138 @@ function caticon( $cats, $cat_icon, $cat )
     return $result;
 }
 
+/**
+ * Create a web friendly URL slug from a string.
+ *
+ * Although supported, transliteration is discouraged because
+ * 1) most web browsers support UTF-8 characters in URLs
+ * 2) transliteration causes a loss of information
+ *
+ * @author Sean Murphy <sean@iamseanmurphy.com>
+ * @copyright Copyright 2012 Sean Murphy. All rights reserved.
+ * @license http://creativecommons.org/publicdomain/zero/1.0/
+ *
+ * @param string $str
+ * @param array $options
+ * @return string
+ */
+function url_slug($str, $options = array()) {
+    // Make sure string is in UTF-8 and strip invalid UTF-8 characters
+    $str = mb_convert_encoding((string)$str, 'UTF-8', mb_list_encodings());
+
+    $defaults = array(
+        'delimiter' => '-',
+        'limit' => null,
+        'lowercase' => true,
+        'replacements' => array(),
+        'transliterate' => false,
+    );
+
+    // Merge options
+    $options = array_merge($defaults, $options);
+
+    $char_map = array(
+        // Latin
+        'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'AE', 'Ç' => 'C',
+        'È' => 'E', 'É' => 'E', 'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I',
+        'Ð' => 'D', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ő' => 'O',
+        'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ű' => 'U', 'Ý' => 'Y', 'Þ' => 'TH',
+        'ß' => 'ss',
+        'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'ae', 'ç' => 'c',
+        'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+        'ð' => 'd', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ő' => 'o',
+        'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u', 'ű' => 'u', 'ý' => 'y', 'þ' => 'th',
+        'ÿ' => 'y',
+
+        // Latin symbols
+        '©' => '(c)',
+
+        // Greek
+        'Α' => 'A', 'Β' => 'B', 'Γ' => 'G', 'Δ' => 'D', 'Ε' => 'E', 'Ζ' => 'Z', 'Η' => 'H', 'Θ' => '8',
+        'Ι' => 'I', 'Κ' => 'K', 'Λ' => 'L', 'Μ' => 'M', 'Ν' => 'N', 'Ξ' => '3', 'Ο' => 'O', 'Π' => 'P',
+        'Ρ' => 'R', 'Σ' => 'S', 'Τ' => 'T', 'Υ' => 'Y', 'Φ' => 'F', 'Χ' => 'X', 'Ψ' => 'PS', 'Ω' => 'W',
+        'Ά' => 'A', 'Έ' => 'E', 'Ί' => 'I', 'Ό' => 'O', 'Ύ' => 'Y', 'Ή' => 'H', 'Ώ' => 'W', 'Ϊ' => 'I',
+        'Ϋ' => 'Y',
+        'α' => 'a', 'β' => 'b', 'γ' => 'g', 'δ' => 'd', 'ε' => 'e', 'ζ' => 'z', 'η' => 'h', 'θ' => '8',
+        'ι' => 'i', 'κ' => 'k', 'λ' => 'l', 'μ' => 'm', 'ν' => 'n', 'ξ' => '3', 'ο' => 'o', 'π' => 'p',
+        'ρ' => 'r', 'σ' => 's', 'τ' => 't', 'υ' => 'y', 'φ' => 'f', 'χ' => 'x', 'ψ' => 'ps', 'ω' => 'w',
+        'ά' => 'a', 'έ' => 'e', 'ί' => 'i', 'ό' => 'o', 'ύ' => 'y', 'ή' => 'h', 'ώ' => 'w', 'ς' => 's',
+        'ϊ' => 'i', 'ΰ' => 'y', 'ϋ' => 'y', 'ΐ' => 'i',
+
+        // Turkish
+        'Ş' => 'S', 'İ' => 'I', 'Ç' => 'C', 'Ü' => 'U', 'Ö' => 'O', 'Ğ' => 'G',
+        'ş' => 's', 'ı' => 'i', 'ç' => 'c', 'ü' => 'u', 'ö' => 'o', 'ğ' => 'g',
+
+        // Russian
+        'А' => 'A', 'Б' => 'B', 'В' => 'V', 'Г' => 'G', 'Д' => 'D', 'Е' => 'E', 'Ё' => 'Yo', 'Ж' => 'Zh',
+        'З' => 'Z', 'И' => 'I', 'Й' => 'J', 'К' => 'K', 'Л' => 'L', 'М' => 'M', 'Н' => 'N', 'О' => 'O',
+        'П' => 'P', 'Р' => 'R', 'С' => 'S', 'Т' => 'T', 'У' => 'U', 'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C',
+        'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Sh', 'Ъ' => '', 'Ы' => 'Y', 'Ь' => '', 'Э' => 'E', 'Ю' => 'Yu',
+        'Я' => 'Ya',
+        'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd', 'е' => 'e', 'ё' => 'yo', 'ж' => 'zh',
+        'з' => 'z', 'и' => 'i', 'й' => 'j', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n', 'о' => 'o',
+        'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'c',
+        'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sh', 'ъ' => '', 'ы' => 'y', 'ь' => '', 'э' => 'e', 'ю' => 'yu',
+        'я' => 'ya',
+
+        // Ukrainian
+        'Є' => 'Ye', 'І' => 'I', 'Ї' => 'Yi', 'Ґ' => 'G',
+        'є' => 'ye', 'і' => 'i', 'ї' => 'yi', 'ґ' => 'g',
+
+        // Czech
+        'Č' => 'C', 'Ď' => 'D', 'Ě' => 'E', 'Ň' => 'N', 'Ř' => 'R', 'Š' => 'S', 'Ť' => 'T', 'Ů' => 'U',
+        'Ž' => 'Z',
+        'č' => 'c', 'ď' => 'd', 'ě' => 'e', 'ň' => 'n', 'ř' => 'r', 'š' => 's', 'ť' => 't', 'ů' => 'u',
+        'ž' => 'z',
+
+        // Polish
+        'Ą' => 'A', 'Ć' => 'C', 'Ę' => 'e', 'Ł' => 'L', 'Ń' => 'N', 'Ó' => 'o', 'Ś' => 'S', 'Ź' => 'Z',
+        'Ż' => 'Z',
+        'ą' => 'a', 'ć' => 'c', 'ę' => 'e', 'ł' => 'l', 'ń' => 'n', 'ó' => 'o', 'ś' => 's', 'ź' => 'z',
+        'ż' => 'z',
+
+        // Latvian
+        'Ā' => 'A', 'Č' => 'C', 'Ē' => 'E', 'Ģ' => 'G', 'Ī' => 'i', 'Ķ' => 'k', 'Ļ' => 'L', 'Ņ' => 'N',
+        'Š' => 'S', 'Ū' => 'u', 'Ž' => 'Z',
+        'ā' => 'a', 'č' => 'c', 'ē' => 'e', 'ģ' => 'g', 'ī' => 'i', 'ķ' => 'k', 'ļ' => 'l', 'ņ' => 'n',
+        'š' => 's', 'ū' => 'u', 'ž' => 'z'
+    );
+
+    // Make custom replacements
+    $str = preg_replace(array_keys($options['replacements']), $options['replacements'], $str);
+
+    // Transliterate characters to ASCII
+    if ($options['transliterate']) {
+        $str = str_replace(array_keys($char_map), $char_map, $str);
+    }
+
+    // Replace non-alphanumeric characters with our delimiter
+    $str = preg_replace('/[^\p{L}\p{Nd}]+/u', $options['delimiter'], $str);
+
+    // Remove duplicate delimiters
+    $str = preg_replace('/(' . preg_quote($options['delimiter'], '/') . '){2,}/', '$1', $str);
+
+    // Truncate slug to max. characters
+    $str = mb_substr($str, 0, ($options['limit'] ? $options['limit'] : mb_strlen($str, 'UTF-8')), 'UTF-8');
+
+    // Remove delimiter from ends
+    $str = trim($str, $options['delimiter']);
+
+    return $options['lowercase'] ? mb_strtolower($str, 'UTF-8') : $str;
+}
+
+function titleToUrl($title)
+{
+    global $config_use_replacement;
+
+    if($config_use_replacement == '0') return null;
+
+    if(preg_match('|&#\d{0,4};|',trim($title)))
+        $title = mb_convert_encoding($title, 'UTF-8', 'HTML-ENTITIES');
+
+    return url_slug($title, array('delimiter' => '_', 'transliterate' => true, 'limit' => 40));
+}
+
 // Short Story or fullstory replacer -----------------------------------------------------------------------------------
 function template_replacer_news($news_arr, $output)
 {
@@ -741,8 +873,11 @@ function template_replacer_news($news_arr, $output)
                                      '</a>'), $output);
     }
     else
-    {
-        $URL = RWU( 'readcomm', $PHP_SELF . build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $my_start_from)) );
+    {//RWU( 'readcomm', $PHP_SELF . build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $my_start_from)) );
+        if($archive)
+            $URL = RWU( 'archreadcomm', $PHP_SELF . build_uri('subaction,id,ucat,title,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], titleToUrl($news_arr[NEW_TITLE]))) );
+        else
+            $URL = RWU( 'readcomm', $PHP_SELF . build_uri('subaction,id,ucat,title,template', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], titleToUrl($news_arr[NEW_TITLE]))) );
         $output = str_replace(array("[com-link]", '[/com-link]'), array("<a href=\"$URL\">", '</a>'), $output);
     }
 
@@ -760,9 +895,12 @@ function template_replacer_news($news_arr, $output)
              $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
         }
         else
-        {
+        {//RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull', $news_arr[0], $archive, $my_start_from, $news_arr[NEW_CAT], $template)) . "&amp;$user_query" );
             if ($template == 'Default') $template = false;
-            $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,archive,start_from,ucat,template', array('showfull', $news_arr[0], $archive, $my_start_from, $news_arr[NEW_CAT], $template)) . "&amp;$user_query" );
+            if($archive)
+                $URL  = RWU( 'archreadmore', $PHP_SELF . build_uri('subaction,id,archive,ucat,title,template', array('showfull', $news_arr[0], $archive, $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );//-start_from, -$my_start_from,
+            else
+                $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,ucat,title,template', array('showfull', $news_arr[0], $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );//-start_from, -$my_start_from,
             $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
         }
 
@@ -780,7 +918,7 @@ function template_replacer_news($news_arr, $output)
         $member_db = user_search($_SESS['user']);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
-            $url    = build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
+            $url    = '/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
             $output = preg_replace('/\[edit\]/i', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = preg_replace('/\[\/edit\]/i', '</a>', $output);
             $DREdit = true;
@@ -806,10 +944,21 @@ function more_fields($mf, $output)
     if ( !empty($cfg['more_fields']) && is_array($cfg['more_fields']) )
     {
         $artmore = explode(';', $mf);
+        $isused = array();
         foreach ($artmore as $v)
         {
             list ($a, $b) = explode('=', $v, 2);
             $output = str_replace('{'.$a.'}', hesc($b), $output );
+            $isused[$a] = true;
+        }
+        //delete unused fields
+        if(count($isused) != count($cfg['more_fields']))
+        {
+            foreach ($cfg['more_fields'] as $fname => $ftitle)
+            {
+                if($isused[$fname]) continue;
+                $output = str_replace('{'.$fname.'}', '', $output );
+            }
         }
     }
     return $output;
@@ -861,7 +1010,8 @@ function format_date($time, $type = false)
     // type format - since current time
     if ($type == 'since' || $type == 'since-short')
     {
-        $dists = array(
+        $dists = array
+        (
             ' year(s) ' => 3600*24*365,
             ' month(s) ' => 3600*24*31,
             ' d. ' => 3600*24,
@@ -2011,6 +2161,44 @@ function RWU($type = 'readmore', $url, $html = true)
 
     if (count($adds)) $tpl .= '?'.implode(($html?'&amp;':'&'), $adds);
     return $tpl;
+}
+
+function set_default_val_for_rewrite()
+{
+    global $conf_rw_htaccess,$conf_rw_readmore, $conf_rw_readmore_layout, $conf_rw_archread,
+           $conf_rw_archread_layout, $conf_rw_archreadmore, $conf_rw_archreadmore_layout,
+           $conf_rw_readcomm, $conf_rw_readcomm_layout, $conf_rw_newspage, $conf_rw_newspage_layout,
+           $conf_rw_commpage, $conf_rw_commpage_layout, $conf_rw_archreadcomm, $conf_rw_archreadcomm_layout,
+           $conf_rw_archcommpage, $conf_rw_archcommpage_layout;
+
+    if (empty($conf_rw_htaccess))
+    {
+        $conf_rw_htaccess = SERVDIR.'/.htaccess';
+    }
+
+    if (empty($conf_rw_readmore))           $conf_rw_readmore = '/news/view/%id/%title';
+    if (empty($conf_rw_readmore_layout))    $conf_rw_readmore_layout = '/example2.php?subaction=showfull';
+
+    if (empty($conf_rw_archread))           $conf_rw_archread = '/news/archive/%archive';
+    if (empty($conf_rw_archread_layout))    $conf_rw_archread_layout = '/example2.php?subaction=list-archive';
+
+    if (empty($conf_rw_archreadmore))       $conf_rw_archreadmore = '/news/archive/%archive/%id/%title';
+    if (empty($conf_rw_archreadmore_layout))$conf_rw_archreadmore_layout = '/example2.php?subaction=showfull';
+
+    if (empty($conf_rw_readcomm))           $conf_rw_readcomm = '/news/read/%id/%title/comment';
+    if (empty($conf_rw_readcomm_layout))    $conf_rw_readcomm_layout = '/example2.php?subaction=showcomments';
+
+    if (empty($conf_rw_newspage))           $conf_rw_newspage = '/news/read/%start_from';
+    if (empty($conf_rw_newspage_layout))    $conf_rw_newspage_layout = '/example2.php';
+
+    if (empty($conf_rw_commpage))           $conf_rw_commpage = '/news/read/%id/%title/comment/%comm_start_from';
+    if (empty($conf_rw_commpage_layout))    $conf_rw_commpage_layout = '/example2.php?subaction=showcomments';
+
+    if (empty($conf_rw_archreadcomm))       $conf_rw_archreadcomm = '/news/archive/%archive/%id/%title/comment';
+    if (empty($conf_rw_archreadcomm_layout))$conf_rw_archreadcomm_layout = '/example2.php?subaction=showcomments';
+
+    if (empty($conf_rw_archcommpage))       $conf_rw_archcommpage = '/news/archive/%archive/%id/%title/comment/%comm_start_from';
+    if (empty($conf_rw_archcommpage_layout))$conf_rw_archcommpage_layout = '/example2.php?subaction=showcomments';
 }
 
 // Separate string to array: imporved "explode" function

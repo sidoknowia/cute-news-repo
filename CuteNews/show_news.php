@@ -22,7 +22,7 @@
     if ( $template == 'rss' ) include( SERVDIR.'/cdata/rss_config.php' );
 
     // definition FB comments if uses
-    if ( $config_use_fbcomments == 'yes' and !isset($_CACHE['__first_time__']) )
+    if ( ($config_use_fbcomments == 'yes' || $config_use_fblike == 'yes') and !isset($_CACHE['__first_time__']) )
     {
         if (empty($config_fb_i18n)) $config_fb_i18n = 'en_US';
         echo str_replace( array('{appID}', '{fbi18n}'), array($config_fb_appid, $config_fb_i18n), read_tpl('fb_comments'));

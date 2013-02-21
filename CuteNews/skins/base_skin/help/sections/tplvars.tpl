@@ -18,12 +18,22 @@
     <tr> <td class="r">{category-icon}</td>   <td>Shows the category icon</td>  </tr>
     <tr> <td class="r">{star-rate}</td>       <td>Rating bar</td>  </tr>
 
+    <tr> <td class="r">{month}</td>                 <td>Equivalent to date('F')</td>  </tr>
+    <tr> <td class="r">{month|Jan,Feb,...,Dec}</td> <td>Enumerate one by one with commas all 12 months on the necessary language.</td>  </tr>
+    <tr> <td class="r">{weekday}</td>               <td>Equivalent to date('l')</td>  </tr>
+    <tr> <td class="r">{year}</td>                  <td>Equivalent to date('Y')</td>  </tr>
+    <tr> <td class="r">{day}</td>                   <td>Equivalent to date('d')</td>  </tr>
+    <tr> <td class="r">{hours}</td>                 <td>Equivalent to date('H')</td>  </tr>
+    <tr> <td class="r">{minite}</td>                <td>Equivalent to date('i')</td>  </tr>
+    <tr> <td class="r">{since}</td>                 <td>Display, for ex. "N minutes ago."</td>  </tr>
+
     <tr bgcolor="#fefee0"> <td class="r" style="font-size: 16px;">Wrappers</td> <td>&nbsp;</td>  </tr>
     <tr> <td class="r">[mail] ... [/mail]</td> <td>Will generate a link to the author mail (if any) eg. [mail] email [/mail]</td>  </tr>
     <tr> <td class="r">[link] and [/link]</td> <td>Will generate a permanent link to the full story</td>  </tr>
     <tr> <td class="r">[full-link] ... [/full-link]</td> <td>Link to the full story of article, only if there is full story</td>  </tr>
     <tr> <td class="r">[com-link] ... [/com-link]</td> <td>Generate link to the comments of article</td>  </tr>
     <tr> <td class="r">[edit] ... [/edit]</td>    <td>Make link to edit article at admin panel</td>  </tr>
+    <tr> <td class="r">[loggedin] ... [/loggedin]</td> <td>Show a template fragment for an authorized user</td>  </tr>
 
     <tr bgcolor="#fefee0"> <td class="r" style="font-size: 16px;">System variables</td> <td>&nbsp;</td>  </tr>
     <tr> <td class="r">{index-link}</td>       <td>Link to $PHP_SELF</td>  </tr>

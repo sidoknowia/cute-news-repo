@@ -438,10 +438,10 @@ elseif ($action == 'xfields')
         list($name, $vis, $add_name, $add_vis) = GET('name,vis,add_name,add_vis');
 
         // check name
-        if (preg_match('/^[a-z0-9_]+$/i', '', $add_name) == false)
+        if (preg_match('/^[a-z0-9_]+$/i', $add_name) == false && !empty($add_name))
             msg('error', lang('Error!'), lang('Name may consist only letters and digits!'), '#GOBACK');
 
-        if (empty($add_vis))
+        if (!empty($add_name) && empty($add_vis))
             msg('error', lang('Error!'), lang('Please enter field "name for admin panel"'), '#GOBACK');
 
         // set optional flag and refresh vis name
@@ -574,18 +574,14 @@ elseif ($action == 'plugins')
 }
 elseif ($action == 'rewrite')
 {
-
     if ($subaction == 'save')
     {
         $w = fopen(SERVDIR.'/cdata/conf_rw.php', 'w');
         flock($w, LOCK_EX);
         fwrite($w, '<'."?php\n");
         foreach ($_REQUEST as $i => $v)
-        {
-
             if (substr($i, 0, 5) == 'conf_')
                 fwrite( $w, '$conf_rw_'.substr($i, 5).' = "'.str_replace('"', '\"', $v) . "\";\n" );
-        }
         flock($w, LOCK_UN);
         fclose($w);
 
@@ -597,25 +593,7 @@ elseif ($action == 'rewrite')
         include ( SERVDIR.'/cdata/conf_rw.php' );
 
     // Default values -----------------
-    if (empty($conf_rw_htaccess))
-    {
-        $conf_rw_htaccess = SERVDIR.'/.htaccess';
-    }
-
-    if (empty($conf_rw_readmore))           $conf_rw_readmore = '/news/view/%id';
-    if (empty($conf_rw_readmore_layout))    $conf_rw_readmore_layout = '/show_news.php?subaction=showfull';
-
-    if (empty($conf_rw_readarch))           $conf_rw_readarch = '/news/archive/%id';
-    if (empty($conf_rw_readarch_layout))    $conf_rw_readarch_layout = '/show_archive.php';
-
-    if (empty($conf_rw_readcomm))           $conf_rw_readcomm = '/news/read/%id/comment?subaction=showcomments';
-    if (empty($conf_rw_readcomm_layout))    $conf_rw_readcomm_layout = '/show_news.php?subaction=showcomment';
-
-    if (empty($conf_rw_newspage))           $conf_rw_newspage = '/news/read/%start_from/';
-    if (empty($conf_rw_newspage_layout))    $conf_rw_newspage_layout = '/show_news.php';
-
-    if (empty($conf_rw_commpage))           $conf_rw_commpage = '/news/read/%id/comment/%start_from';
-    if (empty($conf_rw_commpage_layout))    $conf_rw_commpage_layout = '/show_news.php?subaction=showcomment';
+    set_default_val_for_rewrite();
 
     hook('insert_additional_rewrites');
 
@@ -625,31 +603,9 @@ elseif ($action == 'rewrite')
         $w = fopen($conf_rw_htaccess, 'w');
         flock($w, LOCK_EX);
         fwrite($w, "RewriteEngine ON\n");
-
-        // Get all config values
-        foreach ($GLOBALS as $idv => $rwa)
-        if (is_string($rwa) && substr($idv, 0, 8) == 'conf_rw_' && !preg_match('~(layout|htaccess)~i', $idv))
-        {
-            $rwb = array();
-
-            // Get layout for data settings
-            $cin = $GLOBALS[ 'conf_rw_'.substr($idv, 8).'_layout' ];
-            if (strpos($cin, '?') === false) $cin .= '?';
-
-            // Make path
-            if ( preg_match_all('~\%\w+~', $rwa, $c, PREG_SET_ORDER ))
-                 foreach ($c as $i => $v)
-                     $cin .= ((substr($cin, -1, 1) == '?')? '' : '&').substr($v[0], 1).'=$'.($i+1);
-
-            // Clear leading slash
-            if ($rwa[0] == '/') $rwa = substr($rwa, 1);
-            $rwa = '^'.preg_replace('~\%\w+~', '([0-9a-zA-Z_]+)', $rwa);
-
-            // Save rule
-            $last = count($c) + 1;
-            fwrite($w, "RewriteRule $rwa(.*)\$ $cin&xfw=\$$last [L]\n");
-        }
-
+        fwrite($w, "RewriteCond %{REQUEST_FILENAME} !-d\n");
+        fwrite($w, "RewriteCond %{REQUEST_FILENAME} !-f\n");
+        fwrite($w, "RewriteRule ^(.*)\$ /cn_friendly_url.php?rew=\$1&%{QUERY_STRING}[L]\n");
         flock($w, LOCK_UN);
         fclose($w);
     }

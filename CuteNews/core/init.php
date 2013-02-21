@@ -102,8 +102,26 @@
     if (!isset($config_fb_inactive))        $config_fb_inactive = 'yes';
     if (!isset($config_fb_comments))        $config_fb_comments = '4';
     if (!isset($config_fb_box_width))       $config_fb_box_width = '470';
+    if (!isset($config_fbcomments_color))   $config_fbcomments_color = 'light';
     if (!isset($config_fb_appid))           $config_fb_appid = '';
     if (!isset($config_ban_attempts))       $config_ban_attempts = 3;
+    if (!isset($config_use_fblike))         $config_use_fblike = "no";
+    if (!isset($config_fblike_send_btn))    $config_fblike_send_btn = "no";
+    if (!isset($config_fblike_style))       $config_fblike_style = "standard";
+    if (!isset($config_fblike_width))       $config_fblike_width = "450";
+    if (!isset($config_fblike_show_faces))  $config_fblike_show_faces = "no";
+    if (!isset($config_fblike_font))        $config_fblike_font = "arial";
+    if (!isset($config_fblike_color))       $config_fblike_color = "light";
+    if (!isset($config_fblike_verb))        $config_fblike_verb = "like";
+    if (!isset($config_use_twitter))        $config_use_twitter = "no";
+    if (!isset($config_tw_url))             $config_tw_url = "";
+    if (!isset($config_tw_text))            $config_tw_text = "";
+    if (!isset($config_tw_show_count))      $config_tw_show_count = "none";
+    if (!isset($config_tw_via))             $config_tw_via = "";
+    if (!isset($config_tw_recommended))     $config_tw_recommended = "";
+    if (!isset($config_tw_hashtag))         $config_tw_hashtag = "";
+    if (!isset($config_tw_large))           $config_tw_large = "no";
+    if (!isset($config_tw_lang))            $config_tw_lang = "en";
 
     // adjust timezone
     if (function_exists('date_default_timezone_set'))

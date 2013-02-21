@@ -101,7 +101,7 @@
             // allow use fb comments
             if ($config_use_fbcomments == 'yes' && $config_fb_inactive == 'yes')
             {
-                echo '<div class="fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[0].'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'"></div>';
+                echo '<div class="fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[0].'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
             }
 
             // Includes for bottom of activenews
