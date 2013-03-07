@@ -58,7 +58,9 @@ function confirmDelete(url)
     {if $Using_Avat}
     <tr>
         <td>Avatar URL</td>
-        <td> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span> </td>
+        <td> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>
+        width: <input tabindex=2 type="text" name="_avatar_width" size="3" value="{$_avatar_width}">
+        height: <input tabindex=2 type="text" size="3" name="_avatar_height" value="{$_avatar_height}">&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span> </td>
     </tr>
     {/if}
 
@@ -149,22 +151,13 @@ function confirmDelete(url)
             language: 'en',
             entities_latin: false,
             entities_greek: false,
-            toolbar: [
-                ['Source','Maximize','Scayt','PasteText','Undo','Redo','Find','Replace','-','SelectAll','RemoveFormat','NumberedList','BulletedList','Outdent','Indent'],
-                ['Image','Table','HorizontalRule','Smiley'],
-                ['Link','Unlink','Anchor'],
-                ['Format','FontSize','TextColor','BGColor'],
-                ['Bold','Italic','Underline','Strike','Blockquote'],
-                ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-
-            ],
-            filebrowserBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true',
-            filebrowserImageBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true'
+            toolbar: [{$config_ckeditor_customize}],
+            {$implemented_ckeditor_filemanager}
         };
 
-        {$CKEDITOR_Settings}
         CKEDITOR.replace( 'short_story', {$CKEDITOR_SetsName} );
         CKEDITOR.replace( 'full_story', {$CKEDITOR_SetsName} );
+        {$CKEDITOR_Settings}
     })();
 
 </script>

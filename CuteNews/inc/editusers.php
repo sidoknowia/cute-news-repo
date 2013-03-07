@@ -103,7 +103,7 @@ elseif ($action == "adduser")
         case "4": $level = "commenter"; break;
     }
 
-    user_add(array(UDB_ID => $add_time, $reglevel, $regusername, $regpassword, $regnickname, $regemail, 0, 1));
+    user_add(array(UDB_ID => $add_time, $reglevel, $regusername, $regpassword, $regnickname, $regemail, 0, 1, '', ''));
 
     msg("info", lang("User Added"),
                 str_replace(array('%1', '%2'), array($regusername, $level), lang("The user <b>%1</b> was successfully added as <b>%2</b>")),

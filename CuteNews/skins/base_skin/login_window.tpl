@@ -19,7 +19,7 @@
             <td style='text-align:left'>
                 <input tabindex=1 accesskey='s' type=submit style="width:150px; background-color: #F3F3F3;" value='      Login...      '><br/>
             </td>
-            <td style='text-align:left'><label for=rememberme title='Remmber me for 30 days, Do not use on Public-Terminals!'>
+            <td style='text-align:left'><label for=rememberme title='Remember me for 30 days, Do not use on Public-Terminals!'>
                 <input id=rememberme type=checkbox value=yes style="border:0px;" name=rememberme>Remember Me</label>
             </td>
         </tr>

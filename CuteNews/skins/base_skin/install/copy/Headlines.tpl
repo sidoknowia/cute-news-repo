@@ -14,7 +14,7 @@ $template_full = <<<HTML
 <div style="float: right;">{comments-num} Comments</div>
 
 <div><em>Posted on {date} by {author}</em></div>
-</div>
+</div> {fb-comments}
 HTML;
 
 

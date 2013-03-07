@@ -9,11 +9,6 @@
     $comment_number         = 0;
     $showed                 = 0;
 
-    if ($config_use_fbcomments == 'yes')
-    {
-        echo '<div class="fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$id.'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
-    }
-
     $all_comments = file( $comm_file );
     foreach ($all_comments as $comment_line)
     {

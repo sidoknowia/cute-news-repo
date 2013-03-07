@@ -9,7 +9,7 @@ $template_active = <<<HTML
 <div style="float: right;">[edit]Edit[/edit] [full-link]Read more[/full-link] | [com-link]{comments-num} Comments[/com-link]</div>
 
 <div><em>Posted on {date} by {author}</em></div>
-</div>
+</div> {fb-comments}
 HTML;
 
 
@@ -24,7 +24,7 @@ $template_full = <<<HTML
 <div style="float: right;">{comments-num} Comments</div>
 
 <div>[edit]Edit | [/edit]<em>Posted on {date} by {author}</em></div>
-</div>
+</div> {fb-comments}
 HTML;
 
 

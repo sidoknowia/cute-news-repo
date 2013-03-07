@@ -479,7 +479,7 @@ elseif ($action == 'mass_change_pubdate')
     }
 
     $CSRF = CSRFMake();
-    $msg = proc_tpl('mass/chdate');
+    $msg = proc_tpl('mass/chdate', array('source'=>$source));
     msg('info', lang('Change Date'), $msg);
 }
 elseif ($action == 'dochangedate')
@@ -497,7 +497,7 @@ elseif ($action == 'dochangedate')
 
     foreach ($dates as $id => $date)
     {
-        if ($date <= time())
+        if ($date <= time() + $config_date_adjust*60)
         {
             // Don't touch this news: only change date
             $db_news_file = preg_replace("~^".intval($id)."\|~m", $date.'|', $db_news_file);

@@ -39,7 +39,9 @@
     {if $UseAvatar}
     <tr>
         <td width="75" align="right">Avatar URL&nbsp;</td>
-        <td width="575" colspan="2"><input tabindex=2 type=text size="42" value="{$member_db8}" name="manual_avatar" >&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span></td>
+        <td width="575" colspan="2"><input tabindex=2 type=text size="42" value="{$member_db8}" name="manual_avatar" >
+        width: <input tabindex=2 type="text" name="_avatar_width" size="3" value="{$_avatar_width}">
+        height: <input tabindex=2 type="text" size="3" name="_avatar_height" value="{$_avatar_height}">&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span></td>
     </tr>
     {/if}
 
@@ -71,6 +73,7 @@
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$short_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
             <p>{$insertsmiles}</p>
+            {$Hook_AdditionalFieldsShort}
         </td>
     </tr>
 
@@ -84,8 +87,12 @@
         <td width="108" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
             <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$full_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
             <p>{$insertsmiles_full}</p>
+            {$Hook_AdditionalFieldsFull}
         </td>
     </tr>
+
+    {$Hook_AdditionalFieldsBottom}
+
     <tr>
         <td>&nbsp;</td>
         <td>
@@ -102,14 +109,12 @@
         <td>&nbsp;</td>
     </tr>
 
-    {$Hook_AdditionalFieldsBottom}
-
     <tr id='options' style="display:none;">
         <td align="center" valign="top" style="padding: 18px 0 0 0">Options</td>
         <td colspan="2" style="padding: 15px 0 0 0">
 
             <label for='html'>
-            <input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html"> Use HTML in this article</label>
+            <input id='html' style="border:0; background-color:transparent" type=checkbox value="yes" name="if_use_html" {if $Using_HTML}checked{/if}> Use HTML in this article</label>
             <br/><br/>
 
             <label for='active'><input checked id='active' style="border:0; background-color: transparent" type=radio value="active" name="postpone_draft">

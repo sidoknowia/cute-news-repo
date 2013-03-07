@@ -48,7 +48,7 @@ foreach ($news_db as $line)
 {
     $item_db = explode("|", $line);
     $itemdate = date("d/m/y", $item_db[0]);
-    if ($itemdate == date("d/m/y"))
+    if ($itemdate == date("d/m/y", time() + $config_date_adjust*60))
     {
         $todaynews++;
         if ( $item_db[1] == $member_db[UDB_NAME]) $count_my_news++;

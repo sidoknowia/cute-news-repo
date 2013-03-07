@@ -394,14 +394,19 @@ elseif ($action == "syscon")
         list($config_name, $opt) = explode('=', $config_name, 2);
 
         $out = '';
-        $var = $GLOBALS['config_'.$config_name];
+        $var = getoption($config_name);
 
         // Is digits or empty - INPUT
         if (!is_array($options))
         {
-            $opt = $opt ? intval($opt) : 40;
+            $opt = $opt ? $opt : 40;
 
-            if ($options == 'Y/N')
+            if ($options == ':text:')
+            {
+                list($cols, $rows) = explode('/', $opt);
+                $out = '<textarea cols="'.$cols.'" rows="'.$rows.'" name="save_con['.$config_name.']">'.htmlspecialchars($var).'</textarea>';
+            }
+            elseif ($options == 'Y/N')
             {
                 $checked = $var? 'checked="checked"': '';
                 $out = '<input type="checkbox" name="save_con['.$config_name.']" value="1" '.$checked.' />';
@@ -430,7 +435,7 @@ elseif ($action == "syscon")
 
         // --- make line ---
         if ( ($counter++)%2 == 0) $bg = "bgcolor=#F7F6F4"; else $bg = "";
-        return proc_tpl("options/syscon.row", array('bg' => $bg, 'title' => $title, 'field' => $out, 'description' => $desc));
+        return proc_tpl("options/syscon.row", array('bg' => $bg, 'title' => lang($title), 'field' => $out, 'description' => lang($desc)));
     }
 
     // ---------- show options
@@ -451,16 +456,21 @@ elseif ($action == "syscon")
     echo syscon('utf8html',         "Don't convert UTF8 symbols to HTML entities|no conversion, e.g. &aring; to &amp;aring;", 'Y/N');
     echo syscon('use_wysiwyg',      "Use WYSIWYG Editor|use (or not) the advanced editor", array('no'=>'No', 'ckeditor'=>'CKEditor'));
 
-    echo syscon('date_adjust',      'Time adjustment|in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours');
+    if (getoption('use_wysiwyg') == 'ckeditor')
+        echo syscon('ckeditor_customize=50/12', 'Customize CKEditor|<a href="http://docs.cksource.com/CKEditor_3.x/Developers_Guide/Toolbar" target="_blank">CKEditor options</a>', ':text:');
+
+    echo syscon('use_html',         "Use HTML in the article|if checked, CuteNews will parse the article as HTML elements + text, if unchecked - your article will be treated as pute text", 'Y/N');
+    echo syscon('date_adjust=5',    'Time adjustment|in minutes; eg. : <b>180</b>=+3 hours; <b>-120</b>=-2 hours');
     echo syscon('smilies',          'Smilies|Separate them with commas (<b>,</b>)');
     echo syscon('auto_archive',         'Automatic archiving every month|Every month your active news will be archived', array('no'=>'No','yes'=>'Yes'));
     echo syscon('allow_registration',   'Allow self-Registration|allow users to register automatically', 'Y/N');
     echo syscon('registration_level',   'Self-registration level|choose your status', array(ACL_LEVEL_JOURNALIST=>"Journalist", ACL_LEVEL_COMMENTER=>"Commentator"));
     echo syscon('ban_attempts=5',       'Number of login attempts|specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour.');
-    echo syscon('xss_strict',       'XSS strict|if "strong", remove all suspicious parameters in tags', array(0=>"No", 1=>"Strong", 2=>"Total Filter"));
-    echo syscon('use_replacement',  'Custom rewrite|allow rewrite news url path', 'Y/N');
-    echo syscon('ipauth',           'Check IP|stronger authenticate (by changing this setting, you will be logged out)', 'Y/N');
-    echo syscon('userlogs',         'Enable user logs|store user logs', 'Y/N');
+    echo syscon('xss_strict',           'XSS strict|if "strong", remove all suspicious parameters in tags', array(0=>"No", 1=>"Strong", 2=>"Total Filter"));
+    echo syscon('use_replacement',      'Custom rewrite|allow rewrite news url path', 'Y/N');
+    echo syscon('ipauth',               'Check IP|stronger authenticate (by changing this setting, you will be logged out)', 'Y/N');
+    echo syscon('userlogs',             'Enable user logs|store user logs', 'Y/N');
+    echo syscon('allowed_extensions',   'Allowed extensions|Used by file manager. Enter by comma without space');
 
     hook('field_options_general');
     echo "</table></td></tr>";
@@ -475,11 +485,12 @@ elseif ($action == "syscon")
     echo syscon('backup_news',          'Make backup news|when you add or edit news, a backup is made', 'y/n');
     echo syscon('use_captcha',          'Use CAPTCHA|on registration and comments', 'Y/N');
     echo syscon('use_rater',            'Use rating|use internal rating system', 'Y/N');
+    echo syscon('disable_pagination',   'Disable pagination|Use it to disable pagination', 'Y/N');
 
     if ($config_use_rater)
     {
-        echo syscon('ratey=10', 'Rate symbol 1|rate full symbol');
-        echo syscon('raten=10', 'Rate symbol 2|rate empty symbol');
+        echo syscon('ratey=8', 'Rate symbol 1|rate full symbol');
+        echo syscon('raten=8', 'Rate symbol 2|rate empty symbol');
     }
     hook('field_options_news');
 
@@ -598,6 +609,8 @@ elseif ($action == "dosavesyscon")
 {
     CSRFCheck();
 
+    $config_filter = array();
+
     // Sanitize skin var
     $save_con["skin"] = preg_replace('~[^a-z0-9_.]~i', '', $save_con["skin"]);
     if (!file_exists(SERVDIR."/skins/".$save_con["skin"].".skin.php")) $save_con['skin'] = 'default';
@@ -609,7 +622,8 @@ elseif ($action == "dosavesyscon")
     fwrite ($handler, "<?php \n\n//System Configurations (Auto Generated file)\n");
     foreach($save_con as $name => $value)
     {
-        fwrite($handler, "\$config_$name = \"".htmlspecialchars($value)."\";\n");
+        $value = str_replace(array('$', '"'), '', $value);
+        fwrite($handler, "\$config_$name = \"".$value."\";\n");
     }
     fwrite($handler, "?>");
     fclose($handler);

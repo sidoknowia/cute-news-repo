@@ -17,7 +17,6 @@
     <tr> <td class="r">{category}</td>        <td>Name of the category where article is posted (if any)</td>  </tr>
     <tr> <td class="r">{category-icon}</td>   <td>Shows the category icon</td>  </tr>
     <tr> <td class="r">{star-rate}</td>       <td>Rating bar</td>  </tr>
-
     <tr> <td class="r">{month}</td>                 <td>Equivalent to date('F')</td>  </tr>
     <tr> <td class="r">{month|Jan,Feb,...,Dec}</td> <td>Enumerate one by one with commas all 12 months on the necessary language.</td>  </tr>
     <tr> <td class="r">{weekday}</td>               <td>Equivalent to date('l')</td>  </tr>
@@ -26,6 +25,12 @@
     <tr> <td class="r">{hours}</td>                 <td>Equivalent to date('H')</td>  </tr>
     <tr> <td class="r">{minite}</td>                <td>Equivalent to date('i')</td>  </tr>
     <tr> <td class="r">{since}</td>                 <td>Display, for ex. "N minutes ago."</td>  </tr>
+
+    <tr bgcolor="#fefee0"> <td class="r" style="font-size: 16px;">Social buttons</td> <td>&nbsp;</td>  </tr>
+    <tr> <td class="r">{fb-comments}</td> <td>Facebook comments</td>  </tr>
+    <tr> <td class="r">{fb-like}</td> <td>Facebook Like button</td>  </tr>
+    <tr> <td class="r">{twitter}</td> <td>Twitter send button</td>  </tr>
+
 
     <tr bgcolor="#fefee0"> <td class="r" style="font-size: 16px;">Wrappers</td> <td>&nbsp;</td>  </tr>
     <tr> <td class="r">[mail] ... [/mail]</td> <td>Will generate a link to the author mail (if any) eg. [mail] email [/mail]</td>  </tr>
@@ -39,11 +44,12 @@
     <tr> <td class="r">{index-link}</td>       <td>Link to $PHP_SELF</td>  </tr>
     <tr> <td class="r">{phpself}</td>          <td>$PHP_SELF value</td>  </tr>
     <tr> <td class="r">{back-previous}</td>    <td>Link "Go back"</td>  </tr>
-    <tr> <td class="r">{cute-http-path}</td>   <td>CuteNew root path</td>  </tr>
+    <tr> <td class="r">{cute-http-path}</td>   <td>CuteNews root path</td>  </tr>
     <tr> <td class="r">{news-id}</td>          <td>News ID</td>  </tr>
     <tr> <td class="r">{category-id}</td>      <td>Category ID</td>  </tr>
     <tr> <td class="r">{archive-id}</td>       <td>Archive ID</td>  </tr>
     <tr> <td class="r">{rss-news-include-url}</td> <td>Link to include rss</td>  </tr>
+
     {$More_Active_News}
 </table>
 <br/>

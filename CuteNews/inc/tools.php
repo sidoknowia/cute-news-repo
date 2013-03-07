@@ -542,6 +542,8 @@ elseif ($action == 'plugins')
     {
         CSRFCheck();
         unlink(SERVDIR.'/cdata/plugins/'.$name.'.php');
+        if(is_dir($name))
+            del_dir(SERVDIR.'/cdata/plugins/'.$name);
     }
 
     $CSRF = CSRFMake();
@@ -554,6 +556,7 @@ elseif ($action == 'plugins')
         {
             $r = fopen(SERVDIR.$plugin, 'r');
             $description = '-';
+            fgets($r);
             if (preg_match('~// description: (.*)~i', fgets($r), $match))
                 $description = $match[1];
 

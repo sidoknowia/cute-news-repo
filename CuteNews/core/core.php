@@ -25,7 +25,7 @@ function deprecated_check()
 // User-defined error handler for catch errors
 function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
 {
-
+    global $config_time_adjust;
     $errtypes = array
     (
         E_ERROR             => "Error",
@@ -55,8 +55,9 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
         $str = trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out));
         if (is_writable(SERVDIR.'/cdata/log'))
         {
+            $need_time = time() + $config_time_adjust*60;
             $log = fopen(SERVDIR.'/cdata/log/error_dump.log', 'a');
-            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|'.$str."\n");
+            fwrite($log, $need_time.'|'.date('Y-m-d H:i:s', $need_time).'|'.$str."\n");
             fclose($log);
         }
     }
@@ -65,6 +66,7 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
 
 function die_stat($No, $Reason = false)
 {
+    global $config_time_adjust;
     $HTTP = array
     (
         0   => '',
@@ -87,12 +89,18 @@ function die_stat($No, $Reason = false)
     {
         if (is_writable(SERVDIR.'/cdata/log'))
         {
+            $need_time = time() + $config_time_adjust*60;
             $log = fopen(SERVDIR.'/cdata/log/error_dump.log', 'a');
-            fwrite($log, time().'|'.date('Y-m-d H:i:s').'|DIE_STAT: '.$No.'; '.str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $Reason)."\n");
+            fwrite($log, $need_time.'|'.date('Y-m-d H:i:s', $need_time).'|DIE_STAT: '.$No.'; '.str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $Reason)."\n");
             fclose($log);
         }
     }
     die();
+}
+
+function getoption($opt_name)
+{
+    return isset($GLOBALS["config_$opt_name"]) ? $GLOBALS["config_$opt_name"] : FALSE;
 }
 
 // Modified from http://en.wikibooks.org/wiki/Algorithm_implementation/Sorting/Quicksort#PHP for quicksort cutenews
@@ -136,7 +144,7 @@ function read_tpl($tpl = 'index')
 
     // Get plugin patch
     if  ($tpl[0] == '/')
-         $open = SERVDIR.'/cdata/plugins/'.$tpl.'.tpl';
+         $open = SERVDIR.'/cdata/plugins/'.substr($tpl,1).'.tpl';
     else $open = SERVDIR.SKIN.'/'.($tpl?$tpl:'default').'.tpl';
 
     // Try open
@@ -440,6 +448,7 @@ function xxtea_decrypt($str, $key)
 // Mail function -------------------------------------------------------------------------------------------------------
 function send_mail($to, $subject, $message, $hdr = false)
 {
+    global $config_time_adjust;
     if (!isset($to)) return false;
     if (!$to) return false;
 
@@ -452,9 +461,9 @@ function send_mail($to, $subject, $message, $hdr = false)
     $headers .= 'From: '.$from."\n";
     $headers .= 'Reply-to: '.$from."\n";
     $headers .= 'Return-Path: '.$from."\n";
-    $headers .= 'Message-ID: <' . md5(uniqid(time())) . '@' . $_SERVER['SERVER_NAME'] . ">\n";
+    $headers .= 'Message-ID: <' . md5(uniqid(time() + $config_time_adjust*60)) . '@' . $_SERVER['SERVER_NAME'] . ">\n";
     $headers .= "X-Mailer: PHP/" . phpversion()."\n";
-    $headers .= "Date: " . date('r', time()) . "\n";
+    $headers .= "Date: " . date('r', time() + $config_time_adjust*60) . "\n";
     $headers .= $hdr;
 
     foreach ($tos as $v)
@@ -541,6 +550,24 @@ function read_dir($dir_name, $cdir = array(), $rec = true, $replacement = SERVDI
         closedir($dir);
     }
     return $cdir;
+}
+
+function scan_dir($dir)
+{
+    $dh  = opendir($dir);
+    while (false !== ($filename = readdir($dh))) {
+        $files[] = $filename;
+    }
+    return $files;
+}
+
+function del_dir($dir) {
+    $files = array_diff(scan_dir($dir), array('.','..'));
+
+    foreach ($files as $file) {
+        (is_dir("$dir/$file")) ? del_dir("$dir/$file") : unlink("$dir/$file");
+    }
+    return rmdir($dir);
 }
 
 // Add hook to system
@@ -838,9 +865,17 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{comments-num}",    countComments($news_arr[NEW_ID], $archive), $output);
     $output      = str_replace("{archive-id}",      $archive, $output);
     $output      = str_replace("{category-icon}",   caticon( $news_arr[NEW_CAT], $cat_icon, $cat ), $output);
-    $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;" />' : '', $output);
+    $mf_for_avatar = options_extract($news_arr[NEW_MF]);
+    if(array_key_exists('_avatar_width', $mf_for_avatar)) $width_for_avatar = 'width:'.$mf_for_avatar['_avatar_width'].';';
+    if(array_key_exists('_avatar_height', $mf_for_avatar)) $height_for_avatar = 'height:'.$mf_for_avatar['_avatar_height'].';';
+    $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;'.$width_for_avatar.$height_for_avatar.'" />' : '', $output);
 
     $output      = preg_replace('/\[loggedin\](.*?)\[\/loggedin\]/is', empty($_SESS['user']) ? '' : '\\1', $output);
+
+    // social plugins
+    $output      = str_replace('{fb-comments}', show_social_code('fb', $news_arr), $output);
+    $output      = str_replace('{fb-like}', show_social_code('fb-like', $news_arr), $output);
+    $output      = str_replace('{twitter}', show_social_code('twitter', $news_arr), $output);
 
     // in RSS we need the date in specific format
     if ($template == 'rss')
@@ -884,31 +919,41 @@ function template_replacer_news($news_arr, $output)
     // Open link --------------------------------------------------------------- [link]...[/link]
     $URL     = build_uri('subaction,id,start_from,ucat,archive,template', array('showfull',$news_arr[NEW_ID],$my_start_from,$news_arr[NEW_CAT]));
     $URL    .= "&amp;#disqus_thread";
+
+    $output  = preg_replace('/\[link target\=([a-z0-9_]+?)\](.*?)\[\/link\]/is', '<a href="'.$PHP_SELF.$URL.'" target="\\1">\\2</a>', $output);
     $output  = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);
 
     // With Action = showheadlines -------------------------------------------- [full-link]...[/full-link]
     if ($news_arr[NEW_FULL] or $action == "showheadlines")
     {
-        if ( $config_full_popup == "yes" )
+        if ($config_full_popup == "yes")
         {
-             $URL = build_uri('subaction,id,archive,template', array('showfull',$news_arr[NEW_ID],$archive,$template));
-             $output = str_replace('[full-link]', "<a href=\"#\" onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string');return false;\">", $output);
+            $URL = build_uri('subaction,id,archive,template', array('showfull',$news_arr[NEW_ID],$archive,$template));
+
+            // Popup string
+            $attrlink = "href='#' onclick=\"window.open('$config_http_script_dir/router.php{$URL}', '_News', '$config_full_popup_string'); return false;\"";
+            $output = preg_replace('/\[full\-link target\=([a-z0-9_]+?)\](.*?)\[\/full\-link\]/is', "<a $attrlink target='\\1'>\\2</a>", $output);
+            $output = str_replace('[full-link]', "<a $attrlink>", $output);
         }
         else
         {
-            if ($template == 'Default') $template = false;
-            if($archive)
+            $template = ($template == 'Default') ? '' : $template;
+            if ($archive)
                 $URL  = RWU( 'archreadmore', $PHP_SELF . build_uri('subaction,id,archive,ucat,title,template', array('showfull', $news_arr[0], $archive, $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );
             else
                 $URL  = RWU( 'readmore', $PHP_SELF . build_uri('subaction,id,ucat,title,template', array('showfull', $news_arr[0], $news_arr[NEW_CAT],titleToUrl($news_arr[NEW_TITLE]),$template)) . "&amp;$user_query" );
-            $output = str_replace("[full-link]", "<a href=\"{$URL}\">", $output);
+
+            // Target string
+            $attrlink = "href='{$URL}'";
+            $output = preg_replace('/\[full\-link target\=([a-z0-9_]+?)\](.*?)\[\/full\-link\]/is', "<a $attrlink target='\\1'>\\2</a>", $output);
+            $output = str_replace("[full-link]", "<a $attrlink>", $output);
         }
 
         $output = str_replace("[/full-link]", "</a>", $output);
     }
     else
     {
-        $output = preg_replace('~\[full-link\].*?\[/full-link\]~si', '<!-- no full story-->', $output);
+        $output = preg_replace('~\[full-link.*?\].*?\[/full-link\]~si', '<!-- no full story-->', $output);
     }
 
     // Admin can edit for news ------------------------------------------------ [edit]...[/edit]
@@ -918,7 +963,7 @@ function template_replacer_news($news_arr, $output)
         $member_db = user_search($_SESS['user']);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
-            $url    = $config_http_script_dir.'/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
+            $url    = '/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
             $output = preg_replace('/\[edit\]/i', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = preg_replace('/\[\/edit\]/i', '</a>', $output);
             $DREdit = true;
@@ -964,6 +1009,25 @@ function more_fields($mf, $output)
     return $output;
 }
 
+function create_avatar_size_in_mf($avatar_option, $mfname, $mfvalue)
+{
+    global $cfg;
+
+    if(!preg_match('/^\d{0,5}(?:px|%)?$/', trim($avatar_option)))
+        return false;
+
+    if($avatar_option && !isset($cfg['more_fields'][$mfname]))
+    {
+        $cfg['more_fields'][$mfname] = $mfvalue;
+
+        // save
+        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
+        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+        fclose($fx);
+    }
+    return true;
+}
+
 
 /*
  * Log, base on multifiles and md5 tells about day & hour for user login
@@ -971,7 +1035,7 @@ function more_fields($mf, $output)
  */
 function add_to_log($username, $action)
 {
-    global $config_userlogs;
+    global $config_userlogs, $config_time_adjust;
 
     // Sanitize username
     $username = preg_replace('/[^a-z0-9_\- ]/i', '', $username);
@@ -981,7 +1045,8 @@ function add_to_log($username, $action)
 
     // authorization stat
     $locked = false;
-    $flog = SERVDIR.'/cdata/log/log_'.date('Y_m').'.php';
+    $need_time = time() + $config_time_adjust*60;
+    $flog = SERVDIR.'/cdata/log/log_'.date('Y_m', $need_time).'.php';
 
     // create log file if not exists
     if ( !file_exists($flog) )
@@ -993,9 +1058,9 @@ function add_to_log($username, $action)
     if ( !file_exists($flog) ) return false;
 
     // add to log
-    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m').'.php', 'a');
+    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m', $need_time).'.php', 'a');
     flock($log, LOCK_EX);
-    fwrite($log, time().'|'.serialize(array('user' => $username, 'action' => $action, 'time' => time(), 'ip' => $_SERVER['REMOTE_ADDR']))."\n");
+    fwrite($log, $need_time.'|'.serialize(array('user' => $username, 'action' => $action, 'time' => $need_time, 'ip' => $_SERVER['REMOTE_ADDR']))."\n");
     flock($log, LOCK_UN);
     fclose($log);
 
@@ -1005,7 +1070,7 @@ function add_to_log($username, $action)
 // User-defined for date formatting
 function format_date($time, $type = false)
 {
-    global $cfg;
+    global $cfg, $config_date_adjust;
 
     // type format - since current time
     if ($type == 'since' || $type == 'since-short')
@@ -1021,7 +1086,8 @@ function format_date($time, $type = false)
 
         $ago    = 'ago';
         $rd     = false;
-        $dist   = time() - $time;
+        $need_time = time() + $config_date_adjust*60;
+        $dist   = $need_time - $time;
         if ($dist < 0)
         {
             $ago  = 'after';
@@ -1039,7 +1105,7 @@ function format_date($time, $type = false)
             }
         }
 
-        $rd .= ($rd? '' : '0 m' ).' '.$ago. (($type == 'since' && $mids > 24*3600) ? ' at '.date('Y-m-d H:i') : '');
+        $rd .= ($rd? '' : '0 m' ).' '.$ago. (($type == 'since' && $mids > 24*3600) ? ' at '.date('Y-m-d H:i', $need_time) : '');
         return $rd;
     }
 
@@ -1295,7 +1361,7 @@ function SHA256_hash($str)
 // Auto-Archives News
 function ResynchronizeAutoArchive()
 {
-    global $config_auto_archive, $config_notify_email,$config_notify_archive,$config_notify_status;
+    global $config_auto_archive, $config_notify_email,$config_notify_archive,$config_notify_status, $config_date_adjust;
 
     $count_news = count(file(SERVDIR."/cdata/news.txt"));
     if($count_news > 1)
@@ -1303,8 +1369,8 @@ function ResynchronizeAutoArchive()
         if ($config_auto_archive == "yes")
         {
 
-            $now['year'] = date("Y");
-            $now['month'] = date("n");
+            $now['year'] = date("Y", time() + $config_date_adjust*60);
+            $now['month'] = date("n", time() + $config_date_adjust*60);
 
             $db_content = file(SERVDIR."/cdata/auto_archive.db.php");
             list($last_archived['year'], $last_archived['month']) = explode("|", $db_content[0] );
@@ -1315,7 +1381,7 @@ function ResynchronizeAutoArchive()
             if($tmp_now_sum > $tmp_last_sum)
             {
                 $error = FALSE;
-                $arch_name = time();
+                $arch_name = time() + $config_date_adjust*60;
 
                 if (!copy(SERVDIR."/cdata/news.txt", SERVDIR."/cdata/archives/$arch_name.news.arch"))          { $error = lang("Cannot copy news.txt from cdata/ to cdata/archives"); }
                 if (!copy(SERVDIR."/cdata/comments.txt", SERVDIR."/cdata/archives/$arch_name.comments.arch"))  { $error = lang("Cannot copy comments.txt from cdata/ to cdata/archives"); }
@@ -1352,15 +1418,15 @@ function ResynchronizeAutoArchive()
 // Refreshes the Postponed News file.
 function ResynchronizePostponed()
 {
-    global $config_notify_postponed,$config_notify_status,$config_notify_email;
+    global $config_notify_postponed,$config_notify_status,$config_notify_email, $config_date_adjust;
 
     $all_postponed_db = file(SERVDIR."/cdata/postponed_news.txt");
     if (!empty($all_postponed_db))
     {
-        $new_postponed_db = fopen(SERVDIR."/cdata/postponed_news.txt", w);
+        $new_postponed_db = fopen(SERVDIR."/cdata/postponed_news.txt", "w");
         if ($new_postponed_db)
         {
-            $now_date = time();
+            $now_date = time() + $config_date_adjust*60;
             flock ($new_postponed_db, LOCK_EX);
 
             foreach ($all_postponed_db as $p_line)
@@ -1769,7 +1835,7 @@ function replace_news($way, $sourse, $use_html = true)
     }
 
     // Replace hook
-    list($find, $replace) = hook('core:replace_news', array($find, $replace));
+    list($way, $find, $replace) = hook('core:replace_news', array($way, $find, $replace));
 
     // Replace all
     $sourse  = preg_replace($find, $replace, $sourse);
@@ -1816,6 +1882,7 @@ function rating_bar($id, $value = '1/1', $from = 1, $to = 5)
 function check_avatar($editavatar)
 {
     global $config_http_script_dir;
+    $avatar = array('is_loaded' => true, 'path' => $editavatar);
 
     // avatar not uploaded?
     if ( strpos($editavatar, $config_http_script_dir) === false)
@@ -1825,10 +1892,10 @@ function check_avatar($editavatar)
 
         if ( !file_exists($Px) )
         {
-            $fp = fopen($editavatar, 'r') or ($editavatar = false);
+            $fp = fopen($editavatar, 'r') or ($avatar = array('is_loaded' => false, 'path' => false, 'error_msg' => 'Cannot download the '.$editavatar.' file. Please check \'allow_url_fopen\' option in php.ini file.'));
 
             // may load file?
-            if ($editavatar)
+            if ($avatar['is_loaded'])
             {
                 ob_start();
                 fpassthru($fp);
@@ -1845,7 +1912,7 @@ function check_avatar($editavatar)
                 if ( !isset($attrs[0]) || !isset($attrs[1]) || !$attrs[0] || !$attrs[1])
                 {
                     unlink($Px);
-                    $editavatar = false;
+                    $avatar = array('is_loaded' => false, 'path' => false, 'error_msg' => 'Wrong attributes of image');
                 }
                 else
                 {
@@ -1855,17 +1922,17 @@ function check_avatar($editavatar)
         }
 
         // replace for absolute path
-        if ($editavatar)
-            $editavatar = str_replace(SERVDIR, $config_http_script_dir, $Px);
+        if ($avatar['is_loaded'])
+            $avatar['path'] = str_replace(SERVDIR, $config_http_script_dir, $Px);
     }
     else
     {
         // check - available at server?
         $Px = str_replace($config_http_script_dir, SERVDIR, $editavatar);
-        if (!file_exists($Px)) $editavatar = false;
+        if (!file_exists($Px)) $avatar = array('is_loaded' => false, 'path' => false, 'error_msg' => 'The image does not exist on the server.');
     }
 
-    return $editavatar;
+    return $avatar;
 }
 
 function get_allowed_cats($member_db)
@@ -1893,10 +1960,11 @@ function get_allowed_cats($member_db)
 // Make HTML code for postponed date
 function make_postponed_date($gstamp = 0)
 {
+    global $config_date_adjust;
     $_dateD = $_dateM = $_dateY = false;
 
     // Use current timestamp if no present
-    if ($gstamp == 0) $gstamp = time();
+    if ($gstamp == 0) $gstamp = time() + $config_date_adjust*60;
 
     $day    = date('j', $gstamp);
     $month  = date('n', $gstamp);
@@ -1965,43 +2033,6 @@ function relocation($url)
     header("Location: $url");
     echo '<html><head><title>Redirect...</title><meta http-equiv="refresh" content="0;url='.htmlspecialchars($url).'"></head><body>'.lang('Please wait... Redirecting to ').htmlspecialchars($url).'...<br/><br/></body></html>';
     die();
-}
-
-$sys_http_response_header = array();
-
-// Takes content from remote addrs
-function cwget($url)
-{
-    global $sys_http_response_header;
-
-    if ( ini_get('allow_url_fopen') )
-    {
-        if (substr(PHP_VERSION, 0, 5) >= '4.3.0')
-        {
-            $context = stream_context_create(
-                array('http' => array('method' => 'GET',
-                                      'user_agent'  => $_SERVER['HTTP_USER_AGENT'],
-                                      'ignore_errors' => true
-                ) )
-            );
-
-            $r = fopen( $url, 'r', false, $context );
-        }
-        else
-        {
-            $r = fopen( $url, 'r' );
-        }
-
-        ob_start();
-        fpassthru($r);
-        $rd = ob_get_clean();
-
-        // Save headers
-        $sys_http_response_header = $http_response_header;
-        return $rd;
-    }
-
-    return false;
 }
 
 // Extract all options
@@ -2465,7 +2496,6 @@ function cn_selfcheck()
         'cdata/cache',
         'cdata/log',
         'cdata/plugins',
-        'cdata/skins',
     );
 
     // Check dirs
@@ -2486,79 +2516,77 @@ function cn_selfcheck()
         }
     }
 
-    // Check files
-    if (empty($errors))
+    $check_files  = array
+    (
+        '/cdata/auto_archive.db.php',
+        '/cdata/category.db.php',
+        '/cdata/cat.num.php',
+        '/cdata/comments.txt',
+        '/cdata/confirmations.php',
+        '/cdata/db.ban.php',
+        '/cdata/users.db.php',
+        '/cdata/replaces.php',
+        '/cdata/flood.db.php',
+        '/cdata/csrf.php',
+
+        '/cdata/newsid.txt',
+        '/cdata/news.txt',
+        '/cdata/postponed_news.txt',
+        '/cdata/unapproved_news.txt',
+
+        '/cdata/rss_config.php',
+        '/cdata/config.php',
+        '/cdata/conf.php',
+
+        '/cdata/Default.tpl',
+        '/cdata/Headlines.tpl',
+        '/cdata/rss.tpl',
+    );
+
+    foreach ($check_files as $file)
     {
-        $check_files  = array
-        (
-            '/cdata/auto_archive.db.php',
-            '/cdata/category.db.php',
-            '/cdata/cat.num.php',
-            '/cdata/comments.txt',
-            '/cdata/confirmations.php',
-            '/cdata/db.ban.php',
-            '/cdata/users.db.php',
-            '/cdata/replaces.php',
-            '/cdata/flood.db.php',
+        $the_file = SERVDIR . $file;
 
-            '/cdata/newsid.txt',
-            '/cdata/news.txt',
-            '/cdata/postponed_news.txt',
-            '/cdata/unapproved_news.txt',
-
-            '/cdata/rss_config.php',
-            '/cdata/config.php',
-            '/cdata/conf.php',
-
-            '/cdata/Default.tpl',
-            '/cdata/Headlines.tpl',
-            '/cdata/rss.tpl',
-        );
-
-        foreach ($check_files as $file)
+        // Check exists
+        if (file_exists($the_file))
         {
-            $the_file = SERVDIR . $file;
-
-            // Check exists
-            if (file_exists($the_file))
+            // Check readable
+            if (is_readable($the_file))
             {
-                // Check readable
-                if (is_readable($the_file))
-                {
-                    // FS. BEFORE
-                    clearstatcache($the_file);
-                    $fs0 = filesize($the_file);
+                // FS. BEFORE
+                clearstatcache($the_file);
+                $fs0 = filesize($the_file);
 
-                    $af = fopen($the_file, 'a+');
-                    fwrite($af, "\n");
-                    fclose($af);
+                $af = fopen($the_file, 'a+');
+                fwrite($af, "\n");
+                fclose($af);
 
-                    // FS. AFTER
-                    clearstatcache($the_file);
-                    $fs1 = filesize($the_file);
+                // FS. AFTER
+                clearstatcache($the_file);
+                $fs1 = filesize($the_file);
 
-                    // REVERT
-                    $aw = fopen($the_file, 'a+');
-                    ftruncate($aw, $fs0);
-                    fclose($aw);
+                // REVERT
+                $aw = fopen($the_file, 'a+');
+                ftruncate($aw, $fs0);
+                fclose($aw);
 
-                    // Check writable status: no change in filesize
-                    if ($fs0 == $fs1)
-                    {
-                        $errors[] = array('perm' => decoct(fileperms($the_file)), 'file' => $the_file, 'msg' => lang('File not writable'));
-                    }
-                }
-                else
+                // Check writable status: no change in filesize
+                if ($fs0 == $fs1)
                 {
                     $errors[] = array('perm' => decoct(fileperms($the_file)), 'file' => $the_file, 'msg' => lang('File not writable'));
                 }
             }
             else
             {
-                $errors[] = array('perm' => '---', 'file' => $the_file, 'msg' => lang('Not exists'));
+                $errors[] = array('perm' => decoct(fileperms($the_file)), 'file' => $the_file, 'msg' => lang('File not writable'));
             }
         }
+        else
+        {
+            $errors[] = array('perm' => '---', 'file' => $the_file, 'msg' => lang('Not exists'));
+        }
     }
+
 
     return $errors;
 }
@@ -2570,17 +2598,15 @@ function CSRFMake()
 {
     global $_SESS;
 
-    // Make new section if not exists
-    if (!is_array($_SESS['CSRF'])) $_SESS['CSRF'] = array();
+    $csrf = md5(mt_rand() . mt_rand() . mt_rand() . mt_rand() ) ;
 
-    // New CSRF value
-    $csrf = substr( md5(mt_rand() . mt_rand() . mt_rand() ), 0, 16);
+    // Use storage for csrf
+    $csrf_storage = SERVDIR.'/cdata/csrf.php';
+    $a = fopen($csrf_storage, 'a+');
+    fwrite($a, time().'|'.$csrf.'|'.preg_replace('/[^a-z0-9]/i', '_', $_SESS['user'])."\n");
+    fclose($a);
 
-    array_unshift($_SESS['CSRF'], $csrf);
-    $_SESS['CSRF'] = array_slice($_SESS['CSRF'], 0, 4);
-
-    // Set new CSRF by session
-    send_cookie();
+    send_cookie(); // Set new CSRF by session
     return $csrf;
 }
 
@@ -2588,18 +2614,85 @@ function CSRFCheck()
 {
     global $_SESS;
 
-    // Search in CSRF-table
-    $csid = array_search($_REQUEST['csrf_code'], $_SESS[ 'CSRF' ]);
+    $user = $_SESS['user'];
+    $csrf_storage = SERVDIR.'/cdata/csrf.php';
 
-    if ($csid === false)
+    $csrf_correct = 0;
+    $csrf_code    = REQ('csrf_code');
+
+    $rcheck = file($csrf_storage);
+    foreach ($rcheck as $id => $vdata)
+    {
+        list($time, $csrf, $user_name) = explode('|', trim($vdata));
+
+        // Check for correct user & csrf code -> unset
+        if ($user_name == $user && $csrf == $csrf_code)
+        {
+            unset($rcheck[$id]);
+            $csrf_correct = 1;
+        }
+
+        // 5-min limit for CSRF
+        if ($time < time() - 300) unset($rcheck[$id]);
+    }
+
+    rewritefile('/cdata/csrf.php', '<'.'?php die(); ?>'."\n".join('', $rcheck));
+
+    if ($csrf_correct == 0)
     {
         add_to_log($_SESS['user'], 'CSRF Missed '.$_SERVER['HTTP_REFERER']);
         msg("error", lang('Error!'), '<div>CSRF fail <a href="'.make_nocache().'">Go back</div>');
     }
-    else
+}
+
+function check_postponed_date($added_time, $all_db)
+{
+    if ( preg_match("~^".intval($added_time)."\|(.*)$~m", join('', $all_db), $match ) )
     {
-        // CSRF used
-        unset($_SESS['CSRF'][$csid]);
+        $added_time++;
+        $added_time = check_postponed_date($added_time, $all_db);
+    }
+
+    return $added_time;
+}
+
+function show_social_code($name = 'fb', $news_arr)
+{
+    // External
+    global $config_http_script_dir, $soc_categories;
+
+    // Facebook
+    global $config_use_fbcomments, $config_fb_inactive, $config_fb_comments, $config_fb_box_width, $config_fbcomments_color;
+    global $config_use_fblike, $config_fblike_send_btn, $config_fblike_style, $config_fblike_width, $config_fblike_show_faces, $config_fblike_font;
+    global $config_fblike_color, $config_fblike_verb;
+
+    // Twitter
+    global $config_use_twitter, $config_tw_url, $config_tw_text, $config_tw_via, $config_tw_recommended, $config_tw_show_count, $config_tw_hashtag;
+    global $config_tw_lang, $config_tw_large;
+
+    // allow use fb comments
+    $soc_allowed = 1;
+
+    if (!empty($soc_categories))
+    {
+        $tmp_fb_cats = spsep($soc_categories);
+        $tmp_nw_cats = spsep($news_arr[NEW_CAT]);
+        $soc_allowed = count(array_intersect($tmp_fb_cats, $tmp_nw_cats)) ? 1 : 0;
+    }
+
+    // Show FB comments
+    if ($name == 'fb' && $config_use_fbcomments == 'yes' && $config_fb_inactive == 'yes' && $soc_allowed)
+    {
+        return '<div class="fb-comments cutenews-fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[NEW_ID].'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
+    }
+    // Show FB like
+    elseif ($name == 'fb-like' && $config_use_fblike == 'yes' && $soc_allowed)
+    {
+        return '<div class="fb-like cutenews-fb-comments" data-send="'.($config_fblike_send_btn=="yes"?"true":"false").'" data-layout="'.$config_fblike_style.'" data-width="'.$config_fblike_width.'" data-show-faces="'.($config_fblike_show_faces=="yes"?"true":"false").'" data-font="'.$config_fblike_font.'" data-colorscheme="'.$config_fblike_color.'" data-action="'.$config_fblike_verb.'"></div>';
+    }
+    elseif ($name == 'twitter' && $config_use_twitter == 'yes' && $soc_allowed)
+    {
+        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($config_tw_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.$config_tw_lang.'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
     }
 }
 

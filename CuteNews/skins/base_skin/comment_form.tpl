@@ -1,4 +1,4 @@
-<form onsubmit="return CNSubmitComment();" method="post" name="comment" id="comment" action="">
+<form onsubmit="return CNSubmitComment();" method="post" name="comment" id="comment" action="" style="clear: left;">
 {$template_form}
 <div>
     <input type="hidden" name="subaction" value="addcomment" />

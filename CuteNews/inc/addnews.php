@@ -10,7 +10,14 @@ list ($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
 
 // ON/OFF CKEditor
 $use_wysiwyg = 0;
-if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor') ) $use_wysiwyg = 1;
+if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor') )
+{
+    $implemented_ckeditor_filemanager = hook('implement_file_browser', "
+        filebrowserBrowseUrl:      '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true',
+        filebrowserImageBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true'");
+
+    $use_wysiwyg = 1;
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 if ($action == "addnews")
@@ -67,7 +74,7 @@ if ($action == "addnews")
                 $error_messages .= getpart('addnews_err', array( lang("You want to add a postponed article, but the hour format is invalid.") ));
 
             $postpone          = true;
-            $added_time        = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60;
+            $added_time        = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year);
             $decide_news_file  = SERVDIR."/cdata/postponed_news.txt";
         }
         else
@@ -113,9 +120,18 @@ if ($action == "addnews")
         // avatar check
         if ($manual_avatar)
         {
-            $manual_avatar = check_avatar($manual_avatar);
-            if ($manual_avatar == false)
-                $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!') ));
+            $check_result = check_avatar($manual_avatar);
+            if ($check_result['is_loaded'] == false)
+                $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!').' '.$check_result['error_msg'] ));
+            $manual_avatar = $check_result['path'];
+        }
+
+        if($config_use_avatar == 'yes')
+        {
+            if(!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
+                $error_messages .= getpart('addnews_err', array( lang('Avatar width may consist only digits and % or px on the end') ));
+            if(!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
+                $error_messages .= getpart('addnews_err', array( lang('Avatar height may consist only digits and % or px on the end') ));
         }
 
         // Additional fields ---
@@ -125,7 +141,7 @@ if ($action == "addnews")
         $preview_hmtl = false;
         if (isset($preview) && $preview == 'preview')
         {
-            $new[NEW_ID]        = time();
+            $new[NEW_ID]        = time() + $config_date_adjust*60;
             $new[NEW_USER]      = $member_db[2];
             $new[NEW_TITLE]     = $title;
             $new[NEW_SHORT]     = $short_story;
@@ -148,12 +164,12 @@ if ($action == "addnews")
             // Make unique time, just for draft/normal: not postponed
             if ($postpone == false)
             {
-                $added_time = time();
+                $added_time = time() + $config_date_adjust*60;
                 if ( file_exists (SERVDIR.'/cdata/newsid.txt') )
                     $added_time = join('', file(SERVDIR.'/cdata/newsid.txt'));
 
-                if (time() <= $added_time) $added_time++;
-                else $added_time = time();
+                if (time() + $config_date_adjust*60 == $added_time) $added_time++;
+                else $added_time = time() + $config_date_adjust*60;
 
                 $w = fopen(SERVDIR.'/cdata/newsid.txt', 'w');
                 fwrite($w, $added_time);
@@ -166,13 +182,15 @@ if ($action == "addnews")
             flock($news_file, LOCK_EX);
 
             $has_added = false;
+            if($postpone)
+                $added_time = check_postponed_date($added_time, $all_db);
             $add_line  = "$added_time|$member_db[2]|$title|$short_story|$full_story|$manual_avatar|$nice_category||$pack|$options|\n";
             foreach ($all_db as $line)
             {
                 list ($ID) = explode("|", $line);
 
                 // Add one
-                if ($ID <= time() && $has_added == false)
+                if ($ID <= time() + $config_date_adjust*60 && $has_added == false)
                 {
                     fwrite($news_file, $add_line);
                     $has_added = true;
@@ -266,6 +284,16 @@ if ($action == "addnews")
         if ( $v[0] == '&' )
              $xfields[] = array( $i, substr($v,1), '<span style="color: red;">*</span> '. lang('required','news'), $af );
         else $xfields[] = array( $i, $v, '' ,$af );
+        if($i == '_avatar_width')
+        {
+            list($name, $desc, $req, $value) = array_pop($xfields);
+            $_avatar_width = $value;
+        }
+        if($i == '_avatar_height')
+        {
+            list($name, $desc, $req, $value) = array_pop($xfields);
+            $_avatar_height = $value;
+        }
     }
 
     if (count($cat_lines) > 0)
@@ -304,6 +332,7 @@ if ($action == "addnews")
     $full_story  = htmlspecialchars( $_POST['full_story'] );
 
     $UseAvatar   = ($config_use_avatar == 'yes') ? 1 : 0;
+    $Using_HTML = $config_use_html;
     echo proc_tpl
     (
             'addnews/'.$tpl,

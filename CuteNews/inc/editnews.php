@@ -10,7 +10,14 @@ $source = preg_replace('~[^a-z0-9_\.]~i', '', $source);
 list ($allowed_cats, $cat_lines, $cat) = get_allowed_cats($member_db);
 
 $use_wysiwyg = 0;
-if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor')) $use_wysiwyg = 1;
+if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor'))
+{
+    $implemented_ckeditor_filemanager = hook('implement_file_browser', "
+        filebrowserBrowseUrl:      '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true',
+        filebrowserImageBrowseUrl: '{$PHP_SELF}?&mod=images&action=quick&wysiwyg=true'");
+
+    $use_wysiwyg = 1;
+}
 
 // ********************************************************************************
 // List all news available for editing
@@ -334,6 +341,15 @@ elseif ($action == "editnews")
         {
             $optfields = array();
             $more = false;
+
+            if($config_use_avatar == 'yes')
+            {
+                if(!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
+                    $error_messages .= getpart('addnews_err', array( lang('Avatar width may consist only digits and % or px on the end') ));
+                if(!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
+                    $error_messages .= getpart('addnews_err', array( lang('Avatar height may consist only digits and % or px on the end') ));
+            }
+
             foreach ($cfg['more_fields'] as $i => $v)
             {
                 if ($v[0] == '&' && $_REQUEST[$i] == false)
@@ -369,16 +385,17 @@ elseif ($action == "editnews")
         // Check avatar
         if ($editavatar)
         {
-            $editavatar = check_avatar($editavatar);
-            if ($editavatar == false)
-                $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded'), '#GOBACK')  );
+            $check_result = check_avatar($editavatar);
+            if ($check_result['is_loaded'] == false)
+                $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!').' '.$check_result['error_msg'], '#GOBACK'));
+            $editavatar = $check_result['path'];
         }
 
         // Preview tool
         $preview_hmtl = false;
         if (isset($preview) && $preview == 'preview')
         {
-            $new[NEW_ID]        = time();
+            $new[NEW_ID]        = time() + $config_date_adjust*60;
             $new[NEW_USER]      = $member_db[2];
             $new[NEW_TITLE]     = $title;
             $new[NEW_SHORT]     = $short_story;
@@ -445,7 +462,7 @@ elseif ($action == "editnews")
                         if ($ifdelete != "yes")
                         {
                             // If save as postponed news
-                            $id = ($source == "postponed") ? mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) + $config_date_adjust*60 : $old_db_arr[NEW_ID];
+                            $id = ($source == "postponed") ? mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) : $old_db_arr[NEW_ID];
                             $old_db_arr[NEW_ID] = $id;
 
                             // Only for editor without wysiwyg
@@ -573,7 +590,7 @@ elseif ($action == "editnews")
     $short_story_id = 'short_story';
     $full_story_id = 'full_story';
 
-    $newstime = date("D, d F Y h:i:s", $item_db[0] + $config_date_adjust*60);
+    $newstime = date("D, d F Y h:i:s", $item_db[0]);
     $item_db[NEW_TITLE] = stripslashes( preg_replace(array("'\|'", "'\"'", "'\''"), array("I", "&quot;", "&#039;"), $item_db[NEW_TITLE]) );
 
     // Are we using the WYSIWYG ?
@@ -704,6 +721,16 @@ elseif ($action == "editnews")
         if ( $v[0] == '&' )
              $xfields[] = array( $i, substr($v,1), '<span style="color: red;">*</span> '. lang('required','news'), $af );
         else $xfields[] = array( $i, $v, '', $af );
+        if($i == '_avatar_width')
+        {
+            list($name, $desc, $req, $value) = array_pop($xfields);
+            $_avatar_width = $value;
+        }
+        if($i == '_avatar_height')
+        {
+            list($name, $desc, $req, $value) = array_pop($xfields);
+            $_avatar_height = $value;
+        }
     }
 
     $options = options_extract($item_db[NEW_OPT]);

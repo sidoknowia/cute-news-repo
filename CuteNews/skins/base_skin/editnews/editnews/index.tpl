@@ -57,7 +57,9 @@
         {if $Using_Avat}
         <tr>
             <td align="right">Avatar URL&nbsp;</td>
-            <td width="464" colspan="2"> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span>
+            <td width="464" colspan="2"> <input type=text name=editavatar value="{$item_db5}" size=42 tabindex=2>
+            width: <input tabindex=2 type="text" name="_avatar_width" size="3" value="{$_avatar_width}">
+            height: <input tabindex=2 type="text" size="3" name="_avatar_height" value="{$_avatar_height}">&nbsp;&nbsp;&nbsp;<span style="font-size:7pt">(optional)</span></td>
         </tr>
         {/if}
 
@@ -80,6 +82,7 @@
             <td width="140" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
                 <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$short_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
                 <p>{$short_story_smiles}</p>
+                {$Hook_AdditionalFieldsShort}
             </td>
         </tr>
 
@@ -105,6 +108,7 @@
             <td width="140" valign="top" style='background: url(skins/images/baloon.gif) no-repeat top left' align="center">
                 <p><a href=# onclick="window.open('{$PHP_SELF}?&mod=images&action=quick&area={$short_story_id}', '_Addimage', 'HEIGHT=500,resizable=yes,scrollbars=yes,WIDTH=360');return false;" target="_Addimage"><br />[insert image]</a></p>
                 <p>{$full_story_smiles}</p>
+                {$Hook_AdditionalFieldsFull}
             </td>
         </tr>
 

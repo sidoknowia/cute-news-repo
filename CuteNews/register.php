@@ -20,7 +20,7 @@ $user_arr       = user_search($regusername);
 // sanitize
 if ($action == "doregister")
 {
-    if ($config_allow_registration != "yes")     msg("error", lang('Error!'), lang("User registration is disabled"), '#GOBACK');
+    if ($config_allow_registration != "1")     msg("error", lang('Error!'), lang("User registration is disabled"), '#GOBACK');
     if (!$regusername)                           msg("error", lang('Error!'), lang("Username cannot be blank"), '#GOBACK');
     if (!$regpassword)                           msg("error", lang('Error!'), lang("Password cannot be blank"), '#GOBACK');
     if (!$regemail)                              msg("error", lang('Error!'), lang("Email cannot be blank"), '#GOBACK');
@@ -60,7 +60,7 @@ if ($action == "doregister")
     $regpassword = $hmet[ count($hmet)-1 ];
 
     // add to database
-    user_add( array(UDB_ID => $add_time, $register_level, $regusername, $regpassword, $regnickname, $regemail, 0, 1 ));
+    user_add( array(UDB_ID => $add_time, $register_level, $regusername, $regpassword, $regnickname, $regemail, 0, 1, '','' ));
 
     // send email
     if ($config_notify_registration == "yes" and $config_notify_status == "active")
@@ -164,7 +164,7 @@ elseif ($action == "dsp")
 }
 else
 {
-    if ($config_allow_registration != "yes")
+    if ($config_allow_registration != "1")
         msg("error", lang('Error!'), lang("User registration is Disabled"), '#GOBACK');
 
     echoheader("user", lang("User Registration"));

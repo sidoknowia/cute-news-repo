@@ -5,7 +5,7 @@ if (!defined('INIT_INSTANCE')) die('Access restricted');
 if ($member_db[UDB_ACL] > ACL_LEVEL_JOURNALIST or ($member_db[UDB_ACL] != ACL_LEVEL_ADMIN and $action == "doimagedelete"))
     msg("error", "Access Denied", "You don't have permission to manage images");
 
-$allowed_extensions = array("gif", "jpg", "png", "bmp", "jpe", "jpeg");
+$allowed_extensions = explode(',', $config_allowed_extensions);
 
 // ********************************************************************************
 // Show Preview of Image
@@ -111,6 +111,7 @@ elseif ($action != "doimagedelete")
     {
         $img_name_arr = explode(".",$file);
         $img_type     = end($img_name_arr);
+
         if ( (in_array($img_type, $allowed_extensions) or in_array(strtolower($img_type), $allowed_extensions)) and $file != ".." and $file != "." and is_file(SERVDIR."/uploads/".$file))
         {
             $i++;

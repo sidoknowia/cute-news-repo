@@ -12,19 +12,11 @@
             $output      = template_replacer_news($news_arr, $template_full);
             $output      = hook('replace_fullstory', $output);
             $output      = UTF8ToEntities($output);
+
             echo $output;
         }
     }
 
-    if($config_use_fblike == 'yes')
-    {
-        $float = '';
-        if($config_use_twitter == 'yes') $float = 'style="float: left;"';
-        echo '<div class="fb-like" data-send="'.($config_fblike_send_btn=="yes"?"true":"false").'" data-layout="'.$config_fblike_style.'" data-width="'.$config_fblike_width.'" data-show-faces="'.($config_fblike_show_faces=="yes"?"true":"false").'" data-font="'.$config_fblike_font.'" data-colorscheme="'.$config_fblike_color.'" data-action="'.$config_fblike_verb.'" '.$float.'></div>';
-    }
-
-    if($config_use_twitter == 'yes')
-        echo '<div><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($config_tw_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.$config_tw_lang.'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
     // Article ID was not found, if we have not specified an archive -> try to find the article in some archive.
     // Auto-Find ID In archives
     //----------------------------------------------------------------------

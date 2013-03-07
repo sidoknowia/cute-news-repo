@@ -43,7 +43,7 @@ $is_loged_in = false;
 
 // Check the User is Identified -------------------------------------------------------------------------------------
 $result      = false;
-$username    = empty($_POST['user']) ? $_POST['username'] : $_SESS['ix'];
+$username    = isset($_POST['username']) ? $_POST['username'] : $_SESS['ix'];
 $password    = $_POST['password'];
 
 // User is banned
@@ -166,7 +166,7 @@ if (empty($is_loged_in))
     echoheader("user", lang("Please Login"));
     echo proc_tpl('login_window',
                   array('lastusername'  => htmlspecialchars($username) ),
-                  array('ALLOW_REG'     => ($config_allow_registration == "yes")? 1:0 ) );
+                  array('ALLOW_REG'     => ($config_allow_registration == "1")? 1:0 ) );
 
     echofooter();
 }

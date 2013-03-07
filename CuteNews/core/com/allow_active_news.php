@@ -61,7 +61,7 @@
             $news_arr = explode("|", $news_line);
 
             // Prospected news not showing
-            if ($news_arr[NEW_ID] > time()) continue;
+            if ($news_arr[NEW_ID] > time() + $config_date_adjust*60) continue;
 
             if (strstr($news_arr[NEW_CAT], ','))
             {
@@ -97,12 +97,6 @@
 
             $i++;
             $showed++;
-
-            // allow use fb comments
-            if ($config_use_fbcomments == 'yes' && $config_fb_inactive == 'yes')
-            {
-                echo '<div class="fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[0].'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
-            }
 
             // Includes for bottom of activenews
             echo hook('additional_include_activenews');
@@ -146,65 +140,71 @@
         else $repeat = false;
     }
 
-    // << Previous & Next >>
-    $prev_next_msg = $template_prev_next;
-
-    //----------------------------------
-    // Previous link
-    //----------------------------------
-    if ($start_from)
+    // Triggerred by $config_disable_pagination = TRUE
+    if ($config_disable_pagination == 0)
     {
-        $prev = $start_from - $number;
-        $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($prev, $ucat, $url_archive, $subaction, $id));
-        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a> ', $prev_next_msg);
-    }
-    else
-    {
-        $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "\\1", $prev_next_msg);
-        $no_prev = true;
-    }
+        // << Previous & Next >>
+        $prev_next_msg = $template_prev_next;
 
-    //----------------------------------
-    // Pages
-    //----------------------------------
-    $pages = '';
-
-    if ($number)
-    {
-        $pages_count        = ceil($count_all / $number);
-        $pages_start_from   = 0;
-
-        for($j=1; $j<= $pages_count; $j++)
+        //----------------------------------
+        // Previous link
+        //----------------------------------
+        if ($start_from)
         {
-            if ( $pages_start_from != $start_from)
-            {
-                $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
-                $pages .= '<a href="'.RWU('newspage', $URL).'">'.$j.'</a> ';
-            }
-            else $pages .= '<strong>'.$j.'</strong> ';
-            $pages_start_from += $number;
+            $prev = $start_from - $number;
+            $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($prev, $ucat, $url_archive, $subaction, $id));
+            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a> ', $prev_next_msg);
         }
-    }
-    else
-    {
-        $no_next = true;
-        $no_prev = true;
-    }
+        else
+        {
+            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "\\1", $prev_next_msg);
+            $no_prev = true;
+        }
 
-    $prev_next_msg = str_replace("{pages}", $pages, $prev_next_msg);
+        //----------------------------------
+        // Pages
+        //----------------------------------
+        $pages = '';
 
-    //----------------------------------
-    // Next link  (typo here ... typo there... typos everywhere !)
-    //----------------------------------
-    if ($number < $count_all and $i < $count_all)
-    {
-        $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($i, $ucat, $url_archive, $subaction, $id));
-        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a>', $prev_next_msg);
-    }
-    else
-    {
-        $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "\\1", $prev_next_msg);
-        $no_next = TRUE;
-    }
+        if ($number)
+        {
+            $pages_count        = ceil($count_all / $number);
+            $pages_start_from   = 0;
 
-    if (!$no_prev or !$no_next) echo $prev_next_msg;
+            for($j=1; $j<= $pages_count; $j++)
+            {
+                if ( $pages_start_from != $start_from)
+                {
+                    $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
+                    $pages .= '<a href="'.RWU('newspage', $URL).'">'.$j.'</a> ';
+                }
+                else $pages .= '<strong>'.$j.'</strong> ';
+                $pages_start_from += $number;
+            }
+        }
+        else
+        {
+            $no_next = true;
+            $no_prev = true;
+        }
+
+        $prev_next_msg = str_replace("{pages}", $pages, $prev_next_msg);
+
+        //----------------------------------
+        // Next link  (typo here ... typo there... typos everywhere !)
+        //----------------------------------
+        if ($number < $count_all and $i < $count_all)
+        {
+            $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($i, $ucat, $url_archive, $subaction, $id));
+            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.RWU('newspage', $URL).'">\\1</a>', $prev_next_msg);
+        }
+        else
+        {
+            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "\\1", $prev_next_msg);
+            $no_next = TRUE;
+        }
+
+        if (!$no_prev or !$no_next) echo $prev_next_msg;
+
+    }
+?>

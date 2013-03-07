@@ -104,7 +104,7 @@
     if (!isset($config_fb_box_width))       $config_fb_box_width = '470';
     if (!isset($config_fbcomments_color))   $config_fbcomments_color = 'light';
     if (!isset($config_fb_appid))           $config_fb_appid = '';
-    if (!isset($config_ban_attempts))       $config_ban_attempts = 3;
+    if (empty($config_ban_attempts))        $config_ban_attempts = 5;
     if (!isset($config_use_fblike))         $config_use_fblike = "no";
     if (!isset($config_fblike_send_btn))    $config_fblike_send_btn = "no";
     if (!isset($config_fblike_style))       $config_fblike_style = "standard";
@@ -122,6 +122,8 @@
     if (!isset($config_tw_hashtag))         $config_tw_hashtag = "";
     if (!isset($config_tw_large))           $config_tw_large = "no";
     if (!isset($config_tw_lang))            $config_tw_lang = "en";
+    if (!isset($config_disable_pagination)) $config_disable_pagination = 0;
+    if (empty($config_allowed_extensions))  $config_allowed_extensions = "gif,jpg,png,bmp,jpe,jpeg";
 
     // adjust timezone
     if (function_exists('date_default_timezone_set'))
@@ -213,6 +215,9 @@
     $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
     fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
     fclose($fx);
+
+    // More default options
+    if (!getoption('ckeditor_customize')) $config_ckeditor_customize = read_tpl('default/ckeditor.options');
 
     //----------------------------------
     // Html Special Chars (HEX -> UTF-8) L-Endian

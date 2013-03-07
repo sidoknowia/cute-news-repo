@@ -219,7 +219,7 @@ BODY,TD,TR{
                         <table border="0" width="453" cellspacing="1" cellpadding="3">
                             <tr>
                                 <td width="441">
-                                    <?php
+                                    <?php $soc_categories = '1,7';
 
                                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     Here we decide what page to include
