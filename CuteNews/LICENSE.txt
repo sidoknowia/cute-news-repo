@@ -53,8 +53,8 @@ are occurring.
 6.4 Un-Official technical support will be provided in our forums from
 voluntary members to both Registered and Un-Registered Users.
 
-6.5 CutePHP.com Software includes CKEditor, which is an open-source 
-product.
+6.5 CutePHP.com Software includes CKEditor and class "zipfile" by
+Joshua Townsend, which is an open-source product.
 
 TERMINATION
 This Agreement will terminate automatically upon failure to comply

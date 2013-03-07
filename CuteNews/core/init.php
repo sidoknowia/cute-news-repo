@@ -10,8 +10,8 @@
     define('EXEC_TIME',               microtime(true));
 
     // BASE SETTINGS
-    define('VERSION',                 '1.5.2');
-    define('VERSION_ID',              190);
+    define('VERSION',                 '1.5.3');
+    define('VERSION_ID',              191);
 
     define('SERVDIR',                 dirname(dirname(__FILE__).'.html'));
     define('SKINS',                   '/skins');
