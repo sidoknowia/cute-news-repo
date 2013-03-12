@@ -23,6 +23,9 @@ if (REQ('action','GET') == 'permissions')
     }
 }
 
+// Check previous versions
+$data_folder_exists = (is_dir(SERVDIR.'/data')) ? 1 : 0;
+
 // ----------------------------------------
 echoheader("home", lang("Welcome"));
 

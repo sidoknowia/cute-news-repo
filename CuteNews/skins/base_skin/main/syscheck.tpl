@@ -10,7 +10,10 @@
         <div style="clear: left;"></div>
         {/if}
 
-        <div style="margin: 20px 0 0 0; text-align: right;"><a href="{$PHP_SELF}?mod=main&amp;action=permissions">Run permissions check</a></div>
+        <div style="margin: 20px 0 0 0; text-align: right;">
+            <a href="{$PHP_SELF}?mod=main&amp;action=permissions">Run permissions check</a>
+            {if $data_folder_exists}| <a href="migrate_to_latest.php">Migrate to the latest</a>{/if}
+        </div>
 
     </div>
 
