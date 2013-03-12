@@ -2596,7 +2596,10 @@ function cn_selfcheck()
 
 function CSRFMake()
 {
-    global $_SESS;
+    global $config_csrf, $_SESS;
+
+    // no check CSRF
+    if ($config_csrf == 0) return TRUE;
 
     $csrf = md5(mt_rand() . mt_rand() . mt_rand() . mt_rand() ) ;
 
@@ -2612,7 +2615,10 @@ function CSRFMake()
 
 function CSRFCheck()
 {
-    global $_SESS;
+    global $config_csrf, $_SESS;
+
+    // no check CSRF
+    if ($config_csrf == 0) return TRUE;
 
     $user = $_SESS['user'];
     $csrf_storage = SERVDIR.'/cdata/csrf.php';

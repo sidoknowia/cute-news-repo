@@ -462,7 +462,14 @@ elseif ($action == "editnews")
                         if ($ifdelete != "yes")
                         {
                             // If save as postponed news
-                            $id = ($source == "postponed") ? mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year) : $old_db_arr[NEW_ID];
+                            if($source == "postponed")
+                            {
+                                $postponed_time = mktime($from_date_hour, $from_date_minutes, 0, $from_date_month, $from_date_day, $from_date_year);
+                                $id = check_postponed_date($postponed_time, $old_db);
+                            }
+                            else
+                                $id = $old_db_arr[NEW_ID];
+
                             $old_db_arr[NEW_ID] = $id;
 
                             // Only for editor without wysiwyg

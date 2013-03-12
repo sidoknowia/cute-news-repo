@@ -124,6 +124,7 @@
     if (!isset($config_tw_lang))            $config_tw_lang = "en";
     if (!isset($config_disable_pagination)) $config_disable_pagination = 0;
     if (empty($config_allowed_extensions))  $config_allowed_extensions = "gif,jpg,png,bmp,jpe,jpeg";
+    if (empty($config_csrf))                $config_csrf = 0;
 
     // adjust timezone
     if (function_exists('date_default_timezone_set'))
@@ -464,8 +465,8 @@
     foreach ($HTML_SPECIAL_CHARS_UTF8 as $hex => $html)
     {
         $key = '';
-        if (strlen($hex) == 4)      $key = pack("cc",  hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)));
-        elseif (strlen($hex) == 6)  $key = pack("ccc", hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
+        if (strlen($hex) == 4)      $key = pack("CC",  hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)));
+        elseif (strlen($hex) == 6)  $key = pack("CCC", hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
 
         if ($key) $HTML_SPECIAL_CHARS[$key] = $html;
     }
