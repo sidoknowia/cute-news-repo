@@ -471,7 +471,7 @@ elseif ($action == "syscon")
     echo syscon('ipauth',               'Check IP|stronger authenticate (by changing this setting, you will be logged out)', 'Y/N');
     echo syscon('userlogs',             'Enable user logs|store user logs', 'Y/N');
     echo syscon('allowed_extensions',   'Allowed extensions|Used by file manager. Enter by comma without space');
-    echo syscon('csrf',                 'Check CSRF|Add more security by checking cross-site request forgery', 'Y/N');
+    echo syscon('csrf',                 'Check CSRF|Protect your safety by checking cross-site request forgery', 'Y/N');
 
     hook('field_options_general');
     echo "</table></td></tr>";
