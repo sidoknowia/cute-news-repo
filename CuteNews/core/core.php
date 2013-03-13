@@ -2554,7 +2554,7 @@ function cn_selfcheck()
             if (is_readable($the_file))
             {
                 // FS. BEFORE
-                clearstatcache($the_file);
+                clearstatcache();
                 $fs0 = filesize($the_file);
 
                 $af = fopen($the_file, 'a+');
@@ -2562,7 +2562,7 @@ function cn_selfcheck()
                 fclose($af);
 
                 // FS. AFTER
-                clearstatcache($the_file);
+                clearstatcache();
                 $fs1 = filesize($the_file);
 
                 // REVERT
@@ -2686,20 +2686,25 @@ function show_social_code($name = 'fb', $news_arr)
         $soc_allowed = count(array_intersect($tmp_fb_cats, $tmp_nw_cats)) ? 1 : 0;
     }
 
+    $data_href    = $config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[NEW_ID];
+    $twitter_text = $config_tw_text ?  $config_tw_text : htmlspecialchars($news_arr[NEW_TITLE]);
+
     // Show FB comments
     if ($name == 'fb' && $config_use_fbcomments == 'yes' && $config_fb_inactive == 'yes' && $soc_allowed)
     {
-        return '<div class="fb-comments cutenews-fb-comments" data-href="'.$config_http_script_dir.'/router.php?subaction=showfull&amp;id='.$news_arr[NEW_ID].'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
+        return '<div class="fb-comments cutenews-fb-comments" data-href="'.$data_href.'" data-num-posts="'.$config_fb_comments.'" data-width="'.$config_fb_box_width.'" data-colorscheme="'.$config_fbcomments_color.'"></div>';
     }
     // Show FB like
     elseif ($name == 'fb-like' && $config_use_fblike == 'yes' && $soc_allowed)
     {
-        return '<div class="fb-like cutenews-fb-comments" data-send="'.($config_fblike_send_btn=="yes"?"true":"false").'" data-layout="'.$config_fblike_style.'" data-width="'.$config_fblike_width.'" data-show-faces="'.($config_fblike_show_faces=="yes"?"true":"false").'" data-font="'.$config_fblike_font.'" data-colorscheme="'.$config_fblike_color.'" data-action="'.$config_fblike_verb.'"></div>';
+        return '<div class="fb-like cutenews-fb-comments" data-href="'.$data_href.'" data-send="'.($config_fblike_send_btn=="yes"?"true":"false").'" data-layout="'.$config_fblike_style.'" data-width="'.$config_fblike_width.'" data-show-faces="'.($config_fblike_show_faces=="yes"?"true":"false").'" data-font="'.$config_fblike_font.'" data-colorscheme="'.$config_fblike_color.'" data-action="'.$config_fblike_verb.'"></div>';
     }
     elseif ($name == 'twitter' && $config_use_twitter == 'yes' && $soc_allowed)
     {
-        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($config_tw_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.$config_tw_lang.'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
+        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($twitter_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.$config_tw_lang.'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
     }
+
+    return '';
 }
 
 ?>

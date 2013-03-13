@@ -55,75 +55,41 @@ BODY,TD,TR{
 
     <tr>
         <td>
-            &nbsp;
             <table border="0" width="100%" cellspacing="0" cellpadding="6">
                 <tr>
                     <td width="180" valign=top style="border-right: 1px dotted #000000;"><table border="0" width=93% cellspacing="0" cellpadding="0">
                         <tr>
-
-                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26">
-                                <p align="left">&nbsp;<b><font color="#003366">Navigation</font></b></p>
-                            </td>
+                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26"><p align="left">&nbsp;<b><font color="#003366">Navigation</font></b></p></td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;
-                            </td>
+                            <td width="100%">&nbsp;</td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>">main page</a>
-                            </td>
+                            <td width="100%">&nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>">main page</a></td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=archives">archives</a>
-                            </td>
+                            <td width="100%">&nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=archives">archives</a></td>
                         </tr>
                         <tr>
-                            <td width="100%">
-                                &nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=stats">statistic</a>
-                            </td>
+                            <td width="100%">&nbsp;<a href="<?php echo $_SERVER['PHP_SELF']; ?>?do=stats">statistic</a></td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;<a href="?">other link</a>
-                            </td>
+                            <td width="100%">&nbsp;<a href="?">other link</a></td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;<a href="?">other link</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td width="100%">
-                                <a title="RSS Feed" href="<?php echo $_SERVER['PHP_SELF']; ?>?do=rss"><img src="<?php echo $config_http_script_dir; ?>/skins/images/rss_icon.gif" border=0/></a>
-                            </td>
-                        </tr>
-
-
-                        <tr>
-
-                            <td width="100%">
-                                &nbsp;
-                            </td>
+                            <td width="100%">&nbsp;<a href="?">other link</a></td>
                         </tr>
                         <tr>
-
-                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26">
-                                <p align="left">&nbsp;<font color="#003366"><b>Quick search</b></font></p>
-                            </td>
+                            <td width="100%"><a title="RSS Feed" href="<?php echo $_SERVER['PHP_SELF']; ?>?do=rss"><img src="<?php echo $config_http_script_dir; ?>/skins/images/rss_icon.gif" border=0/></a></td>
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                            </td>
+                            <td width="100%">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26"><p align="left">&nbsp;<font color="#003366"><b>Quick search</b></font></p></td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;</td>
                         </tr>
                         <tr>
                             <!-- The Quick Search Form -->
@@ -134,82 +100,43 @@ BODY,TD,TR{
                                 </form>
                             </td>
                             <!-- End of the Search Form -->
-
                         </tr>
                         <tr>
-
-                            <td width="100%">
-                                &nbsp;
-                            </td>
+                            <td width="100%">&nbsp;</td>
                         </tr>
                         <tr>
-
-                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26">
-                                <p align="left">&nbsp;<b><font color="#003366">banners/sponsors</font></b></p>
-                            </td>
+                            <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26"><p align="left">&nbsp;<b><font color="#003366">banners/sponsors</font></b></p></td>
                         </tr>
-                        <center>
-
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;put some banners here
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;and another banners here
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%" style="border-top: 1 solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26">
-                                    <p align="left">&nbsp;<font color="#003366"><b>Friends</b></font></p>
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;<a href="http://cutephp.com" title="PHP News Content Management System" target="_blank">CutePHP Scripts</a>
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;<a href="http://news.google.com" target="_blank">Google News</a>
-                                </td>
-                            </tr>
-                            <tr>
-
-                                <td width="100%">
-                                    &nbsp;<a href="http://mozilla.org" target="_blank">Mozilla.org</a>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td width="100%">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;put some banners here</td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;and another banners here</td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="100%" style="border-top: 1px solid #000000; border-bottom: 1 solid #000000" bgcolor="#F3F4F5" height="26"><p align="left">&nbsp;<font color="#003366"><b>Friends</b></font></p></td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;<a href="http://cutephp.com" title="PHP News Content Management System" target="_blank">CutePHP Scripts</a></td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;<a href="http://news.google.com" target="_blank">Google News</a></td>
+                        </tr>
+                        <tr>
+                            <td width="100%">&nbsp;<a href="http://mozilla.org" target="_blank">Mozilla.org</a></td>
+                        </tr>
                     </table>
 
                     <br><br><br><br><br>
@@ -219,34 +146,42 @@ BODY,TD,TR{
                         <table border="0" width="453" cellspacing="1" cellpadding="3">
                             <tr>
                                 <td width="441">
-                                    <?php
+                                <?php
 
-                                    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    Here we decide what page to include
-                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-                                    if($_POST['do'] == "search" or $_GET['dosearch'] == "yes"){ $subaction = "search"; $dosearch = "yes"; include("search.php"); }
-                                    elseif($_GET['do'] == "archives"){ include("show_archives.php"); }
-                                    elseif($_GET['do'] == "stats"){ echo"You can download the stats addon and include it here to show how many news, comments ... you have"; /* include("$path/stats.php"); */ }
-                                    else{ include("show_news.php"); }
+                                    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                    // Here we decide what page to include
+                                    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                    if ($_POST['do'] == "search" or $_GET['dosearch'] == "yes")
+                                    {
+                                        $subaction = "search";
+                                        $dosearch = "yes";
+                                        include("search.php");
+                                    }
+                                    elseif ($_GET['do'] == "archives")
+                                    {
+                                        include("show_archives.php");
+                                    }
+                                    elseif ($_GET['do'] == "stats")
+                                    {
+                                        echo"You can download the stats addon and include it here to show how many news, comments ... you have";
+                                    }
+                                    else
+                                    {
+                                        include("show_news.php");
+                                    }
 
-                                    ?>
+                                ?>
                                 </td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
-
 </table>
 <br>
 <br>
-<table border=0 width=700 style="border-top: 1px dotted #000000;">
-    <tr>
-        <td> <p align="center">put your footer and copyright here </td>
-    </tr>
-</table>
+<table border=0 width=700 style="border-top: 1px dotted #000000;"><tr><td> <p align="center">put your footer and copyright here </td></tr></table>
 </body>
 </html>
