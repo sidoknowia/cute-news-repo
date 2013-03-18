@@ -167,6 +167,7 @@ BODY,TD,TR{
                                     }
                                     else
                                     {
+                                        $number = 5;
                                         include("show_news.php");
                                     }
 

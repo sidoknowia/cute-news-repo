@@ -575,48 +575,5 @@ elseif ($action == 'plugins')
 
     echofooter();
 }
-elseif ($action == 'rewrite')
-{
-    if ($subaction == 'save')
-    {
-        $w = fopen(SERVDIR.'/cdata/conf_rw.php', 'w');
-        flock($w, LOCK_EX);
-        fwrite($w, '<'."?php\n");
-        foreach ($_REQUEST as $i => $v)
-            if (substr($i, 0, 5) == 'conf_')
-                fwrite( $w, '$conf_rw_'.substr($i, 5).' = "'.str_replace('"', '\"', $v) . "\";\n" );
-        flock($w, LOCK_UN);
-        fclose($w);
-
-        $saved_ok = getpart('saved_ok');
-    }
-
-    // Read data from datatable
-    if (file_exists(SERVDIR.'/cdata/conf_rw.php'))
-        include ( SERVDIR.'/cdata/conf_rw.php' );
-
-    // Default values -----------------
-    set_default_val_for_rewrite();
-
-    hook('insert_additional_rewrites');
-
-    // Try to update htaccess
-    if ($update_htaccess == 'Y')
-    {
-        $w = fopen($conf_rw_htaccess, 'w');
-        flock($w, LOCK_EX);
-        fwrite($w, "RewriteEngine ON\n");
-        fwrite($w, "RewriteCond %{REQUEST_FILENAME} !-d\n");
-        fwrite($w, "RewriteCond %{REQUEST_FILENAME} !-f\n");
-        fwrite($w, "RewriteRule ^(.*)\$ /cn_friendly_url.php?rew=\$1&%{QUERY_STRING}[L]\n");
-        flock($w, LOCK_UN);
-        fclose($w);
-    }
-
-    // view template
-    echoheader('home', lang('URL Rewrite Manager'), make_breadcrumbs('main=main/options:options=options/tools:rewrite=Rewrite Manager', true));
-    echo proc_tpl('tools/rewrites/index');
-    echofooter();
-}
 
 hook('tools_additional_actions');

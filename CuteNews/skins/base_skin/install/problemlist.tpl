@@ -1,7 +1,7 @@
 {if $fail}
 
 <br/><br/>
-<h2 style="color: red;">Some problem occurred by migration script</h2>
+<h2 style="color: red;">{$problemlist_title}</h2>
 <table>
     <tr bgcolor="#FFFFC0">
         <th>Problem</th>

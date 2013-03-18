@@ -90,7 +90,6 @@
     if (!isset($config_default_charset))    $config_default_charset = 0;
     if (!isset($config_useutf8))            $config_useutf8 = 0;
     if (!isset($config_utf8html))           $config_utf8html = 0;
-    if (!isset($config_use_replacement))    $config_use_replacement = 0;
     if (!isset($config_ipauth))             $config_ipauth = 0;
     if (!isset($config_xss_strict))         $config_xss_strict = 0;
     if (!isset($config_userlogs))           $config_userlogs = 0;
@@ -148,10 +147,6 @@
     if (file_exists(SERVDIR . '/cdata/conf.php'))
         $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
     else $cfg = array();
-
-    // initialize mod_rewrite if present
-    if  ($config_use_replacement && file_exists(SERVDIR.'/cdata/conf_rw.php'))
-         include ( SERVDIR.'/cdata/conf_rw.php' );
 
     // check skin if exists
     $config_skin = preg_replace('~[^a-z]~i','', $config_skin);

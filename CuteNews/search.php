@@ -130,8 +130,11 @@
 
                 if (preg_match('~(\d+)\.news\.arch$~i', $resline['src'], $arc)) $archive = $arc[1];
 
-                $URL = $PHP_SELF . build_uri('subaction,id,archive,ucat', array('showfull'));
-                $url = RWU( 'readmore', $URL );
+                $URL = '';
+                list($hook_is_used, $url) = hook('rewrite_url_in_search', array(false, $URL));
+                if(!$hook_is_used)
+                    $URL = $PHP_SELF . build_uri('subaction,id,archive,ucat', array('showfull'));
+
                 echo "<div class='cutenews_search_item'>$itemid <b><a href='$url'>$title</a></b> (". date("d F, Y", $id) .")</div>";
             }
 

@@ -208,6 +208,6 @@ else
     chmod (SERVDIR.'/cdata/.htaccess', 0644);
     fclose($w);
 
-    $found_problems = proc_tpl('install/problemlist');
+    $found_problems = proc_tpl('install/problemlist', array('problemlist_title'=>'Some problem occurred by migration script'));
     msg('info', lang('Migration success'), lang("Congrats! You migrated to Cutenews ".VERSION). " | <a href='index.php'>Login</a> ".$found_problems);
 }

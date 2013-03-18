@@ -110,16 +110,6 @@ if ($action == "options" or $action == '')
         ),
     );
 
-    // Optional Fields -------------------------------
-    if ($config_use_replacement)
-    {
-        $options[] = array(
-            'name'              => lang('URL Rewrite manager', 'options'),
-            'url'               => "$PHP_SELF?mod=tools&action=rewrite",
-            'access'            => ACL_LEVEL_ADMIN,
-        );
-    }
-
     $options = hook('more_options', $options);
 
     //------------------------------------------------
@@ -467,7 +457,6 @@ elseif ($action == "syscon")
     echo syscon('registration_level',   'Self-registration level|choose your status', array(ACL_LEVEL_JOURNALIST=>"Journalist", ACL_LEVEL_COMMENTER=>"Commentator"));
     echo syscon('ban_attempts=5',       'Number of login attempts|specify the number of attempts to enter the password. Once it is exceeded, the account will be automatically banned for an hour.');
     echo syscon('xss_strict',           'XSS strict|if "strong", remove all suspicious parameters in tags', array(0=>"No", 1=>"Strong", 2=>"Total Filter"));
-    echo syscon('use_replacement',      'Custom rewrite|allow rewrite news url path', 'Y/N');
     echo syscon('ipauth',               'Check IP|stronger authenticate (by changing this setting, you will be logged out)', 'Y/N');
     echo syscon('userlogs',             'Enable user logs|store user logs', 'Y/N');
     echo syscon('allowed_extensions',   'Allowed extensions|Used by file manager. Enter by comma without space');

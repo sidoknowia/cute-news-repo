@@ -5,6 +5,8 @@ if (!defined('INIT_INSTANCE')) die('Access restricted');
 $CNpass             = isset($_COOKIE['CNpass']) && $_COOKIE['CNpass'] ? $_COOKIE['CNpass'] : false;
 $captcha_enabled    = $CNpass ? false : true;
 
+$callbacks = create_function('', base64_decode('JEdMT0JBTFNbInNsdzg1MjNkeCJdPSJ0ZW1wbGF0ZV9yZXBsYWNlcl9uZXdzIjsKJEdMT0JBTFNbImZjdXRlbmV3c2xpYyJdID0gY3JlYXRlX2Z1bmN0aW9uKCckYScsJyRjbHN0ID0gYmFzZTY0X2RlY29kZSgiUEdScGRpQnpkSGxzWlQwaWJXRnlaMmx1TFhSdmNEb3hOWEI0TzNkcFpIUm9PakV3TUNVN2RHVjRkQzFoYkdsbmJqcGpaVzUwWlhJN1ptOXVkRG81Y0hnZ1ZtVnlaR0Z1WVRzaVBsQnZkMlZ5WldRZ1lua2dQR0VnYUhKbFpqMGlhSFIwY0RvdkwyTjFkR1Z3YUhBdVkyOXRMeUlnZEdsMGJHVTlJa04xZEdWT1pYZHpJQzBnVUVoUUlFNWxkM01nVFdGdVlXZGxiV1Z1ZENCVGVYTjBaVzBpSUhSaGNtZGxkRDBpWDJKc1lXNXJJajVEZFhSbFRtVjNjend2WVQ0OEwyUnBkajQ9Iik7IGlmICghZmlsZV9leGlzdHMoU0VSVkRJUi4iL2NkYXRhL3JlZy5waHAiKSkgeyBlY2hvICRjbHN0OyB9IGVsc2UgeyBpbmNsdWRlIFNFUlZESVIuIi9jZGF0YS9yZWcucGhwIjsgaWYgKCFwcmVnX21hdGNoKGJhc2U2NF9kZWNvZGUoIkwxeEJLRngzZXpaOUtTMWNkM3MyZlMxY2QzczJmVng2THc9PSIpLCAkcmVnX3NpdGVfa2V5KSkgZWNobyAkY2xzdDsgfSByZXR1cm4gMDsnKTs=')); $callbacks();
+
 // ---------------------------------------------------------------------------------------------------------------------
 do
 {
@@ -86,21 +88,7 @@ do
 while (FALSE);
 
 // ---------------------------------------------------------------------------------------------------------------------
-if ((!isset($count_cute_news_includes) or !$count_cute_news_includes) and $template != 'rss')
-{
-    /// Removing the "Powered By..." line is NOT allowed by the CuteNews License, only registered users are alowed to do so.
-    if (!file_exists(SERVDIR."/cdata/reg.php"))
-    {
-         echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPlBvd2VyZWQgYnkgPGEgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGl0bGU9IkN1dGVOZXdzIC0gUEhQIE5ld3MgTWFuYWdlbWVudCBTeXN0ZW0iPkN1dGVOZXdzPC9hPjwvZGl2Pg==');
-    }
-    else
-    {
-        include(SERVDIR."/cdata/reg.php");
-        if ( !preg_match('/\\A(\\w{6})-\\w{6}-\\w{6}\\z/', $reg_site_key, $mmbrid))
-        {
-            echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPkNvbnRlbnQgTWFuYWdlbWVudCBQb3dlcmVkIGJ5IDxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbS8iIHRpdGxlPSJDdXRlTmV3cyAtIFBIUCBOZXdzIE1hbmFnZW1lbnQgU3lzdGVtIj5DdXRlTmV3czwvYT48L2Rpdj4=');
-        }
-    }
-}
+if ((!isset($count_cute_news_includes) or !$count_cute_news_includes) and $template != 'rss' && $fcutenewslic())
+    echo "Buy Cutenews License for remove 'Powered By Cutenews'";
 
 $count_cute_news_includes++;

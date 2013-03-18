@@ -2,20 +2,6 @@
 
     if (!defined('INIT_INSTANCE')) die('Access restricted');
 
-    // In case if uses MOD-Rewrite, variables must be come from external url
-    if ($config_use_replacement)
-    {
-        $R = $_SERVER['REQUEST_URI'];
-        if (preg_match('~^.*?\?(.*)$~', $_SERVER['REQUEST_URI'], $c ))
-        {
-            foreach ( explode('&', $c[1]) as $cv )
-            {
-                list($k, $v) = explode('=', $cv, 2);
-                if ($k) $_REQUEST[$k] = $_GET[$k] = $v;
-            }
-        }
-    }
-
     // -----------------------------------------------------------------------------------------------------------------
     if (isset($_COOKIE)) extract($_COOKIE, EXTR_SKIP);
     if (isset($_POST))   extract($_POST,   EXTR_SKIP);

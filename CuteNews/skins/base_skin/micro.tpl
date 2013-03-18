@@ -13,5 +13,6 @@ addnews_err|        <div style="margin: 4px 0 4px 75px; color: red; ">&bull; %1<
 addnews_preview|    <div style="border: 1px dashed gray; float: left;"> <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px;">%1</div> <div style="border:4px solid #f0f0a0;">%2</div> </div> <div style="clear:left;"></div> <div style="height: 8px"></div>
 category_icon|      <img style="border: none; vertical-align: middle; margin: 2px;" alt="%1 icon" src="%2" />
 saved_ok|           <div style="color: green; font-size: 14px; margin: 8px 0 8px 0">The changes were successfully saved</div>
+saved_not_ok|       <div style="color: red; font-size: 14px; margin: 8px 0 8px 0">%1</div>
 block_ban|          <span style='color:red;'>Wrong username or password</span>. Banned %1 times until %2.
 youban|             You're banned! Estimate time to unblock %1
