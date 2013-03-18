@@ -2101,7 +2101,7 @@ function user_delete($user)
     $user = preg_sanitize( $user );
     if ( empty($user) ) return false;
 
-    $users_db = load_database('users_db', 'users.db');
+    $users_db = load_database('users_db', 'users.db', true);
     if (preg_match('~^[0-9]*?\|[0-9]*?\|'.$user.'\|.*?$~im', $users_db, $c))
         $users_db = str_replace($c[0]."\n", '', $users_db);
 
