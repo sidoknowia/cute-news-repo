@@ -310,10 +310,7 @@
         send_mail($config_notify_email, $subject, $message);
     }
 
-    list($hook_is_used, $URL) = hook('rewrite_add_comment_url', array(false, $URL));
-    if(!$hook_is_used)
-        $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from,title', array('showcomments', $id ,$ucat, $archive, $start_from, titleToUrl($news_arr[NEW_TITLE])), false);
-
+    $URL = hook('rewrite_add_comment_url', $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from,title', array('showcomments', $id ,$ucat, $archive, $start_from, $news_arr[NEW_TITLE]), false));
     echo '<script type="text/javascript">window.location="'.$URL.'";</script>';
 
     // ------------ ALL OK ----------------
