@@ -461,8 +461,8 @@ elseif ($action == "syscon")
     echo syscon('userlogs',             'Enable user logs|store user logs', 'Y/N');
     echo syscon('allowed_extensions',   'Allowed extensions|Used by file manager. Enter by comma without space');
     echo syscon('csrf',                 'Check CSRF|Protect your safety by checking cross-site request forgery', 'Y/N');
-
     hook('field_options_general');
+
     echo "</table></td></tr>";
     echo "<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
 
@@ -474,14 +474,8 @@ elseif ($action == "syscon")
     echo syscon('timestamp_active=15',  'Time format for news|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
     echo syscon('backup_news',          'Make backup news|when you add or edit news, a backup is made', 'y/n');
     echo syscon('use_captcha',          'Use CAPTCHA|on registration and comments', 'Y/N');
-    echo syscon('use_rater',            'Use rating|use internal rating system', 'Y/N');
     echo syscon('disable_pagination',   'Disable pagination|Use it to disable pagination', 'Y/N');
-
-    if ($config_use_rater)
-    {
-        echo syscon('ratey=8', 'Rate symbol 1|rate full symbol');
-        echo syscon('raten=8', 'Rate symbol 2|rate empty symbol');
-    }
+    echo syscon('url_append=30',        'URL append|Append URL suffix for [link]');
     hook('field_options_news');
 
     echo"</table></td></tr>";
@@ -501,7 +495,6 @@ elseif ($action == "syscon")
     echo syscon('comments_popup_string', "Settings for comments popup|only if 'Show Comments In PopUp' is enabled");
     echo syscon('show_full_with_comments', 'Show full story when showing comments|if yes, comments will be shown under the story','y/n');
     echo syscon('timestamp_comment=15', 'Time format for comments|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>');
-
     hook('field_options_comments');
 
     echo"</table></td></tr>";
@@ -516,19 +509,23 @@ elseif ($action == "syscon")
     echo syscon('notify_archive', 'Notify of auto-archiving|when (if) news are auto-archived','y/n');
     echo syscon('notify_postponed', 'Notify of activated postponed articles|when postponed article is activated','y/n');
     echo syscon('notify_email', 'Email(s)|where the notification will be send, separate multyple emails by comma');
-
     hook('field_options_notifications');
+
     echo "</table></td></tr>";
 
     // Facebook preferences
     $config_fb_comments     = $config_fb_comments ? $config_fb_comments : 4;
     $config_fb_box_width    = $config_fb_box_width ? $config_fb_box_width : 470;
-    $config_fb_i18n         = empty($config_fb_i18n) ? 'en_US' : $config_fb_i18n;
+    $config_social_i18n     = empty($config_social_i18n) ? 'en_US' : $config_social_i18n;
+    $config_gplus_width     = $config_gplus_width ? $config_gplus_width : 250;
 
     echo "<tr style='display:none' id='social'><td colspan=10 width=100%>";
+    echo "<div class='consys_sub'>General:</div>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
+    echo syscon('social_i18n', 'Language code|by default en_US. See: <a href="http://en.wikipedia.org/wiki/Language_localization#Language_tags_and_codes">codes</a>');
+    echo "</table>";
     echo "<div class='consys_sub'>Facebook:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
-    echo syscon('fb_i18n', 'Facebook i18n code|by default en_US');
     echo syscon('fb_appid', "Facebook appID|Get your AppId <a href='https://developers.facebook.com/apps' target='_blank'>there</a>");
     echo "</table>";
 
@@ -566,10 +563,16 @@ elseif ($action == "syscon")
     echo syscon('tw_recommended=10', 'Recommended @|Accounts suggested to the user after tweeting, comma-separated.');
     echo syscon('tw_hashtag=10', 'Hashtag #|Comma-separated hashtags appended to the tweet text');
     echo syscon('tw_large', 'Large button|if yes, the twitter button will be large', 'y/n');
-    echo syscon('tw_lang', 'Language|The language of button text', array("en"=>"English", "fr"=>"French", "ar"=>"Arabic","ja"=>"Japanese","es"=>"Spanish","de"=>"German","it"=>"Italian","id"=>"Indonesian","pt"=>"Portuguese","ko"=>"Korean","tr"=>"Turkish","ru"=>"Russian","nl"=>"Dutch","fil"=>"Filipino","msa"=>"Malay","zh-tw"=>"Traditional Chinese","zh-cn"=>"Simplified Chinese","hi"=>"Hindi","no"=>"Norwegian","sv"=>"Swedish","fi"=>"Finnish","da"=>"Danish","pl"=>"Polish","hu"=>"Hungarian","fa"=>"Farsi","he"=>"Hebrew","ur"=>"Urdu","th"=>"Thai","uk"=>"Ukrainian","ca"=>"Catalan","el"=>"Greek","eu"=>"Basque","cs"=>"Czech","gl"=>"Galician","ro"=>"Romanian"));
+    echo "</table>";
+
+    echo "<div class='consys_sub'>Google +1 button:</div>";
+    echo "<table cellpadding=0 cellspacing=0 width=100%>";
+    echo syscon('use_gplus', 'Use +1 button|if yes, +1 button will be shown','y/n');
+    echo syscon('gplus_size', 'Size | Sets the +1 button size to render.', array("small"=>"Small", "medium"=>"Medium", "standard"=>"Standard", "tall"=>"Tall"));
+    echo syscon('gplus_annotation', 'Annotation | Sets the annotation to display next to the button. ', array("inline"=>"Inline", "bubble"=>"Bubble", "none"=>"None"));
+    echo syscon('gplus_width=5', 'Width|In pixels');
 
     hook('field_options_social');
-
 
     echo "</table></td></tr>";
 

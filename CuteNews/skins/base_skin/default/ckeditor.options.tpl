@@ -1,9 +1,5 @@
-['Source','Maximize','Scayt','PasteText','Undo','Redo','Find',
- 'Replace','-','SelectAll','RemoveFormat',
- 'NumberedList','BulletedList','Outdent','Indent'],
-
-['Image','Table','HorizontalRule','Smiley'],
+['Bold','Italic','Underline','Strike','Blockquote','SpecialChar'],
+['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+['Undo','Redo','Find','RemoveFormat','NumberedList','BulletedList','Outdent','Indent','-','Maximize','Scayt','-','Source'],
+['Styles','Format','Font','FontSize'],['TextColor','BGColor','Image','Table','HorizontalRule','Smiley','PasteFromWord'],
 ['Link','Unlink','Anchor'],
-['Format','FontSize','TextColor','BGColor'],
-['Bold','Italic','Underline','Strike','Blockquote'],
-['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']

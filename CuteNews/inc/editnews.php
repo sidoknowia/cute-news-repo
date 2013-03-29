@@ -105,8 +105,8 @@ if ($action == "list")
             // Enable Up/Down without sorting
             if ( !isset($_REQUEST['ord_title']) and !isset($_REQUEST['ord_date']) )
             {
-                $up    = $PHP_SELF . build_uri('mod,action,direct,id,source,start_from,news_per_page,category,author',array('editnews','move','up',$item_db[0]));
-                $down  = $PHP_SELF . build_uri('mod,action,direct,id,source,start_from,news_per_page,category,author',array('editnews','move','down',$item_db[0]));
+                $up    = $PHP_SELF . build_uri('mod,action,direct,id:source,start_from,news_per_page,category,author',array('editnews','move','up',$item_db[0]));
+                $down  = $PHP_SELF . build_uri('mod,action,direct,id:source,start_from,news_per_page,category,author',array('editnews','move','down',$item_db[0]));
                 $ORDER = getpart('editnews_order', array($up, $down));
             }
             else $ORDER = '-';
@@ -143,7 +143,7 @@ if ($action == "list")
             }
             else
             {
-                $the_oneln['category'] = getpart('edn_link4cat', array( build_uri('mod,action,category,source', array('editnews','list',$item_db[NEW_CAT])), $cat[ $item_db[NEW_CAT] ] ));
+                $the_oneln['category'] = getpart('edn_link4cat', array( build_uri('mod,action,category,source', array('editnews', 'list', $item_db[NEW_CAT])), $cat[ $item_db[NEW_CAT] ] ));
             }
 
             $the_oneln['itemdate'] = $itemdate;
@@ -255,7 +255,7 @@ if ($action == "list")
         $previous = $start_from - $news_per_page;
         if ($previous < 0) $previous = 0;
 
-        $uri = build_uri('mod,action,start_from,category,author,source,news_per_page,ord_title,ord_date', array('editnews','list',$previous));
+        $uri = build_uri('mod,action,start_from:category,author,source,news_per_page,ord_title,ord_date', array('editnews','list',$previous));
         $npp_nav .= '<a href="'.$PHP_SELF.$uri.'">&lt;&lt; '.lang('Previous').'</a>';
         $tmp = true;
     }
@@ -267,7 +267,7 @@ if ($action == "list")
         $how_next = count($all_db) - $ipos;
 
         if ($how_next > $news_per_page) $how_next = $news_per_page;
-        $URL = build_uri('mod,action,start_from,category,author,source,news_per_page,ord_title,ord_date', array('editnews','list', $ipos+1));
+        $URL = build_uri('mod,action,start_from:category,author,source,news_per_page,ord_title,ord_date', array('editnews','list', $ipos+1));
         $npp_nav .= '<a href="'.$PHP_SELF.$URL.'">'.lang('Next').' '.$how_next.' &gt;&gt;</a>';
     }
 
@@ -758,6 +758,7 @@ elseif ($action == "editnews")
     // Remove "Approve" button from editor
     if ($member_db[UDB_ACL] == ACL_LEVEL_JOURNALIST) $Unapproved = 0;
 
+    hook('editnews_make_form_vars', $item_db);
     echo proc_tpl
     (
         'editnews/editnews/'.$tpl,
@@ -825,6 +826,6 @@ elseif ($action == 'move')
     fclose($w);
 
     // Redirect after move
-    $URL = $PHP_SELF . build_uri('mod,action,id,source,start_from,news_per_page,category,author,ord_title,ord_date', array('editnews','list', $item_db[NEW_ID]), false);
+    $URL = $PHP_SELF . build_uri('mod,action,id,source:start_from,news_per_page,category,author,ord_title,ord_date', array('editnews','list', $item_db[NEW_ID]), '');
     relocation( $URL, false );
 }

@@ -95,9 +95,8 @@
     if (!isset($config_userlogs))           $config_userlogs = 0;
     if (!isset($config_backup_news))        $config_backup_news = 'yes';
     if (!isset($config_use_captcha))        $config_use_captcha = 0;
-    if (!isset($config_use_rater))          $config_use_rater = 0;
     if (!isset($config_use_fbcomments))     $config_use_fbcomments = 'no';
-    if (!isset($config_fb_i18n))            $config_fb_i18n = 'en_US';
+    if (!isset($config_social_i18n))        $config_social_i18n = 'en_US';
     if (!isset($config_fb_inactive))        $config_fb_inactive = 'yes';
     if (!isset($config_fb_comments))        $config_fb_comments = '4';
     if (!isset($config_fb_box_width))       $config_fb_box_width = '470';
@@ -120,10 +119,20 @@
     if (!isset($config_tw_recommended))     $config_tw_recommended = "";
     if (!isset($config_tw_hashtag))         $config_tw_hashtag = "";
     if (!isset($config_tw_large))           $config_tw_large = "no";
-    if (!isset($config_tw_lang))            $config_tw_lang = "en";
+    if (!isset($config_use_gplus))          $config_use_gplus = "no";
+    if (!isset($config_gplus_size))         $config_gplus_size = "standard";
+    if (!isset($config_gplus_annotation))   $config_gplus_annotation = "inline";
+    if (!isset($config_gplus_width))        $config_gplus_width = "250";
     if (!isset($config_disable_pagination)) $config_disable_pagination = 0;
     if (empty($config_allowed_extensions))  $config_allowed_extensions = "gif,jpg,png,bmp,jpe,jpeg";
     if (empty($config_csrf))                $config_csrf = 0;
+    if (empty($config_url_append))          $config_url_append = '';
+
+    // create cutenews session cache
+    $_CN_SESS_CACHE = array();
+
+    // config loading (for plugins, also)
+    $cfg = cn_config_load();
 
     // adjust timezone
     if (function_exists('date_default_timezone_set'))
@@ -142,18 +151,12 @@
         foreach (read_dir(SERVDIR.'/cdata/plugins', array(), false) as $plugin)
             if (preg_match('~\.php$~i', $plugin)) include (SERVDIR . $plugin);
 
-    // load config
-    $cfg = array();
-    if (file_exists(SERVDIR . '/cdata/conf.php'))
-        $cfg = unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) );
-    else $cfg = array();
-
     // check skin if exists
     $config_skin = preg_replace('~[^a-z]~i','', $config_skin);
     if (!isset($config_skin) or !$config_skin or !file_exists(SERVDIR."/skins/$config_skin.skin.php"))
     {
         $using_safe_skin = true;
-        $config_skin = 'default';
+        $config_skin     = 'default';
     }
 
     // Detect My IP and check it
@@ -164,6 +167,8 @@
 
     if ( !preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $ip) )
          $ip = false;
+
+    define('CLIENT_IP', $ip);
 
     // use default, hooked or cfg skin
     if ( $SKIN = hook('change_skin') )
@@ -180,10 +185,6 @@
 
     // CRYPT_SALT consist an IP?
     define('CRYPT_SALT',        ($config_ipauth == '1'? $ip : false).'@'.$cfg['crypt_salt']);
-
-    // experimental defines
-    define('RATEY_SYMBOL',      empty($config_ratey) ? '*' : str_replace('&amp;', '&', $config_ratey) ); // &#9734;
-    define('RATEN_SYMBOL',      empty($config_raten) ? '&ndash;' : str_replace('&amp;', '&', $config_raten) ); // &#9733;
 
     // SERVER values make
     $_SERVER["HTTP_ACCEPT"]             = isset($_SERVER["HTTP_ACCEPT"])?           $_SERVER["HTTP_ACCEPT"] : false;
@@ -202,15 +203,9 @@
         $_SESS = array();
     }
 
-    // create cache
-    $_CACHE = array();
-
     // save cfg file
-    $cfg = hook('init_modify_cfg', $cfg);
-
-    $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
-    fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
-    fclose($fx);
+    hook('init_modify_cfg');
+    cn_config_save();
 
     // More default options
     if (!getoption('ckeditor_customize')) $config_ckeditor_customize = read_tpl('default/ckeditor.options');

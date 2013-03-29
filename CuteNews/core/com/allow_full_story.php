@@ -14,6 +14,7 @@
             $output      = UTF8ToEntities($output);
 
             echo $output;
+            break;
         }
     }
 
@@ -60,7 +61,7 @@
 
         if ($hope_archive)
         {
-            $URL = $PHP_SELF.build_uri('archive,start_from,ucat,subaction,id', array($hope_archive));
+            $URL = $PHP_SELF.build_uri('archive:start_from,ucat,subaction,id', array($hope_archive));
             echo '<div>'.lang('You are now being redirected to the article in our archives, if the redirection fails, please').' <a href="'.$URL.'">'.lang('click here').'</a></div>
                     <script type="text/javascript">window.location="'.str_replace('&amp;', '&', $URL).'";</script>';
         }

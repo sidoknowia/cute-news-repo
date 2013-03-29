@@ -24,13 +24,13 @@ function confirmDelete(url)
     {if $postpone_date}<tr><td>&nbsp;</td><td style="color: gray; padding: 8px 0">This is postpone news</td></tr>{/if}
     {if $saved}<tr><td>&nbsp;</td><td><h3 style="color: green;">The changes were successfully saved</h3></td></tr>{/if}
     <tr>
-        <td width="75">&nbsp;</td>
+        <td width="85">&nbsp;</td>
         <td> Posted on {$newstime} by {$item_db1} </td>
     </tr>
 
     <tr>
         <td>Title</td>
-        <td><input type=text name=title value="{$item_db2}" style="width: 675px;" tabindex=1></td>
+        <td><input type=text name=title value="{$item_db2}" style="width: 635px;" tabindex=1></td>
     </tr>
 
     {$Hook_AdditionalFieldsTop}
@@ -73,10 +73,8 @@ function confirmDelete(url)
     </tr>
 
     <!-- Short story -->
-    <tr>
-        <td valign="top"> <br />Short Story</td>
-        <td> <textarea style="resize: none; width: 680px; height: 240px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=3>{$item_db3}</textarea> </td>
-    </tr>
+    <tr><td colspan="2"><br />Short Story</td></tr>
+    <tr><td colspan="2"> <textarea style="resize: none;" rows="12" cols="74" id="short_story" name="short_story" tabindex=3>{$item_db3}</textarea> </td></tr>
 
     <!-- Postponed options -->
     {if $postpone_date}
@@ -94,16 +92,13 @@ function confirmDelete(url)
     {/if}
 
     <!-- Full story -->
-    <tr>
-        <td valign="top"> <br />Full Story<br /><span style="font-size:7pt">(optional)</span> </td>
-        <td> <textarea style="resize: none; width: 680px; height: 320px;" rows="12" cols="74" id="full_story" name="full_story" tabindex=4>{$item_db4}</textarea> </td>
-    </tr>
+    <tr><td colspan="2"><br />Full Story <span style="font-size:7pt">(optional)</span></td></tr>
+    <tr><td colspan="2"> <textarea style="resize: none;" rows="12" cols="74" id="full_story" name="full_story" tabindex=3>{$item_db4}</textarea> </td></tr>
 
     {$Hook_AdditionalFieldsBottom}
 
     <tr>
-        <td>&nbsp;</td>
-        <td>
+        <td colspan="2">
             <br/>
             <table border=0 cellspacing=0 cellpadding=2 width=100%>
                 <tr>
@@ -138,26 +133,31 @@ function confirmDelete(url)
     </tr>
     {/if}
     {$Comments_HTML}
+    {$Hook_EditNews_After}
 
-<script type="text/javascript">
-    (function()
-    {
-        var settings =
+    <script type="text/javascript">
+        (function()
         {
-            skin: 'v2',
-            width: 680,
-            height: 350,
-            customConfig: '',
-            language: 'en',
-            entities_latin: false,
-            entities_greek: false,
-            toolbar: [{$config_ckeditor_customize}],
-            {$implemented_ckeditor_filemanager}
-        };
+            var settings =
+            {
+                skin: 'moono',
+                width: 'auto',
+                height: 350,
+                customConfig: '',
+                language: 'en',
+                entities_latin: false,
+                entities_greek: false,
+                toolbar: [{$config_ckeditor_customize}],
+                {$implemented_ckeditor_filemanager}
+            };
 
-        CKEDITOR.replace( 'short_story', {$CKEDITOR_SetsName} );
-        CKEDITOR.replace( 'full_story', {$CKEDITOR_SetsName} );
-        {$CKEDITOR_Settings}
-    })();
+            /* Smilies */
+            CKEDITOR.config.smiley_path = "{$config_http_script_dir}/skins/emoticons/";
+            CKEDITOR.config.smiley_images = ['angry.gif','crying.gif','laughing.gif','sad.gif','smile.gif','tongue.gif','wassat.gif','wink.gif'];
+            CKEDITOR.config.smiley_descriptions= [':-)', ':-('];
 
-</script>
+            CKEDITOR.replace( 'short_story', {$CKEDITOR_SetsName} );
+            CKEDITOR.replace( 'full_story', {$CKEDITOR_SetsName} );
+            {$CKEDITOR_Settings}
+        })();
+    </script>

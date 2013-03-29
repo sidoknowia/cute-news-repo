@@ -16,7 +16,7 @@
     $name       = ($name == '' && isset($_COOKIE['CNname']) && $_COOKIE['CNname'] ) ? $_COOKIE['CNname'] : $name;
     $mail       = isset($_POST['mail']) ? trim($_POST['mail']) : '';
 
-    $captcha    = isset($_POST['captcha']) ? $_POST['captcha'] : '';
+    $captcha    = isset($_POST['captcha']) ? trim($_POST['captcha']) : '';
 
     // Logged user
     if ($member_db[UDB_NAME])  $name = $member_db[UDB_NAME];
@@ -165,7 +165,7 @@
     }
 
     // Captcha test (if not disabled force)
-    if ($captcha != $_SESS['CSW'] && $config_use_captcha && $captcha_enabled)
+    if ((empty($captcha) || $captcha != $_SESS['CSW']) && $config_use_captcha && $captcha_enabled)
     {
         echo '<div class="blocking_posting_comment">'.lang('Wrong captcha').'! <a href="javascript:location.reload(true)">'.lang('Refresh').'</a></div>';
         add_to_log($ip, 'Attack to captcha');
@@ -310,7 +310,8 @@
         send_mail($config_notify_email, $subject, $message);
     }
 
-    $URL = hook('rewrite_add_comment_url', $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from,title', array('showcomments', $id ,$ucat, $archive, $start_from), false));
+    $URL = $PHP_SELF . build_uri('subaction,id,ucat,archive,start_from:comm_start_from', array('showcomments', $id, $ucat, $archive, $start_from), false);
+    list($URL, $news_arr) = hook('rewrite_add_comment_url', array($URL, $news_arr));
     echo '<script type="text/javascript">window.location="'.$URL.'";</script>';
 
     // ------------ ALL OK ----------------

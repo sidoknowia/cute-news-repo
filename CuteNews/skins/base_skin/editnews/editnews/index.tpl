@@ -160,3 +160,4 @@
     {/if}
 
     {$Comments_HTML}
+    {$Hook_EditNews_After}

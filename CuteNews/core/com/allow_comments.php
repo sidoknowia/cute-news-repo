@@ -102,9 +102,8 @@
     {
         $prev = $comm_start_from - $comm_per_page;
 
-        list($hook_is_used, $URL) = hook('rewrite_allow_comments_plink', array(false, $URL));
-        if(!$hook_is_used)
-            $URL = $PHP_SELF . build_uri('subaction,comm_start_from,archive,id,ucat', array('showcomments', $prev));
+        $URL = $PHP_SELF . build_uri('subaction,comm_start_from:archive,id,ucat', array('showcomments', $prev));
+        list($URL, $news_arr) = hook('rewrite_allow_comments_plink', array($URL, $news_arr));
 
         $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", "<a href=\"{$URL}\">\\1</a>", $prev_next_msg);
     }
@@ -125,9 +124,8 @@
         {
             if ($pages_start_from != $comm_start_from)
             {
-                list($hook_is_used, $URL) = hook('rewrite_allow_comments_link', array(false, $URL));
-                if(!$hook_is_used)
-                    $URL = $PHP_SELF . build_uri('subaction,comm_start_from,archive,id,ucat', array('showcomments', $pages_start_from));
+                $URL = $PHP_SELF . build_uri('subaction,comm_start_from:archive,id,ucat', array('showcomments', $pages_start_from));
+                list($URL, $news_arr) = hook('rewrite_allow_comments_link', array($URL, $news_arr));
 
                 $pages .= '<a href="'.$URL.'">'.$j.'</a> ';
             }
@@ -145,10 +143,8 @@
     // Next link
     if ($comm_per_page < $total_comments and $comment_number < $total_comments)
     {
-        list($hook_is_used, $URL) = hook('rewrite_allow_comments_nlink', array(false, $URL));
-
-        if(!$hook_is_used)
-            $URL = $PHP_SELF . build_uri('subaction,comm_start_from,archive,id,ucat', array('showcomments', $comment_number));
+        $URL = $PHP_SELF . build_uri('subaction,comm_start_from:archive,id,ucat', array('showcomments', $comment_number));
+        list($URL, $news_arr) = hook('rewrite_allow_comments_nlink', array($URL, $news_arr));
 
         $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", "<a href=\"$URL\">\\1</a>", $prev_next_msg);
     }
@@ -189,6 +185,7 @@
         $remember_form = getpart('forget_me');
     }
 
+    $captha_rand   = mt_rand();
     $gduse         = function_exists('imagecreatetruecolor')? 0 : 1;
     $captcha_form  = $config_use_captcha && $captcha_enabled ? proc_tpl('captcha_comments') : false;
     $smilies_form  = proc_tpl('remember_js') . insertSmilies('short', false);

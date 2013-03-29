@@ -24,6 +24,11 @@ if ($action == "archive")
         if(!$handle = opendir(SERVDIR."/cdata/archives"))
             die_stat(false, lang("Unable to open directory")." ".SERVDIR."/cdata/archive");
 
+        if(!is_writable(SERVDIR."/cdata/news.txt"))
+            die_stat(false, lang("Unable to write to file")." ".SERVDIR."/cdata/news.txt");
+        if(!is_writable(SERVDIR."/cdata/comments.txt"))
+            die_stat(false, lang("Unable to write to file")." ".SERVDIR."/cdata/comments.txt");
+
         while (false !== ($file = readdir($handle)))
         {
             if ($file == "$aid.news.arch")
@@ -381,7 +386,7 @@ elseif ($action == 'userlog')
     $pages = pagination($count, $per, $cr);
     foreach ($pages as $i => $v)
     {
-        $pages[$i]['link'] = $PHP_SELF . build_uri( 'cr,mod,action,year_s,month_s,day_s,hour_s,year_e,month_e,day_e,hour_e,per', array(intval($v['id']) ) );
+        $pages[$i]['link'] = $PHP_SELF . build_uri( 'cr:mod,action,year_s,month_s,day_s,hour_s,year_e,month_e,day_e,hour_e,per', array(intval($v['id']) ) );
         $pages[$i]['id']++;
         if ($v['pt'] == 0) $pages[$i]['id'] = '...';
         if ($v['cr'])
@@ -462,9 +467,7 @@ elseif ($action == 'xfields')
         if ($add_name && $add_vis) $cfg['more_fields'][$add_name] = $add_vis;
 
         // save
-        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
-        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
-        fclose($fx);
+        cn_config_save($cfg);
 
         msg('info', lang('Saved'), lang('Config successfully saved'), false, make_breadcrumbs('main/options/tools:xfields=More fields', true));
     }

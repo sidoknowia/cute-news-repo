@@ -57,13 +57,6 @@ do
     if ($config_auto_archive == "yes") ResynchronizeAutoArchive();
     hook('resync_routines');
 
-    // Add Comment -----------------------------------------------------------------------------------------------------
-    if ($allow_add_comment)
-    {
-        $break = include (SERVDIR.'/core/com/allow_add_comment.php');
-        if ($break === FALSE) { $CN_HALT = TRUE; break; }
-    }
-
     // Show Full Story -------------------------------------------------------------------------------------------------
     if ($allow_full_story)
     {
@@ -78,6 +71,13 @@ do
         if ($break === FALSE) { $CN_HALT = TRUE; break; }
     }
 
+    // Add Comment -----------------------------------------------------------------------------------------------------
+    if ($allow_add_comment)
+    {
+        $break = include (SERVDIR.'/core/com/allow_add_comment.php');
+        if ($break === FALSE) { $CN_HALT = TRUE; break; }
+    }
+
     // Active News -----------------------------------------------------------------------------------------------------
     if ($allow_active_news)
     {
@@ -86,6 +86,13 @@ do
     }
 }
 while (FALSE);
+
+if ( ($config_use_gplus == 'yes') and !mcache_get('gplus_js_on') && $template != 'rss')
+{
+    if (empty($config_social_i18n)) $config_social_i18n = 'en_US';
+    echo str_replace( '{lang}', $config_social_i18n, read_tpl('google_plus'));
+    mcache_set('gplus_js_on', true);
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 if ((!isset($count_cute_news_includes) or !$count_cute_news_includes) and $template != 'rss' && $fcutenewslic())

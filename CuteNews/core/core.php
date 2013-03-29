@@ -98,11 +98,6 @@ function die_stat($No, $Reason = false)
     die();
 }
 
-function getoption($opt_name)
-{
-    return isset($GLOBALS["config_$opt_name"]) ? $GLOBALS["config_$opt_name"] : FALSE;
-}
-
 // Modified from http://en.wikibooks.org/wiki/Algorithm_implementation/Sorting/Quicksort#PHP for quicksort cutenews
 // $order = A(ascending), D(escending)
 // Usage: 0-7/A or 0-7/D
@@ -136,11 +131,9 @@ function quicksort($array, $by = 0)
 // Simply read template file
 function read_tpl($tpl = 'index')
 {
-    global $_CACHE;
-
     // get from cache
-    if (isset($_CACHE['tpl_'.$tpl]))
-        return $_CACHE['tpl_'.$tpl];
+    $cached = mcache_get("tpl:$tpl");
+    if ($cached) return $cached;
 
     // Get plugin patch
     if  ($tpl[0] == '/')
@@ -158,7 +151,7 @@ function read_tpl($tpl = 'index')
     fclose($r);
 
     // cache file
-    $_CACHE['tpl_'.$tpl] = $ob;
+    mcache_set("tpl:$tpl", $ob);
     return $ob;
 }
 
@@ -171,7 +164,7 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
     // Globals are saved too
     foreach ($GLOBALS as $gi => $gv)
     {
-        if ( in_array($gi, array('session', '_CACHE', '_HOOKS', 'HTML_SPECIAL_CHARS', '_SESS',
+        if ( in_array($gi, array('session', '_CN_SESS_CACHE', '_HOOKS', 'HTML_SPECIAL_CHARS', '_SESS',
                                  'GLOBALS', '_ENV', '_REQUEST', '_SERVER', '_FILES', '_COOKIE', '_POST', '_GET')))
              continue;
 
@@ -253,8 +246,19 @@ function proc_tpl($tpl, $args = array(), $ifs = array())
     // truncate unused
     $d = preg_replace('~{\$[^}]+}+~s', '', $d);
 
+    // code obfuscation
+    if (preg_match_all('/<jstidy>(.*?)<\/jstidy>/is', $d, $jt, PREG_SET_ORDER))
+    {
+        foreach ($jt as $jtv)
+        {
+            $jsc = preg_replace('/^\s*\/\/.*$/im', '', $jtv[1]); // remove comment
+            $jsc = preg_replace("/\s{2,}/is", ' ', $jsc);
+            $d = str_replace($jtv[0], $jsc, $d);
+        }
+    }
+
     // replace all
-    return ( $d );
+    return ( hook('return_proc_tpl', $d) );
 }
 
 // Return say value of lang if present
@@ -274,6 +278,24 @@ function lang($say)
     }
 
     return hook('lang_say_after', empty($lang[strtolower($say)]) ? $say : $lang[strtolower($say)]);
+}
+
+function cn_config_load()
+{
+    $cfg = file_exists(SERVDIR . '/cdata/conf.php') ? unserialize( str_replace("<?php die(); ?>\n", '', implode('', file ( SERVDIR . '/cdata/conf.php' ))) ) : array();
+    mcache_set('config', $cfg);
+    return $cfg;
+}
+
+function cn_config_save($cfg = null)
+{
+    if ($cfg === null) $cfg = mcache_get('config');
+
+    $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
+    fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
+    fclose($fx);
+
+    mcache_set('config', $cfg);
 }
 
 function utf8_strtolower($utf8)
@@ -698,7 +720,7 @@ function template_replacer_news($news_arr, $output)
 {
     // Predefined Globals
     global $config_timestamp_active, $config_http_script_dir, $config_comments_popup, $config_comments_popup_string,
-           $config_full_popup, $config_full_popup_string, $rss_news_include_url, $my_names, $start_from, $cat, $action,
+           $config_full_popup, $config_full_popup_string, $config_url_append, $rss_news_include_url, $my_names, $start_from, $cat, $action,
            $cat_icon, $archive, $name_to_nick, $template, $user_query, $member_db, $_SESS, $PHP_SELF;
 
     // Short Story not exists
@@ -744,6 +766,7 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace('{fb-comments}', show_social_code('fb', $news_arr), $output);
     $output      = str_replace('{fb-like}', show_social_code('fb-like', $news_arr), $output);
     $output      = str_replace('{twitter}', show_social_code('twitter', $news_arr), $output);
+    $output      = str_replace('{gplus}', show_social_code('gplus', $news_arr), $output);
 
     // in RSS we need the date in specific format
     if ($template == 'rss')
@@ -756,11 +779,6 @@ function template_replacer_news($news_arr, $output)
         $output = str_replace("{date}", date($config_timestamp_active, $news_arr[NEW_ID]), $output);
     }
 
-    // Star Rating
-    if ( empty($archive) )
-         $output = str_replace("{star-rate}", rating_bar($news_arr[NEW_ID], $news_arr[NEW_RATE]), $output);
-    else $output = str_replace("{star-rate}", false, $output);
-
     // Mail Exist in mailist ---------------------------------------------------- [mail]...[/mail]
     if ( !empty($my_mails[ $news_arr[NEW_USER] ]) )
          $output = str_replace( array("[mail]", '[/mail]'), array('<a href="mailto:'.$my_mails[ $news_arr[NEW_USER] ].'">', ''), $output);
@@ -769,7 +787,7 @@ function template_replacer_news($news_arr, $output)
     // By click to comments - popup window -------------------------------------- [com-link]...[/com-link]
     if ( $config_comments_popup == "yes" )
     {
-         $URL    = build_uri('subaction,id,ucat,start_from,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $start_from));
+         $URL    = build_uri('subaction,id,ucat,start_from:template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT], $start_from));
          $output = str_replace(array('[com-link]',
                                      '[/com-link]'),
                                array('<a href="#" onclick="window.open(\''.$config_http_script_dir.'/router.php'.$URL.'\', \'News\', \''.$config_comments_popup_string.'\'); return false;">',
@@ -777,16 +795,18 @@ function template_replacer_news($news_arr, $output)
     }
     else
     {
-        $URL = $config_http_script_dir.$PHP_SELF . build_uri('subaction,id,ucat,template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT]));
+        $URL    = $PHP_SELF . build_uri('subaction,id,ucat:template,archive', array('showcomments', $news_arr[NEW_ID], $news_arr[NEW_CAT]));
+        list($URL, $news_arr) = hook('rewrite_com_link_template_url', array($URL, $news_arr));
         $output = str_replace(array("[com-link]", '[/com-link]'), array("<a href=\"$URL\">", '</a>'), $output);
     }
 
     // Open link --------------------------------------------------------------- [link]...[/link]
-    $URL     = build_uri('subaction,id,start_from,ucat,archive,template', array('showfull',$news_arr[NEW_ID],$start_from,$news_arr[NEW_CAT]));
-    $URL    .= "&amp;#disqus_thread";
+    $URL     = $PHP_SELF.build_uri('subaction,id,ucat:archive,template', array('showfull', $news_arr[NEW_ID], $news_arr[NEW_CAT]));
+    list($URL, $news_arr) = hook('rewrite_link_template_url', array($URL, $news_arr) );
+    $URL    .= $config_url_append;
 
-    $output  = preg_replace('/\[link target\=([a-z0-9_]+?)\](.*?)\[\/link\]/is', '<a href="'.$PHP_SELF.$URL.'" target="\\1">\\2</a>', $output);
-    $output  = str_replace(array("[link]", "[/link]"), array('<a href="'.$PHP_SELF.$URL.'">', "</a>"), $output);
+    $output  = preg_replace('/\[link target\=([a-z0-9_]+?)\](.*?)\[\/link\]/is', '<a href="'.$URL.'" target="\\1">\\2</a>', $output);
+    $output  = str_replace(array("[link]", "[/link]"), array('<a href="'.$URL.'">', "</a>"), $output);
 
     // With Action = showheadlines -------------------------------------------- [full-link]...[/full-link]
     if ($news_arr[NEW_FULL] or $action == "showheadlines")
@@ -803,7 +823,8 @@ function template_replacer_news($news_arr, $output)
         else
         {
             $template = ($template == 'Default') ? '' : $template;
-            $URL  = $PHP_SELF . build_uri('subaction,id,archive,ucat,template', array('showfull', $news_arr[0], $archive, $news_arr[NEW_CAT],$template)) . "&amp;$user_query";
+            $URL = $PHP_SELF . build_uri('subaction,id,archive,ucat,template', array('showfull', $news_arr[NEW_ID], $archive, $news_arr[NEW_CAT], $template)) . "&amp;$user_query";
+            list($URL, $news_arr) = hook('rewrite_full_link_template_url', array($URL, $news_arr));
 
             // Target string
             $attrlink = "href='{$URL}'";
@@ -825,7 +846,7 @@ function template_replacer_news($news_arr, $output)
         $member_db = user_search($_SESS['user']);
         if (in_array($member_db[UDB_ACL], array(ACL_LEVEL_ADMIN, ACL_LEVEL_JOURNALIST)))
         {
-            $url    = '/index.php'.build_uri('mod,action,id,source', array('editnews','editnews',$news_arr[NEW_ID], $archive));
+            $url    = '/index.php' . build_uri('mod,action,id,source', array('editnews', 'editnews', $news_arr[NEW_ID], $archive));
             $output = preg_replace('/\[edit\]/i', '<a target="_blank" href="'.$config_http_script_dir.$url.'">', $output);
             $output = preg_replace('/\[\/edit\]/i', '</a>', $output);
             $DREdit = true;
@@ -845,25 +866,27 @@ function template_replacer_news($news_arr, $output)
 // Extra Articles Fields
 function more_fields($mf, $output)
 {
-    global $cfg;
+    $cfg = mcache_get('config');
 
     // if use more fields
     if ( !empty($cfg['more_fields']) && is_array($cfg['more_fields']) )
     {
         $artmore = explode(';', $mf);
-        $isused = array();
+        $isused  = array();
+
         foreach ($artmore as $v)
         {
             list ($a, $b) = explode('=', $v, 2);
             $output = str_replace('{'.$a.'}', hesc($b), $output );
             $isused[$a] = true;
         }
-        //delete unused fields
-        if(count($isused) != count($cfg['more_fields']))
+
+        // delete unused fields
+        if (count($isused) != count($cfg['more_fields']))
         {
             foreach ($cfg['more_fields'] as $fname => $ftitle)
             {
-                if($isused[$fname]) continue;
+                if ($isused[$fname]) continue;
                 $output = str_replace('{'.$fname.'}', '', $output );
             }
         }
@@ -873,23 +896,18 @@ function more_fields($mf, $output)
 
 function create_avatar_size_in_mf($avatar_option, $mfname, $mfvalue)
 {
-    global $cfg;
+    $cfg = mcache_get('config');
 
-    if(!preg_match('/^\d{0,5}(?:px|%)?$/', trim($avatar_option)))
+    if (!preg_match('/^\d{0,5}(?:px|%)?$/', trim($avatar_option)))
         return false;
 
-    if($avatar_option && !isset($cfg['more_fields'][$mfname]))
+    if ($avatar_option && !isset($cfg['more_fields'][$mfname]))
     {
         $cfg['more_fields'][$mfname] = $mfvalue;
-
-        // save
-        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
-        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
-        fclose($fx);
+        cn_config_save($cfg);
     }
     return true;
 }
-
 
 /*
  * Log, base on multifiles and md5 tells about day & hour for user login
@@ -932,7 +950,8 @@ function add_to_log($username, $action)
 // User-defined for date formatting
 function format_date($time, $type = false)
 {
-    global $cfg, $config_date_adjust;
+    global $config_date_adjust;
+    $cfg = mcache_get('config');
 
     // type format - since current time
     if ($type == 'since' || $type == 'since-short')
@@ -1013,6 +1032,37 @@ function pagination($count, $per = 25, $current = 0, $spread = 5)
     return $lists;
 }
 
+// Fetch URI using $_SERVER data
+function fetch_uri($query = null, $script = null)
+{
+    $URL_DATA     = array();
+    $SCRIPT_NAME  = ($script === null)? $_SERVER['SCRIPT_NAME'] : $script;
+    $QUERY_STRING = ($query === null)? $_SERVER['QUERY_STRING'] : $query;
+
+    $qpart = explode('&', $QUERY_STRING);
+    foreach ($qpart as $i => $v)
+    {
+        list($L, $R) = explode('=', $v, 2);
+        if ($L && $R) $URL_DATA[$L] = urldecode($R);
+    }
+
+    return array($URL_DATA, $SCRIPT_NAME);
+}
+
+function url_assemble($url_data, $script = '')
+{
+    $query = '';
+
+    $qmark = (($script === null)? '':'?');
+    if ($script == '') $script = $_SERVER['SCRIPT_NAME'];
+
+    if (is_array($url_data))
+        foreach ($url_data as $i => $v)
+            if ($v) $query[] = "$i=".urlencode($v); else unset($url_data[$i]);
+
+    return $script . (count($url_data) ? '?'.join('&', $query) : $qmark );
+}
+
 // make full URI (left & right parts)
 function build_uri($left, $right, $html = 1)
 {
@@ -1021,29 +1071,28 @@ function build_uri($left, $right, $html = 1)
     $URI = $DDR = array();
     list ($left, $adds) = explode(':', $left);
 
+    $ix = 0;
     $ex = spsep($left);
     $uq = spsep($adds);
 
-    // Main parameters get from
-    if (!empty($left) && is_array($ex)) foreach ($ex as $i => $v)
+    // Main parameters GET
+    if ($left && is_array($ex)) foreach ($ex as $v)
     {
-        // Value present in enum
-        if (!empty($right[$i])) $URI[ $v ] = $right[$i];
-
-        // Enum not present, but in GLOBALS is set
-        elseif (!isset($right[$i]) && !empty($GLOBALS[$v])) $URI[$v] = $GLOBALS[$v];
+        if (isset($right[$ix]) && $right[$ix]) $URI[ $v ] = $right[$ix];
+        $ix++;
     }
 
     // Enum not present, but in GLOBALS is set
-    if (!empty($adds) && is_array($uq))
-        foreach ($uq as $v) if (!empty($GLOBALS[$v])) $URI[ $v ] = $GLOBALS[$v];
+    if ($adds && is_array($uq))
+        foreach ($uq as $v)
+            if (isset($GLOBALS[$v]) && $GLOBALS[$v]) $URI[ $v ] = $GLOBALS[$v];
 
     // Import at url $QUERY_STRING
     $QUERY_STRING = str_replace('&amp;', '&', $QUERY_STRING);
     foreach ( spsep($QUERY_STRING, '&') as $qs )
     {
         list($k, $v) = explode('=', $qs, 2);
-        if ($k && $v) $URI[$k] = $v;
+        if ($k && $v && !isset($URI[$k])) $URI[$k] = $v;
     }
 
     // Encode new query
@@ -1390,7 +1439,6 @@ function flooder($ip, $comid)
 // nocache string by referer
 function make_nocache()
 {
-    $referer = $_SERVER['HTTP_REFERER'];
     $referer = preg_replace('/[\&\?]nocache\=\d+/i', '', $_SERVER['HTTP_REFERER']);
     $cacheId = mt_rand(1000,9999).mt_rand(1000,9999);
     if (strpos($referer, '?')) $referer .= '&nocache='.$cacheId; else $referer .= '?nocache='.$cacheId;
@@ -1710,34 +1758,10 @@ function replace_news($way, $sourse, $use_html = true)
     }
 
     // Truncate text
-    $sourse = preg_replace_callback('~\[truncate=(.*?)\](.*?)\[/truncate\]~i', 'clbTruncate', $sourse);
+    if (preg_match_all('~\[truncate=(.*?)\](.*?)\[/truncate\]~is', $sourse, $tpart, PREG_SET_ORDER))
+        foreach ($tpart as $vpart) $sourse = str_replace($vpart[0], word_truncate($vpart[2], intval($vpart[1])), $sourse);
 
     return $sourse;
-}
-
-function rating_bar($id, $value = '1/1', $from = 1, $to = 5)
-{
-    global $_CACHE, $config_http_script_dir, $config_use_rater;
-    if ( $config_use_rater == 0 ) return false;
-
-    // only 1 times
-    if ( empty($_CACHE['use_script_rater']) )
-         $rate = proc_tpl('rater', array('cutepath' => $config_http_script_dir));
-    else $rate = false;
-
-    // increase rater
-    $_CACHE['use_script_rater']++;
-
-    // average ratings
-    list ($cr, $ur) = explode('/', $value);
-    if ($ur == 0) $ur = 1;
-    $value = $cr / $ur;
-
-    for ($i = $from; $i <= $to; $i++)
-        if ($value < $i) $rate .= '<a href="#" id="'.$id.'_'.$i.'" onclick="rateIt('.$id.', '.$i.');">'.RATEN_SYMBOL.'</a>';
-                    else $rate .= '<a href="#" id="'.$id.'_'.$i.'" onclick="rateIt('.$id.', '.$i.');">'.RATEY_SYMBOL.'</a>';
-
-    return $rate;
 }
 
 // Upload avatar to server
@@ -1989,10 +2013,41 @@ function linkedcat($catids)
 function bd_config($str) { return base64_decode($str); }
 function spack($s)   { return str_replace(array('{','|',';','=',"\n"), array("{I}","{kv}","{eq}","{eol}"), $s); }
 function sunpack($s) { return str_replace(array("{I}","{kv}","{eq}","{eol}"), array('{','|',';','=',"\n"), $s); }
-function clbTruncate($match) { return word_truncate($match[2], $match[1]);  }
-function word_truncate($data, $length = 75) { return preg_replace('~^(.{'.$length.',}?)\s.*$~', '\\1\\2...', $data); }
 function check_email($email) { return (preg_match("/^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]{1,4}$/", $email)); }
 function substru($str, $from, $len) { return preg_replace('#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $from .'}'.'((?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){0,'. $len .'}).*#s','$1', $str); }
+function mcache_get($name) { global $_CN_SESS_CACHE; return isset($_CN_SESS_CACHE[$name]) ? $_CN_SESS_CACHE[$name] : FALSE; }
+function mcache_set($name, $var) { global $_CN_SESS_CACHE; $_CN_SESS_CACHE[$name] = $var; }
+
+function word_truncate($data, $length = 75)
+{
+    $words = explode(' ', strip_tags($data));
+    return nl2br( join(' ', array_slice($words, 0, $length)) );
+}
+
+// # - get option from config
+function getoption($opt_name)
+{
+    if ($opt_name[0] == '#')
+    {
+        $cfg = mcache_get('config');
+        $cfn = substr($opt_name, 1);
+        return isset($cfg[$cfn]) ? $cfg[$cfn] : FALSE;
+    }
+    else return isset($GLOBALS["config_$opt_name"]) ? $GLOBALS["config_$opt_name"] : FALSE;
+}
+
+// # - save option to config
+function setoption($opt_name, $var)
+{
+    if ($opt_name[0] == '#')
+    {
+        $cfg = mcache_get('config');
+        $cfn = substr($opt_name, 1);
+        $cfg[$cfn] = $var;
+        cn_config_save($cfg);
+    }
+    else $GLOBALS["config_$opt_name"] = $var;
+}
 
 $preg_sanitize_af = array();
 $preg_sanitize_at = array();
@@ -2020,17 +2075,19 @@ function preg_sanitize($s, $rev = false)
 // Separate string to array: imporved "explode" function
 function spsep($separated_string, $seps = ',')
 {
-    if (empty($separated_string) ) return array();
-    if (strpos($separated_string, $seps) === false) return array( $separated_string );
+    if (strlen($separated_string) == 0 ) return array();
     $ss = explode($seps, $separated_string);
     return $ss;
 }
 
 // Simply rewrite file with locking
-function rewritefile($file, $data)
+function rewritefile($file, $data, $phpsecure = 0)
 {
     if (is_array($data))
         $data = implode('', $data);
+
+    // write php access denine mark
+    if ($phpsecure) $data = '<'."? die(); ?>\n$data";
 
     $w = fopen(SERVDIR.$file, 'w');
     flock($w, LOCK_EX);
@@ -2106,6 +2163,7 @@ function user_delete($user)
         $users_db = str_replace($c[0]."\n", '', $users_db);
 
     rewritefile('/cdata/users.db.php', $users_db );
+    return true;
 }
 
 // If user not banned, return false
@@ -2260,10 +2318,7 @@ function make_crypt_salt()
         $cfg['crypt_salt'] .= md5($salt);
     }
 
-    $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
-    fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
-    fclose($fx);
-
+    cn_config_save($cfg);
     return TRUE;
 }
 
@@ -2284,7 +2339,7 @@ function cn_selfcheck()
     );
 
     // Check dirs
-    foreach ($check_dirs as $dir)
+    foreach (hook('cnsc_dirs', $check_dirs) as $dir)
     {
         // Try create file in cdata
         $test_file = SERVDIR.'/'.$dir.'/.test.html';
@@ -2308,7 +2363,6 @@ function cn_selfcheck()
         '/cdata/cat.num.php',
         '/cdata/comments.txt',
         '/cdata/confirmations.php',
-        '/cdata/db.ban.php',
         '/cdata/users.db.php',
         '/cdata/replaces.php',
         '/cdata/flood.db.php',
@@ -2328,7 +2382,7 @@ function cn_selfcheck()
         '/cdata/rss.tpl',
     );
 
-    foreach ($check_files as $file)
+    foreach (hook('cnsc_files', $check_files) as $file)
     {
         $the_file = SERVDIR . $file;
 
@@ -2372,7 +2426,6 @@ function cn_selfcheck()
         }
     }
 
-
     return $errors;
 }
 
@@ -2409,7 +2462,7 @@ function CSRFCheck()
     $csrf_storage = SERVDIR.'/cdata/csrf.php';
 
     $csrf_correct = 0;
-    $csrf_code    = REQ('csrf_code');
+    $csrf_code    = REQ('csrf_code','POSTGET');
 
     $rcheck = file($csrf_storage);
     foreach ($rcheck as $id => $vdata)
@@ -2450,7 +2503,7 @@ function check_postponed_date($added_time, $all_db)
 function show_social_code($name = 'fb', $news_arr)
 {
     // External
-    global $config_http_script_dir, $soc_categories;
+    global $config_http_script_dir, $soc_categories, $config_social_i18n;
 
     // Facebook
     global $config_use_fbcomments, $config_fb_inactive, $config_fb_comments, $config_fb_box_width, $config_fbcomments_color;
@@ -2459,7 +2512,10 @@ function show_social_code($name = 'fb', $news_arr)
 
     // Twitter
     global $config_use_twitter, $config_tw_url, $config_tw_text, $config_tw_via, $config_tw_recommended, $config_tw_show_count, $config_tw_hashtag;
-    global $config_tw_lang, $config_tw_large;
+    global $config_tw_large;
+
+    //Google
+    global $config_use_gplus, $config_gplus_size, $config_gplus_annotation, $config_gplus_width;
 
     // allow use fb comments
     $soc_allowed = 1;
@@ -2486,7 +2542,11 @@ function show_social_code($name = 'fb', $news_arr)
     }
     elseif ($name == 'twitter' && $config_use_twitter == 'yes' && $soc_allowed)
     {
-        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($twitter_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.$config_tw_lang.'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
+        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($twitter_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.str_replace('_', '-', $config_social_i18n).'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
+    }
+    elseif ($name == 'gplus' && $config_use_gplus == 'yes' && $soc_allowed)
+    {
+        return '<div class="g-plusone" data-size="'.$config_gplus_size.'" data-annotation="'.$config_gplus_annotation.'" data-width="'.$config_gplus_width.'"></div>';
     }
 
     return '';

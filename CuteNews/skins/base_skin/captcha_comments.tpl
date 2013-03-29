@@ -13,7 +13,7 @@
             <div><a href='#' onclick="document.getElementById('comments_captcha').src='{$config_http_script_dir}/captcha.php?r=' + Math.random(); return(false);" style="border-bottom:  1px dashed blue;">Refresh</a></div>
         </td>
         <td>
-            <div> <img id="comments_captcha" src="{$config_http_script_dir}/captcha.php" alt="" /> </div>
+            <div> <img id="comments_captcha" src="{$config_http_script_dir}/captcha.php?r={$captha_rand}" alt="" /> </div>
             <div> <input type="text" name="captcha" value="" /></div>
         </td>
     {/if}

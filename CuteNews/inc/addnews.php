@@ -272,10 +272,7 @@ if ($action == "addnews")
     if ( !isset($cfg['more_fields']) )
     {
         $cfg['more_fields'] = array();
-
-        $fx = fopen(SERVDIR.'/cdata/conf.php', 'w');
-        fwrite($fx, "<?php die(); ?>\n" . serialize($cfg) );
-        fclose($fx);
+        cn_config_save($cfg);
     }
 
     foreach ($cfg['more_fields'] as $i => $v)
@@ -284,12 +281,14 @@ if ($action == "addnews")
         if ( $v[0] == '&' )
              $xfields[] = array( $i, substr($v,1), '<span style="color: red;">*</span> '. lang('required','news'), $af );
         else $xfields[] = array( $i, $v, '' ,$af );
-        if($i == '_avatar_width')
+
+        if ($i == '_avatar_width')
         {
             list($name, $desc, $req, $value) = array_pop($xfields);
             $_avatar_width = $value;
         }
-        if($i == '_avatar_height')
+
+        if ($i == '_avatar_height')
         {
             list($name, $desc, $req, $value) = array_pop($xfields);
             $_avatar_height = $value;
@@ -332,7 +331,9 @@ if ($action == "addnews")
     $full_story  = htmlspecialchars( $_POST['full_story'] );
 
     $UseAvatar   = ($config_use_avatar == 'yes') ? 1 : 0;
-    $Using_HTML = $config_use_html;
+    $Using_HTML  = $config_use_html;
+
+    hook('addnews_make_form_vars', $item_db);
     echo proc_tpl
     (
             'addnews/'.$tpl,

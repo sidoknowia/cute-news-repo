@@ -163,11 +163,11 @@ BODY,TD,TR{
                                     }
                                     elseif ($_GET['do'] == "stats")
                                     {
-                                        echo"You can download the stats addon and include it here to show how many news, comments ... you have";
+                                        echo "You can download the stats addon and include it here to show how many news, comments ... you have";
                                     }
                                     else
                                     {
-                                        $number = 5;
+                                        $number = "5";
                                         include("show_news.php");
                                     }
 

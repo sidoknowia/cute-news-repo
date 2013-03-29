@@ -7,7 +7,6 @@
 <a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=headlines">headlines</a> ||
 <a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=archives">archives</a> ||
 <a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=search">search</a> ||
-<a href="<?php echo $_SERVER['PHP_SELF']; ?>?go=userlist">userlist</a> ||
 <a style="font-size:120%" href="example2.php">See Advanced Example >></a>
 
 <hr>
@@ -28,12 +27,6 @@
     elseif ($_GET['go'] == "search")
     {
        include("search.php");
-    }
-    elseif ($_GET['go'] == "userlist")
-    {
-        $imod = 'userlist';
-        $user_flags = 'unraple';
-        include("shows.php");
     }
 ?>
 

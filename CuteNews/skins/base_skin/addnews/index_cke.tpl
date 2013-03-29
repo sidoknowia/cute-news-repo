@@ -68,23 +68,19 @@
     </tr>
 
     <!-- Short story -->
-    <tr>
-        <td align="right" valign="top"><br />Short Story</td>
-        <td> <textarea style="width: 680px;" rows="12" cols="74" id="short_story" name="short_story" tabindex=4>{$short_story}</textarea> </td>
-    </tr>
+    <tr><td colspan="2"><br />Short Story</td></tr>
+    <tr><td colspan="2"> <textarea style="resize: none;" rows="12" cols="74" id="short_story" name="short_story" tabindex=3>{$short_story}</textarea> </td></tr>
 
     <!-- Full story -->
-    <tr id='full-story' style='display: none;'>
-
-        <td align="right" valign="top"><br />Full Story<br /><span style="font-size:7pt">(optional)</span></td>
-        <td> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=5 style="width:464px;">{$full_story}</textarea> </td>
-    </tr>
+    <div>
+        <tr><td colspan="2"><br /><a onClick="ShowOrHide('full-story',''); return false;" href="#">Full Story</a>  <span style="font-size:7pt">(optional)</span></td></tr>
+        <tr id='full-story' style='display: none;'><td colspan="2"> <textarea style="resize: none;" rows="12" cols="74" id="full_story" name="full_story" tabindex=3>{$full_story}</textarea> </td></tr>
+    </div>
 
     {$Hook_AdditionalFieldsBottom}
 
     <tr>
-        <td>&nbsp;</td>
-        <td style="padding: 4px;">
+        <td style="padding: 4px;" colspan="2">
              <table border=0 cellspacing=0 cellpadding=0 width="100%">
              <tr>
                <td>
@@ -92,8 +88,8 @@
                    <button title="Preview the New Article" name="preview" value="preview" accesskey="p">Preview</button>
                </td>
                <td align=right>
-                   <input style='width:120px;'type=button onClick="ShowOrHide('full-story',''); setTimeout('increaseTextareaBug()',310);" value="Toggle Full-Story">
-                   <input style='width:110px;' type=button onClick="ShowOrHide('options','');" value="Article Options "> </td>
+                   <input style='width:110px;' type=button onClick="ShowOrHide('options','');" value="Article Options ">
+               </td>
              </tr>
             </table>
         </td>
@@ -124,20 +120,24 @@
     {
         var settings =
         {
-            skin: 'v2',
-            width: 680,
+            skin: 'moono',
+            width: 'auto',
             height: 350,
             customConfig: '',
             language: 'en',
             entities_latin: false,
             entities_greek: false,
-            toolbar: [ {$config_ckeditor_customize} ],
-            {$implemented_ckeditor_filemanager}
+            toolbar: [{$config_ckeditor_customize}],
+        {$implemented_ckeditor_filemanager}
         };
+
+        /* Smilies */
+        CKEDITOR.config.smiley_path = "{$config_http_script_dir}/skins/emoticons/";
+        CKEDITOR.config.smiley_images = ['angry.gif','crying.gif','laughing.gif','sad.gif','smile.gif','tongue.gif','wassat.gif','wink.gif'];
+        CKEDITOR.config.smiley_descriptions= [':-)', ':-('];
 
         CKEDITOR.replace( 'short_story', {$CKEDITOR_SetsName} );
         CKEDITOR.replace( 'full_story', {$CKEDITOR_SetsName} );
-        {$CKEDITOR_Settings}
+    {$CKEDITOR_Settings}
     })();
-
 </script>

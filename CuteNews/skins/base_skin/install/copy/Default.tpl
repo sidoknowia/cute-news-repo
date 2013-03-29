@@ -2,7 +2,7 @@
 ///////////////////// TEMPLATE Default /////////////////////
 $template_active = <<<HTML
 <div style="width:420px; margin-bottom:30px;">
-<div><strong>{title}</strong> {star-rate}</div>
+<div><strong>{title}</strong></div>
 
 <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{short-story}</div>
 
@@ -15,7 +15,7 @@ HTML;
 
 $template_full = <<<HTML
 <div style="width:420px; margin-bottom:15px;">
-<div><strong>{title}</strong> {star-rate}</div>
+<div><strong>{title}</strong></div>
 
 {avatar}
 

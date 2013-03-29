@@ -155,7 +155,7 @@
             $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($prev, $ucat, $url_archive, $subaction, $id));
             $URL = hook('rewrite_active_news_plink', $URL);
 
-            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", '<a href="'.$config_http_script_dir.$URL.'">\\1</a> ', $prev_next_msg);
+            $prev_next_msg = preg_replace("'\[prev-link\](.*?)\[/prev-link\]'si", '<a href="'.$URL.'">\\1</a> ', $prev_next_msg);
         }
         else
         {
@@ -177,10 +177,10 @@
             {
                 if ( $pages_start_from != $start_from)
                 {
-                    $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($pages_start_from,$ucat,$url_archive,$subaction,$id));
+                    $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($pages_start_from, $ucat, $url_archive, $subaction, $id));
                     $URL = hook('rewrite_active_news_link', $URL);
 
-                    $pages .= '<a href="'.$config_http_script_dir.$URL.'">'.$j.'</a> ';
+                    $pages .= '<a href="'.$URL.'">'.$j.'</a> ';
                 }
                 else $pages .= '<strong>'.$j.'</strong> ';
                 $pages_start_from += $number;
@@ -202,7 +202,7 @@
             $URL = $PHP_SELF . build_uri('start_from,ucat,archive,subaction,id:comm_start_from', array($i, $ucat, $url_archive, $subaction, $id));
             $URL = hook('rewrite_active_news_nlink', $URL);
 
-            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.$config_http_script_dir.$URL.'">\\1</a>', $prev_next_msg);
+            $prev_next_msg = preg_replace("'\[next-link\](.*?)\[/next-link\]'si", '<a href="'.$URL.'">\\1</a>', $prev_next_msg);
 
         }
         else

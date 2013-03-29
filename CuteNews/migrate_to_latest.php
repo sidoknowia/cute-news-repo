@@ -10,12 +10,13 @@ Copyright (с) 2012-2013 Cutenews Team
 
 if (!isset($_POST['oldpath']))
 {
+    $example_path = dirname(__FILE__);
 ?>
 <div style="width: 500px; background: none repeat scroll 0px 0px rgb(255, 255, 255); height: 200px; position: fixed; left: 50%; top: 50%; margin-top: -100px; margin-left: -250px; text-align: center; border-radius: 20px 20px 20px 20px; font-family: Verdana,Arial,Helvetica,sans-serif; border: 1px solid #A7A6B4;">
     <h2 style="font-size: 20px; margin: 16px 0 0 0;">Migration to the latest CuteNews</h2>
     <hr style="border: 2px dashed #A0A0A0; border-top: none;">
     <form style="position: relative; top: 20px;" method="POST">
-        <p>Enter the path to the old project (ex: /var/www/cutenews):</p>
+        <p>Enter the path to the old project (mb: <?=$example_path?>):</p>
         <input type="text" name="oldpath">
         <input type="submit" value="Migrate">
         <p style="font-size: 14px; font-style: italic; margin: 8px 0px 4px;"><span style="color: red;">Notice:</span> It also works with cutenews 1.4.7 to 1.5.2.</p>

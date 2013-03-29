@@ -22,11 +22,11 @@
     if ( $template == 'rss' ) include( SERVDIR.'/cdata/rss_config.php' );
 
     // definition FB comments if uses
-    if ( ($config_use_fbcomments == 'yes' || $config_use_fblike == 'yes') and !isset($_CACHE['__first_time__']) )
+    if ( ($config_use_fbcomments == 'yes' || $config_use_fblike == 'yes') and !mcache_get('fb_js_on') && $template != 'rss')
     {
-        if (empty($config_fb_i18n)) $config_fb_i18n = 'en_US';
-        echo str_replace( array('{appID}', '{fbi18n}'), array($config_fb_appid, $config_fb_i18n), read_tpl('fb_comments'));
-        $_CACHE['__first_time__'] = true;
+        if (empty($config_social_i18n)) $config_social_i18n = 'en_US';
+        echo str_replace( array('{appID}', '{fbi18n}'), array($config_fb_appid, str_replace('-', '_', $config_social_i18n)), read_tpl('fb_comments'));
+        mcache_set('fb_js_on', true);
     }
 
     // use static path to all links

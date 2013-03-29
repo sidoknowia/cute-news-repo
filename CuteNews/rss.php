@@ -27,7 +27,7 @@ echo "<?xml version=\"1.0\" encoding=\"$rss_encoding\" ?>
 <atom:link href=\"".$config_http_script_dir."/rss.php\" rel=\"self\" type=\"application/rss+xml\" />";
 
 if (isset($_GET['number'])) $number = intval($_GET['number']); else $number = 15;
-if (isset($_GET['only_active']) && $_GET['only_active']) $only_active = true; else $only_active = $_GET['only_active'];
+if (isset($_GET['only_active']) && $_GET['only_active']) $only_active = $_GET['only_active']; else $only_active = true;
 
 $template = 'rss';
 include('show_news.php');
