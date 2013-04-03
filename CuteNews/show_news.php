@@ -10,7 +10,7 @@
     require_once ('core/init.php');
     include ('core/loadenv.php');
 
-    // plugin tells us: he is fork, stop
+// plugin tells us: he is fork, stop
     if ( hook('fork_news', false) ) return;
 
     // Check including
@@ -46,6 +46,13 @@
 
     $requested_cats = array();
     $archive        = preg_replace('~[^0-9]~', '', $archive);
+    if(isset($nocategory) && !empty($nocategory))
+    {
+        $nocategory = preg_replace("/\s/", "", $nocategory);
+        foreach (spsep($nocategory) as $value)
+            if ($value) $requested_cats[$value] = false;
+        if(isset($category) && $category) $category= "";
+    }
     $category       = preg_replace("/\s/", "", $category);
     $save_archive   = $archive;
 

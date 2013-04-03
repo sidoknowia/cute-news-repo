@@ -556,7 +556,6 @@ elseif ($action == "syscon")
     echo "<div class='consys_sub'>Twitter button:</div>";
     echo "<table cellpadding=0 cellspacing=0 width=100%>";
     echo syscon('use_twitter', 'Use twitter button|if yes, twitter button will be shown','y/n');
-    echo syscon('tw_url=15', 'Share URL|if empty, use the page URL');
     echo syscon('tw_text=15', 'Tweet text|if empty, use the title of the page');
     echo syscon('tw_show_count', 'Show count|if yes, count of tweets will be shown near button', array("horisontal"=>"Horisontal", "vertical"=>"Vertical", "none"=>"None"));
     echo syscon('tw_via=10', 'Via @|Screen name of the user to attribute the Tweet to');

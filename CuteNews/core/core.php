@@ -2511,7 +2511,7 @@ function show_social_code($name = 'fb', $news_arr)
     global $config_fblike_color, $config_fblike_verb;
 
     // Twitter
-    global $config_use_twitter, $config_tw_url, $config_tw_text, $config_tw_via, $config_tw_recommended, $config_tw_show_count, $config_tw_hashtag;
+    global $config_use_twitter, $config_tw_text, $config_tw_via, $config_tw_recommended, $config_tw_show_count, $config_tw_hashtag;
     global $config_tw_large;
 
     //Google
@@ -2542,14 +2542,13 @@ function show_social_code($name = 'fb', $news_arr)
     }
     elseif ($name == 'twitter' && $config_use_twitter == 'yes' && $soc_allowed)
     {
-        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($config_tw_url).'" data-text="'.trim($twitter_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.str_replace('_', '-', $config_social_i18n).'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
+        return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($data_href).'" data-text="'.trim($twitter_text).'" data-via="'.trim($config_tw_via).'" data-related="'.trim($config_tw_recommended).'" data-count="'.$config_tw_show_count.'" data-hashtags="'.trim($config_tw_hashtag).'" data-lang="'.str_replace('_', '-', $config_social_i18n).'" data-size="'.($config_tw_large=="yes"?"large":"medium").'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
     }
     elseif ($name == 'gplus' && $config_use_gplus == 'yes' && $soc_allowed)
     {
-        return '<div class="g-plusone" data-size="'.$config_gplus_size.'" data-annotation="'.$config_gplus_annotation.'" data-width="'.$config_gplus_width.'"></div>';
+        return '<div class="g-plusone" data-href="'.$data_href.'" data-size="'.$config_gplus_size.'" data-annotation="'.$config_gplus_annotation.'" data-width="'.$config_gplus_width.'"></div>';
     }
 
     return '';
 }
-
 ?>

@@ -29,6 +29,7 @@
     $number                 = htmlspecialchars($number);
     $template               = htmlspecialchars($template);
     $show                   = htmlspecialchars($show);
+    $nocategory             = htmlspecialchars($nocategory);
 
     // Only if not exists or PHP_SELF is empty
     if (empty($PHP_SELF))   $PHP_SELF = PHP_SELF;

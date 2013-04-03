@@ -112,7 +112,6 @@
     if (!isset($config_fblike_color))       $config_fblike_color = "light";
     if (!isset($config_fblike_verb))        $config_fblike_verb = "like";
     if (!isset($config_use_twitter))        $config_use_twitter = "no";
-    if (!isset($config_tw_url))             $config_tw_url = "";
     if (!isset($config_tw_text))            $config_tw_text = "";
     if (!isset($config_tw_show_count))      $config_tw_show_count = "none";
     if (!isset($config_tw_via))             $config_tw_via = "";

@@ -51,7 +51,6 @@ $config_fblike_font = "arial";
 $config_fblike_color = "light";
 $config_fblike_verb = "like";
 $config_use_twitter = "no";
-$config_tw_url = "";
 $config_tw_text = "";
 $config_tw_show_count = "none";
 $config_tw_via = "";

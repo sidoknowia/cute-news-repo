@@ -26,7 +26,8 @@
     $count_all = 0;
     $all_news = hook('news_reorder', $all_news);
 
-    if (isset($category) and $category)
+
+    if (isset($category) and $category or (isset($nocategory) and !empty($nocategory)))
     {
         foreach ($all_news as $news_line)
         {
@@ -38,10 +39,16 @@
                 $this_cats_arr = spsep($news_arr[NEW_CAT]);
                 foreach ($this_cats_arr as $this_single_cat)
                 {
-                    if (isset($requested_cats[$this_single_cat]) && isset($requested_cats[$this_single_cat])) $is_in_cat = TRUE;
+                    if ((isset($requested_cats[$this_single_cat]) && $requested_cats[$this_single_cat])
+                        || (isset($nocategory) && $nocategory && !isset($requested_cats[$this_single_cat])))
+                        $is_in_cat = true;
                 }
             }
-            elseif (isset($requested_cats[$news_arr[NEW_CAT]]) && isset($requested_cats[$news_arr[NEW_CAT]])) $is_in_cat = TRUE;
+            elseif ((isset($requested_cats[$news_arr[NEW_CAT]]) && $requested_cats[$news_arr[NEW_CAT]])
+                || (isset($nocategory) && $nocategory && !isset($requested_cats[$news_arr[NEW_CAT]]) ))
+            {
+                $is_in_cat = true;
+            }
 
             if ($is_in_cat) $count_all++; else continue;
         }
@@ -69,16 +76,21 @@
                 $this_cats_arr = spsep($news_arr[NEW_CAT]);
                 foreach ($this_cats_arr as $this_single_cat)
                 {
-                    if (isset($requested_cats[$this_single_cat]) && isset($requested_cats[$this_single_cat])) $is_in_cat = true;
+                    if ((isset($requested_cats[$this_single_cat]) && $requested_cats[$this_single_cat])
+                        || (isset($nocategory) && $nocategory && !isset($requested_cats[$this_single_cat])))
+                        $is_in_cat = true;
                 }
-
             }
-            elseif (isset($requested_cats[$news_arr[NEW_CAT]]) && isset($requested_cats[$news_arr[NEW_CAT]])) $is_in_cat = true;
+            elseif ((isset($requested_cats[$news_arr[NEW_CAT]]) && $requested_cats[$news_arr[NEW_CAT]])
+                    || (isset($nocategory) && $nocategory && !isset($requested_cats[$news_arr[NEW_CAT]]) ))
+            {
+                $is_in_cat = true;
+            }
 
             // if User_By, show news only for this user
             if ( !empty($user_by) && $user_by != $news_arr[NEW_USER]) { $count_all--; continue; }
 
-            if (!$is_in_cat and isset($category) and $category) continue;
+            if (!$is_in_cat and ((isset($category) and $category) or (isset($nocategory) and $nocategory))) continue;
             if ($start_from)
             {
                 if ($i < $start_from)
