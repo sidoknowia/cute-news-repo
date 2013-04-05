@@ -123,14 +123,16 @@ if ($action == "addnews")
             $check_result = check_avatar($manual_avatar);
             if ($check_result['is_loaded'] == false)
                 $error_messages .= getpart('addnews_err', array( lang('Avatar not uploaded!').' '.$check_result['error_msg'] ));
+
             $manual_avatar = $check_result['path'];
         }
 
-        if($config_use_avatar == 'yes')
+        if ($config_use_avatar == 'yes')
         {
-            if(!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
+            if (!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
                 $error_messages .= getpart('addnews_err', array( lang('Avatar width may consist only digits and % or px on the end') ));
-            if(!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
+
+            if (!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
                 $error_messages .= getpart('addnews_err', array( lang('Avatar height may consist only digits and % or px on the end') ));
         }
 

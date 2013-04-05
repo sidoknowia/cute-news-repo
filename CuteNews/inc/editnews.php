@@ -19,6 +19,9 @@ if ( $config_use_wysiwyg == 'ckeditor' && is_dir(SERVDIR.'/core/ckeditor'))
     $use_wysiwyg = 1;
 }
 
+// INIT
+list($action, $subaction, $category) = GET('action,subaction,category','POSTGET');
+
 // ********************************************************************************
 // List all news available for editing
 // ********************************************************************************
@@ -311,7 +314,6 @@ elseif ($action == "editnews")
 
         // default values
         $nice_category = '';
-        $options = array();
 
         // Format our categories variable
         if (is_array($category))
@@ -339,14 +341,15 @@ elseif ($action == "editnews")
         // Check optional fields
         if ($ifdelete != 'yes')
         {
+            $more = '';
             $optfields = array();
-            $more = false;
 
-            if($config_use_avatar == 'yes')
+            if ($config_use_avatar == 'yes')
             {
-                if(!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
+                if (!create_avatar_size_in_mf($_avatar_width, '_avatar_width', 'Avatar width'))
                     $error_messages .= getpart('addnews_err', array( lang('Avatar width may consist only digits and % or px on the end') ));
-                if(!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
+
+                if (!create_avatar_size_in_mf($_avatar_height, '_avatar_height', 'Avatar height'))
                     $error_messages .= getpart('addnews_err', array( lang('Avatar height may consist only digits and % or px on the end') ));
             }
 
@@ -379,7 +382,7 @@ elseif ($action == "editnews")
         if ($if_use_html == "yes" || $use_wysiwyg)
         {
             $use_html = true;
-            $options = edit_option($options, 'use_html', true);
+            $options = edit_option('', 'use_html', true);
         }
 
         // Check avatar
@@ -474,7 +477,7 @@ elseif ($action == "editnews")
 
                             // Only for editor without wysiwyg
                             if  ($config_use_wysiwyg == 'no')
-                                $old_db_arr[NEW_OPT] = edit_option($old_db_arr[NEW_OPT], 'use_html', ($if_use_html == 'yes') ? 1 : 0);
+                                 $old_db_arr[NEW_OPT] = edit_option($old_db_arr[NEW_OPT], 'use_html', ($if_use_html == 'yes') ? 1 : 0);
                             else $old_db_arr[NEW_OPT] = str_replace("\n", "", $old_db_arr[NEW_OPT]);
 
                             fwrite ($new_db, "$old_db_arr[0]|$old_db_arr[1]|$title|$short_story|$full_story|$editavatar|$nice_category|$old_db_arr[7]|$more|$old_db_arr[9]|\n");
@@ -702,7 +705,6 @@ elseif ($action == "editnews")
         $Comments_HTML = proc_tpl('editnews/editnews/nocomments');
 
     // init x-fields
-    $options = array();
     $xfields = array();
     $postpone_date = false;
 

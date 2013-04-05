@@ -467,6 +467,7 @@ elseif ($action == "syscon")
     echo "<tr style='display:none' id=news><td colspan=10 width=100%><table cellpadding=0 cellspacing=0 width=100%>";
 
     echo syscon('use_avatar',           "Use avatars|if 'No', the avatar URL won't be shown", 'y/n');
+    echo syscon('check_avatar',         "Check avatar|'If 'yes', the avatar URL will be checked. '<a href='http://php.net/manual/en/filesystem.configuration.php' target='_blank'>allow_url_fopen</a>' is required.", 'Y/N');
     echo syscon('reverse_active',       'Reverse News|if yes, older news will be shown on the top', 'y/n');
     echo syscon('full_popup',           'Show full story in popup|full Story will be opened in PopUp window', 'y/n');
     echo syscon('full_popup_string',    "Settings for full story popup|only if 'Show Full Story In PopUp' is enabled");

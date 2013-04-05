@@ -755,9 +755,11 @@ function template_replacer_news($news_arr, $output)
     $output      = str_replace("{comments-num}",    countComments($news_arr[NEW_ID], $archive), $output);
     $output      = str_replace("{archive-id}",      $archive, $output);
     $output      = str_replace("{category-icon}",   caticon( $news_arr[NEW_CAT], $cat_icon, $cat ), $output);
+
     $mf_for_avatar = options_extract($news_arr[NEW_MF]);
-    if(array_key_exists('_avatar_width', $mf_for_avatar)) $width_for_avatar = 'width:'.$mf_for_avatar['_avatar_width'].';';
-    if(array_key_exists('_avatar_height', $mf_for_avatar)) $height_for_avatar = 'height:'.$mf_for_avatar['_avatar_height'].';';
+    if (array_key_exists('_avatar_width', $mf_for_avatar))  $width_for_avatar = 'width:'.$mf_for_avatar['_avatar_width'].';';
+    if (array_key_exists('_avatar_height', $mf_for_avatar)) $height_for_avatar = 'height:'.$mf_for_avatar['_avatar_height'].';';
+
     $output      = str_replace("{avatar}",          $news_arr[NEW_AVATAR]? '<img alt="" src="'.$news_arr[NEW_AVATAR].'" style="border: none;'.$width_for_avatar.$height_for_avatar.'" />' : '', $output);
 
     $output      = preg_replace('/\[loggedin\](.*?)\[\/loggedin\]/is', empty($_SESS['user']) ? '' : '\\1', $output);
@@ -915,36 +917,40 @@ function create_avatar_size_in_mf($avatar_option, $mfname, $mfvalue)
  */
 function add_to_log($username, $action)
 {
-    global $config_userlogs, $config_time_adjust;
+    global $config_userlogs, $config_time_adjust, $_SESS;
+
+    // By Default + add to error.log
+    if ($username[0] == '*')
+    {
+        $username = $_SESS['user'];
+        $error_log = 1;
+    }
 
     // Sanitize username
     $username = preg_replace('/[^a-z0-9_\- ]/i', '', $username);
 
-    // User logs is disabled
-    if ($config_userlogs == '0') return false;
-
     // authorization stat
-    $locked = false;
     $need_time = time() + $config_time_adjust*60;
-    $flog = SERVDIR.'/cdata/log/log_'.date('Y_m', $need_time).'.php';
 
-    // create log file if not exists
-    if ( !file_exists($flog) )
+    // add to error log
+    if (!empty($error_log))
     {
-        @fclose(@fopen($flog,'w'));
-        @chmod ($flog, 0666);
+        $log = fopen(SERVDIR.'/cdata/log/error.log', 'a+');
+        fwrite($log, "$need_time|$action\n");
+        fclose($log);
+
+        if ($username[1] == '') return FALSE;
     }
 
-    if ( !file_exists($flog) ) return false;
+    // User logs is disabled
+    if ($config_userlogs == '0') return FALSE;
 
     // add to log
-    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m', $need_time).'.php', 'a');
-    flock($log, LOCK_EX);
+    $log = fopen(SERVDIR.'/cdata/log/log_'.date('Y_m', $need_time).'.php', 'a+');
     fwrite($log, $need_time.'|'.serialize(array('user' => $username, 'action' => $action, 'time' => $need_time, 'ip' => $_SERVER['REMOTE_ADDR']))."\n");
-    flock($log, LOCK_UN);
     fclose($log);
 
-    return true;
+    return TRUE;
 }
 
 // User-defined for date formatting
@@ -1331,48 +1337,77 @@ function ResynchronizePostponed()
 {
     global $config_notify_postponed,$config_notify_status,$config_notify_email, $config_date_adjust;
 
-    $all_postponed_db = file(SERVDIR."/cdata/postponed_news.txt");
-    if (!empty($all_postponed_db))
+    // file paths
+    $the_news_file  = SERVDIR."/cdata/news.txt";
+    $postponed_sync = SERVDIR."/cdata/postponed_sync.txt";
+    $postponed_file = SERVDIR."/cdata/postponed_news.txt";
+    $postponed_new  = SERVDIR."/cdata/postponed_newx.txt";
+
+    clearstatcache();
+    if (file_exists($postponed_sync))
+        return add_to_log('*!', 'Locked postponed file');
+
+    // do nothing
+    if (filesize($postponed_file) == 0)
+        return false;
+
+    $h_all_postponed = fopen($postponed_file, 'r');
+    if ($h_all_postponed)
     {
-        $new_postponed_db = fopen(SERVDIR."/cdata/postponed_news.txt", "w");
-        if ($new_postponed_db)
+        $a_postponed = array();
+        $h_postponed = fopen($postponed_sync, "w+");
+
+        if ($h_postponed)
         {
             $now_date = time() + $config_date_adjust*60;
-            flock ($new_postponed_db, LOCK_EX);
 
-            foreach ($all_postponed_db as $p_line)
+            // extract & refresh postponed
+            $h_postponed_new = fopen($postponed_new, 'w+');
+            while ( $p_line = trim(fgets($h_all_postponed)) )
             {
                 $p_item_db = explode("|", $p_line);
                 if ($p_item_db[0] <= $now_date)
-                {
-                    // Item is old and must be Activated, add it to news.txt
-                    $all_active_db      = file(SERVDIR."/cdata/news.txt");
-                    $active_news_file   = fopen(SERVDIR."/cdata/news.txt", "w");
-
-                    if ($active_news_file)
-                    {
-                        flock ($active_news_file, LOCK_EX);
-                        fwrite($active_news_file, $p_line);
-                        foreach ($all_active_db as $active_line) fwrite($active_news_file, $active_line);
-                        flock ($active_news_file, LOCK_UN);
-                        fclose($active_news_file);
-
-                        if($config_notify_postponed == "yes" and $config_notify_status == "active")
-                            send_mail( $config_notify_email, lang("CuteNews - Postponed article was Activated"), lang("CuteNews has activated the article").' '.$p_item_db[2]);
-
-                    }
-                }
-                else
-                {
-                    // Item is still postponed
-                    fwrite($new_postponed_db,"$p_line");
-                }
+                     $a_postponed[] = $p_line;
+                else fwrite($h_postponed_new, "$p_line\n");
             }
+            fclose($h_postponed_new);
 
-            flock ($new_postponed_db, LOCK_UN);
-            fclose($new_postponed_db);
+            arsort($a_postponed);
+            // write postponed news at begin
+            foreach ($a_postponed as $p_line) fwrite($h_postponed, "$p_line\n");
+
+            // write active news at end
+            $h_news_file = fopen($the_news_file, 'r');
+            while ( $p_line = trim(fgets($h_news_file) )) fwrite($h_postponed, "$p_line\n");
+
+            fclose($h_postponed);
+            fclose($h_news_file);
+
+            // copy new news
+            rename($postponed_sync, $the_news_file);
+            @chmod($the_news_file, 0664);
+
+            // copy new postponed
+            rename($postponed_new, $postponed_file);
+            @chmod($postponed_file, 0664);
+
+            // mail
+            if ($config_notify_postponed == "yes" and $config_notify_status == "active")
+                send_mail( $config_notify_email, lang("CuteNews - Postponed article was Activated"), lang("CuteNews has activated the %1 article(s)", count($a_postponed)) );
         }
+        else
+        {
+            add_to_log('*', "Access denied to <$postponed_sync>");
+        }
+
+        fclose($h_all_postponed);
     }
+    else
+    {
+        add_to_log('*', "Access denied <$postponed_file>");
+    }
+
+    return true;
 }
 
 // Format the size of given file
@@ -1768,7 +1803,11 @@ function replace_news($way, $sourse, $use_html = true)
 function check_avatar($editavatar)
 {
     global $config_http_script_dir;
+
     $avatar = array('is_loaded' => true, 'path' => $editavatar);
+
+    // check avatar function disabled
+    if (getoption('check_avatar') == false) return $avatar;
 
     // avatar not uploaded?
     if ( strpos($editavatar, $config_http_script_dir) === false)

@@ -21,12 +21,13 @@ if ($action == "archive")
     // ***************************
     if ($subaction == "unarchive" and !empty($aid))
     {
-        if(!$handle = opendir(SERVDIR."/cdata/archives"))
+        if (!$handle = opendir(SERVDIR."/cdata/archives"))
             die_stat(false, lang("Unable to open directory")." ".SERVDIR."/cdata/archive");
 
-        if(!is_writable(SERVDIR."/cdata/news.txt"))
+        if (!is_writable(SERVDIR."/cdata/news.txt"))
             die_stat(false, lang("Unable to write to file")." ".SERVDIR."/cdata/news.txt");
-        if(!is_writable(SERVDIR."/cdata/comments.txt"))
+
+        if (!is_writable(SERVDIR."/cdata/comments.txt"))
             die_stat(false, lang("Unable to write to file")." ".SERVDIR."/cdata/comments.txt");
 
         while (false !== ($file = readdir($handle)))
@@ -435,6 +436,7 @@ elseif ($action == 'replaces')
 }
 elseif ($action == 'xfields')
 {
+    $cfg = mcache_get('config');
     if ($do == 'submit')
     {
         CSRFCheck();
