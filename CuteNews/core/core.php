@@ -858,6 +858,20 @@ function template_replacer_news($news_arr, $output)
     // If not used, replace [edit]..[/edit]
     if ($DREdit == false) $output = preg_replace('~\[edit\].*?\[/edit\]~si', '', $output);
 
+    // Multicategories
+    $cats = $news_arr[NEW_CAT];
+    $cats = spsep($cats);
+
+    if (preg_match_all('/\[cat\-\d+\](.*?)\[\/\]/is', $output, $c, PREG_SET_ORDER))
+    {
+        foreach ($c as $v)
+        {
+            if (count($cats)) $catid = array_shift($cats); else $catid = FALSE;
+            if ($catid !== FALSE) $d = str_replace('{catid}', $catid, $v[1]); else $d = '';
+            $output = str_replace($v[0], $d, $output);
+        }
+    }
+
     list($output, $news_arr) = hook('template_replacer_news_middle', array($output, $news_arr));
     $output                  = replace_news("show", $output);
     list($output)            = hook('template_replacer_news_after', array($output, $news_arr));
